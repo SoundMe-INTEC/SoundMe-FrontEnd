@@ -7,6 +7,12 @@
 .buildlog/
 .history
 
+<<<<<<< HEAD
+=======
+.idea/
+
+.vscode/
+>>>>>>> origin/feature/SDM-25
 
 
 # Flutter repo-specific
