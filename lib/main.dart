@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:sound_me/config/routes/routes.dart';
-import 'package:sound_me/config/theme/app_theme.dart';
+import 'package:soundme_frontend/features/home/screens/home_screen.dart';
+
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-  runApp(const SoundMe());
+  runApp(const MyApp());
 }
 
-class SoundMe extends StatelessWidget {
-  const SoundMe({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'SoundMe',
       debugShowCheckedModeBanner: false,
-      title: 'Sound Me',
-      theme: AppTheme.light,
-      // home: const HomeScreen(),
-      initialRoute: DefaultRoute,
-      routes: AppRoutes,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF002D62)),
+        useMaterial3: true,
+      ),
+
+      home: const HomeScreen(),
     );
   }
 }

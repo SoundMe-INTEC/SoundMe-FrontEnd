@@ -1,4 +1,4 @@
-# sound_me
+# soundme_frontend
 
 A new Flutter project.
 
