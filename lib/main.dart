@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soundme_frontend/features/home/screens/home_screen.dart';
+import 'package:soundme_frontend/features/home/presentation/screens/home_screen.dart';
 
 
 void main() {
