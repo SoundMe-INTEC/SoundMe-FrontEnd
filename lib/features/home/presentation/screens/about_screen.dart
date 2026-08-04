@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:soundme_frontend/features/home/widgets/header_background.dart';
+import 'package:soundme_frontend/core/widgets/header_background.dart';
+import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -20,15 +21,6 @@ class AboutScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                // Botón superior para regresar
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -36,24 +28,10 @@ class AboutScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 50),
+                        const SizedBox(height: 100),
                         // LOGO Y SUBTÍTULO
-                        Image.asset(
-                          'assets/images/soundme_logo.png',
-                          height: 170,
-                          fit: BoxFit.contain,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Traductor de Voz a Lengua de\nSeñas Dominicana',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
-                            color: textGray,
-                          ),
-                        ),
+
+                        const SoundMeLogo(),
 
                         const SizedBox(height: 28),
 

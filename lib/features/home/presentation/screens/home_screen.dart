@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:soundme_frontend/features/home/screens/about_screen.dart';
-import 'package:soundme_frontend/features/home/widgets/header_background.dart';
+import 'package:soundme_frontend/features/home/presentation/screens/about_screen.dart';
+import 'package:soundme_frontend/features/auth/presentation/screens/login_screen.dart';
+import 'package:soundme_frontend/core/widgets/header_background.dart';
+import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -39,27 +41,8 @@ class HomeScreen extends StatelessWidget {
                       const Spacer(flex: 2),
 
                       // LOGO Y SUBTÍTULO
-                      Column(
-                        children: [
-                          const SizedBox(height: 60),
-                          Image.asset(
-                            'assets/images/soundme_logo.png',
-                            height: 200,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Traductor de Voz a Lengua de\nSeñas Dominicana',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: textGray,
-                            ),
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: 60),
+                      const SoundMeLogo(),
 
                       const Spacer(flex: 2),
 
@@ -186,11 +169,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Botón de Administradores
+// Botón de Administradores
   Widget _buildAdminButton(BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(20), // Para que el efecto de toque sea circular
       onTap: () {
-        // TODO: Navegar a Admin
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+        );
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
