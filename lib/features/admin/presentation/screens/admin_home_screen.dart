@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
-
-  static const Color primaryNavy = Color(0xFF002D62);
-  static const Color cardBlue = Color(0xFF4FA3D1);
-  static const Color accentRed = Color(0xFFCE1126);
-  static const Color textGray = Color(0xFF747474);
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +45,7 @@ class AdminHomeScreen extends StatelessWidget {
                       fontFamily: 'Inter',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: textGray,
+                      color: AppColors.textGray,
                     ),
                   ),
 
@@ -59,7 +55,7 @@ class AdminHomeScreen extends StatelessWidget {
                   _buildStatCard(
                     title: 'Usuarios Activos',
                     value: '1,234',
-                    backgroundColor: primaryNavy,
+                    backgroundColor: AppColors.primaryNavy,
                     icon: Icons.group,
                   ),
 
@@ -69,7 +65,7 @@ class AdminHomeScreen extends StatelessWidget {
                   _buildStatCard(
                     title: 'Traducciones Realizadas',
                     value: '5,678',
-                    backgroundColor: cardBlue,
+                    backgroundColor: AppColors.cardBlue,
                     icon: Icons.g_translate,
                   ),
 
@@ -97,7 +93,7 @@ class AdminHomeScreen extends StatelessWidget {
                         // TODO: Ir a Diccionario
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryNavy,
+                        backgroundColor: AppColors.primaryNavy,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -129,7 +125,7 @@ class AdminHomeScreen extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
                         backgroundColor: Colors.white,
-                        side: const BorderSide(color: textGray, width: 2),
+                        side: const BorderSide(color: AppColors.textGray, width: 2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40),
                         ),
@@ -159,8 +155,8 @@ class AdminHomeScreen extends StatelessWidget {
                           Navigator.of(context).popUntil((route) => route.isFirst);
                         },
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: accentRed,
-                          side: const BorderSide(color: accentRed, width: 2),
+                          foregroundColor: AppColors.accentRed,
+                          side: const BorderSide(color: AppColors.accentRed, width: 2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(40),
                           ),
@@ -192,7 +188,7 @@ class AdminHomeScreen extends StatelessWidget {
     );
   }
 
-  // Widget aux para las tarjetas de estadísticas con icono
+  // Widget auxiliar para las tarjetas de estadísticas con icono
   Widget _buildStatCard({
     required String title,
     required String value,

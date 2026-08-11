@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/auth/presentation/screens/two_step_auth_screen.dart';
@@ -11,11 +12,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Constantes de estilo compartidas con HomeScreen
-  static const Color primaryNavy = Color(0xFF002D62);
-  static const Color textGray = Color(0xFF747474);
-  static const Color inputFillColor = Color(0xFFE7EAEE);
-
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -40,7 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
           SafeArea(
             child: Stack(
               children: [
-
                 // FORMULARIO PRINCIPAL
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -63,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontFamily: 'Inter',
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: textGray,
+                            color: AppColors.textGray,
                           ),
                         ),
                       ),
@@ -75,11 +70,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintText: 'XXXXXXXXXXX',
                           hintStyle: const TextStyle(
                             fontFamily: 'Inter',
-                            color: textGray,
+                            color: AppColors.textGray,
                             fontSize: 14,
                           ),
                           filled: true,
-                          fillColor: inputFillColor,
+                          fillColor: AppColors.inputFillColor,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 18,
@@ -102,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontFamily: 'Inter',
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: textGray,
+                            color: AppColors.textGray,
                           ),
                         ),
                       ),
@@ -113,12 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: InputDecoration(
                           hintText: '••••••••••••',
                           hintStyle: const TextStyle(
-                            color: textGray,
+                            color: AppColors.textGray,
                             fontSize: 18,
                             letterSpacing: 2,
                           ),
                           filled: true,
-                          fillColor: inputFillColor,
+                          fillColor: AppColors.inputFillColor,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 16,
@@ -132,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               _obscurePassword
                                   ? Icons.visibility_off
                                   : Icons.visibility,
-                              color: primaryNavy,
+                              color: AppColors.primaryNavy,
                             ),
                             onPressed: () {
                               setState(() {
@@ -160,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 14,
-                              color: primaryNavy,
+                              color: AppColors.primaryNavy,
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -169,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 24),
 
-                      // BOTÓN INICIAR SESIÓN (Mismo estilo que botones del Home)
+                      // BOTÓN INICIAR SESIÓN
                       SizedBox(
                         width: double.infinity,
                         height: 62,
@@ -183,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryNavy,
+                            backgroundColor: AppColors.primaryNavy,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -213,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 14,
-                            color: primaryNavy,
+                            color: AppColors.primaryNavy,
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -228,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 14,
-                          color: textGray,
+                          color: AppColors.textGray,
                         ),
                       ),
                       const SizedBox(height: 16),

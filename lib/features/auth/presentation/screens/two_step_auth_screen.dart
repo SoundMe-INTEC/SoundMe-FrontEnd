@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/admin/presentation/screens/admin_home_screen.dart';
@@ -12,10 +13,6 @@ class TwoStepAuthScreen extends StatefulWidget {
 }
 
 class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
-  static const Color primaryNavy = Color(0xFF002D62);
-  static const Color textGray = Color(0xFF747474);
-  static const Color inputFillColor = Color(0xFFE7EAEE);
-
   final List<TextEditingController> _controllers =
   List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
@@ -66,7 +63,7 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                       fontFamily: 'Inter',
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
-                      color: textGray,
+                      color: AppColors.textGray,
                       height: 1.2,
                     ),
                   ),
@@ -90,7 +87,7 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                             fontFamily: 'Inter',
                             fontSize: 28,
                             fontWeight: FontWeight.w600,
-                            color: primaryNavy,
+                            color: AppColors.primaryNavy,
                           ),
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
@@ -98,7 +95,7 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                           decoration: InputDecoration(
                             counterText: '',
                             filled: true,
-                            fillColor: inputFillColor,
+                            fillColor: AppColors.inputFillColor,
                             contentPadding: const EdgeInsets.symmetric(vertical: 20),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
@@ -138,7 +135,7 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryNavy,
+                        backgroundColor: AppColors.primaryNavy,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -165,7 +162,7 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
-                      color: textGray,
+                      color: AppColors.textGray,
                     ),
                   ),
                   const SizedBox(height: 16),
