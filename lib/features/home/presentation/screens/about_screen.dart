@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
-
-  static const Color primaryNavy = Color(0xFF002D62);
-  static const Color textGray = Color(0xFF747474);
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +27,8 @@ class AboutScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 100),
-                        // LOGO Y SUBTÍTULO
 
+                        // LOGO Y SUBTÍTULO
                         const SoundMeLogo(),
 
                         const SizedBox(height: 28),
@@ -62,14 +60,18 @@ class AboutScreen extends StatelessWidget {
                             errorBuilder: (context, error, stackTrace) => Container(
                               height: 188,
                               color: Colors.grey[200],
-                              child: const Icon(Icons.image, size: 50, color: textGray),
+                              child: const Icon(
+                                Icons.image,
+                                size: 50,
+                                color: AppColors.textGray,
+                              ),
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 20),
 
-                        // CORDERO/DESCRIPCIÓN
+                        // DESCRIPCIÓN
                         const Text(
                           'En un mundo diseñado para ser escuchado, el silencio no debería ser una barrera para la comprensión. SoundMe nace con la misión de transformar la voz en imágenes, devolviendo la fluidez a las conversaciones y garantizando que cada mensaje, sin importar cómo se transmita, llegue con claridad al corazón de la comunidad sorda. Creemos que la conexión humana es un derecho, no un privilegio, y trabajamos para que nadie vuelva a quedar fuera de la charla.',
                           textAlign: TextAlign.justify,
@@ -91,7 +93,7 @@ class AboutScreen extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 14,
-                            color: textGray,
+                            color: AppColors.textGray,
                           ),
                         ),
                         const SizedBox(height: 16),

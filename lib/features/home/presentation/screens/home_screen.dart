@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:soundme_frontend/features/home/presentation/screens/about_screen.dart';
-import 'package:soundme_frontend/features/auth/presentation/screens/login_screen.dart';
+import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
+import 'package:soundme_frontend/features/auth/presentation/screens/login_screen.dart';
+import 'package:soundme_frontend/features/home/presentation/screens/about_screen.dart';
+import 'package:soundme_frontend/features/main_layout/presentation/screens/main_layout_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  // Definición de colores según el diseño de Figma
-  static const Color primaryNavy = Color(0xFF002D62);
-  static const Color accentRed = Color(0xFFCE1126);
-  static const Color textGray = Color(0xFF747474);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // El Stack principal ocupa TODA la pantalla (incluyendo la barra de estado)
       body: Stack(
         children: [
           // 1. DECORACIÓN DE FONDO REUTILIZABLE
@@ -26,14 +22,14 @@ class HomeScreen extends StatelessWidget {
           SafeArea(
             child: Stack(
               children: [
-                // BOTÓN DE ADMINISTRADORES (Esquina superior derecha)
+                // BOTÓN DE ADMINISTRADORES
                 Positioned(
                   top: 16,
                   right: 16,
                   child: _buildAdminButton(context),
                 ),
 
-                // CONTENIDO PRINCIPAL (Centrado)
+                // CONTENIDO PRINCIPAL
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32.0),
                   child: Column(
@@ -51,7 +47,12 @@ class HomeScreen extends StatelessWidget {
                         text: 'Traductor',
                         icon: Icons.g_translate,
                         onPressed: () {
-                          // TODO: Navegar al Traductor
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MainLayoutScreen(initialIndex: 1),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: 24),
@@ -60,7 +61,12 @@ class HomeScreen extends StatelessWidget {
                         text: 'Opciones',
                         icon: Icons.settings_outlined,
                         onPressed: () {
-                          // TODO: Navegar a Opciones
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MainLayoutScreen(initialIndex: 2),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: 24),
@@ -87,7 +93,7 @@ class HomeScreen extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 14,
-                          color: textGray,
+                          color: AppColors.textGray, // Uso de AppColors
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -116,7 +122,7 @@ class HomeScreen extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryNavy,
+          backgroundColor: AppColors.primaryNavy, // Uso de AppColors
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -150,7 +156,7 @@ class HomeScreen extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.black,
           backgroundColor: Colors.white,
-          side: const BorderSide(color: textGray, width: 2),
+          side: const BorderSide(color: AppColors.textGray, width: 2), // Uso de AppColors
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(40),
           ),
@@ -169,10 +175,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-// Botón de Administradores
+  // Botón de Administradores
   Widget _buildAdminButton(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(20), // Para que el efecto de toque sea circular
+      borderRadius: BorderRadius.circular(20),
       onTap: () {
         Navigator.push(
           context,
@@ -185,7 +191,7 @@ class HomeScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: const [
           SizedBox(height: 10),
-          Icon(Icons.manage_accounts_outlined, color: primaryNavy, size: 40),
+          Icon(Icons.manage_accounts_outlined, color: AppColors.primaryNavy, size: 40), // Uso de AppColors
         ],
       ),
     );
