@@ -17,7 +17,7 @@ class HeaderBackground extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              height: 220,
+              height: 230,
               color: primaryNavy,
             ),
             Container(

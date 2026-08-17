@@ -9,12 +9,12 @@ class AdminHeaderBackground extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          height: 31,
+          height: 45,
           color: const Color(0xFF002D62),
         ),
         Container(
           width: double.infinity,
-          height: 10,
+          height: 13,
           color: const Color(0xFFCE1126),
         ),
       ],
