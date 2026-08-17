@@ -40,7 +40,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Column(
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 60),
 
                   // WIDGET SEÑALES (Área de Renderizado de Señas/Avatar)
                   Container(
@@ -84,7 +84,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             hintText: 'Esperando audio...',
                             hintStyle: TextStyle(
                               fontFamily: 'Inter',
-                              fontSize: 18,
+                              fontSize: 22,
                               color: AppColors.textGray,
                             ),
                             border: InputBorder.none,
@@ -95,12 +95,14 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              '¡También puedes escribir lo que deseas traducir!',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 11,
-                                color: AppColors.primaryNavy,
+                            Expanded(
+                              child: const Text(
+                                '¡También puedes escribir lo que deseas traducir!',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  color: AppColors.primaryNavy,
+                                ),
                               ),
                             ),
                             IconButton(
