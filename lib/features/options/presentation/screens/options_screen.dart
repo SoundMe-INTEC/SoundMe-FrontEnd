@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
+import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/permissions_screen.dart';
+import 'package:soundme_frontend/features/options/presentation/screens/translation_list_screen.dart';
 
 class OptionsScreen extends StatelessWidget {
   const OptionsScreen({super.key});
@@ -47,7 +49,38 @@ class OptionsScreen extends StatelessWidget {
                     icon: Icons.history,
                     title: 'Historial',
                     subtitle: 'Revisa tus traducciones pasadas',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TranslationListScreen(
+                            title: 'Historial',
+                            items: [
+                              TranslationItem(
+                                id: '1',
+                                text: 'Quiero ir a comprar pan con jamón...',
+                                imageUrl: '',
+                              ),
+                              TranslationItem(
+                                id: '2',
+                                text: 'No me gusta el minecraft, soy más de LoL...',
+                                imageUrl: '',
+                              ),
+                              TranslationItem(
+                                id: '3',
+                                text: 'Definitivamente, la raíz de 2...',
+                                imageUrl: '',
+                              ),
+                              TranslationItem(
+                                id: '4',
+                                text: 'Me gusta comer pizza de día...',
+                                imageUrl: '',
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 16),
@@ -75,9 +108,9 @@ class OptionsScreen extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Widget del Logo oficial de SoundMe
-                  Center(
+                  const Center(
                     child: SizedBox(
-                      width: 290, // Ajusta el ancho deseado
+                      width: 290,
                       child: FittedBox(
                         fit: BoxFit.contain,
                         child: SoundMeLogo(),
@@ -198,16 +231,94 @@ class OptionsScreen extends StatelessWidget {
           // Sub-elementos integrados
           _buildSubCategoryItem(
             title: 'Saludos básicos',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TranslationListScreen(
+                    title: 'Saludos Básicos',
+                    items: [
+                      TranslationItem(
+                        id: 's1',
+                        text: 'Hola, ¿cómo estás?',
+                        imageUrl: '',
+                      ),
+                      TranslationItem(
+                        id: 's2',
+                        text: 'Buenos días a todos',
+                        imageUrl: '',
+                      ),
+                      TranslationItem(
+                        id: 's3',
+                        text: 'Mucho gusto en conocerte',
+                        imageUrl: '',
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           _buildSubCategoryItem(
             title: 'Frases comunes',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TranslationListScreen(
+                    title: 'Frases Comunes',
+                    items: [
+                      TranslationItem(
+                        id: 'f1',
+                        text: '¿Dónde está el baño?',
+                        imageUrl: '',
+                      ),
+                      TranslationItem(
+                        id: 'f2',
+                        text: 'Muchas gracias por la ayuda',
+                        imageUrl: '',
+                      ),
+                      TranslationItem(
+                        id: 'f3',
+                        text: '¿Cuánto cuesta esto?',
+                        imageUrl: '',
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           _buildSubCategoryItem(
             title: 'Emergencias',
             isLast: true,
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TranslationListScreen(
+                    title: 'Emergencias',
+                    items: [
+                      TranslationItem(
+                        id: 'e1',
+                        text: 'Necesito ayuda urgente',
+                        imageUrl: '',
+                      ),
+                      TranslationItem(
+                        id: 'e2',
+                        text: 'Por favor, llama a una ambulancia',
+                        imageUrl: '',
+                      ),
+                      TranslationItem(
+                        id: 'e3',
+                        text: 'Me siento mal, necesito un médico',
+                        imageUrl: '',
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
