@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/permissions_screen.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/translation_list_screen.dart';
+import 'package:soundme_frontend/features/dictionary/presentation/screens/dictionary_screen.dart';
+import 'package:soundme_frontend/features/auth/data/auth_service.dart';
+import 'package:soundme_frontend/features/auth/presentation/screens/login_screen.dart';
 
-class OptionsScreen extends StatelessWidget {
+class OptionsScreen extends ConsumerWidget {
   const OptionsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -105,6 +109,35 @@ class OptionsScreen extends StatelessWidget {
                     },
                   ),
 
+                  const SizedBox(height: 16),
+
+                  // Tarjeta: Cerrar sesión
+                  _buildOptionCard(
+                    icon: Icons.logout,
+                    title: 'Cerrar Sesión',
+                    subtitle: 'Cierra tu sesión en este dispositivo',
+                    iconColor: Colors.red,
+                    titleColor: Colors.red,
+                    onTap: () async {
+                      try {
+                        await ref.read(authServiceProvider).logout();
+                        if (context.mounted) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al cerrar sesión: $e')),
+                          );
+                        }
+                      }
+                    },
+                  ),
+
                   const SizedBox(height: 32),
 
                   // Widget del Logo oficial de SoundMe
@@ -134,6 +167,8 @@ class OptionsScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    Color? iconColor,
+    Color? titleColor,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -142,14 +177,14 @@ class OptionsScreen extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        leading: Icon(icon, color: AppColors.primaryNavy, size: 36),
+        leading: Icon(icon, color: iconColor ?? AppColors.primaryNavy, size: 36),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: AppColors.primaryNavy,
+            color: titleColor ?? AppColors.primaryNavy,
           ),
         ),
         subtitle: subtitle.isNotEmpty
@@ -159,13 +194,13 @@ class OptionsScreen extends StatelessWidget {
             fontFamily: 'Inter',
             fontSize: 13,
             fontWeight: FontWeight.w300,
-            color: AppColors.primaryNavy.withOpacity(0.8),
+            color: (titleColor ?? AppColors.primaryNavy).withOpacity(0.8),
           ),
         )
             : null,
-        trailing: const Icon(
+        trailing: Icon(
           Icons.arrow_forward_ios,
-          color: AppColors.primaryNavy,
+          color: iconColor ?? AppColors.primaryNavy,
           size: 18,
         ),
         onTap: onTap,
@@ -184,47 +219,61 @@ class OptionsScreen extends StatelessWidget {
       child: Column(
         children: [
           // Cabecera del Diccionario
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.menu_book,
-                  color: AppColors.primaryNavy,
-                  size: 32,
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DictionaryScreen(),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Diccionario',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryNavy,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Busca las palabras/frases que gustes y su interpretación en señas',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300,
-                          color: AppColors.primaryNavy.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
+              );
+            },
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.menu_book,
+                    color: AppColors.primaryNavy,
+                    size: 32,
                   ),
-                ),
-                const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: AppColors.primaryNavy,
-                ),
-              ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Diccionario',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryNavy,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Busca las palabras/frases que gustes y su interpretación en señas (completo)',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300,
+                            color: AppColors.primaryNavy.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.primaryNavy,
+                  ),
+                ],
+              ),
             ),
           ),
 

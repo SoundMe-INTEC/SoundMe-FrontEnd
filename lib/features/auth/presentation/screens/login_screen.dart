@@ -1,20 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
+import 'package:soundme_frontend/features/auth/data/auth_service.dart';
 import 'package:soundme_frontend/features/auth/presentation/screens/two_step_auth_screen.dart';
+import 'package:soundme_frontend/core/utils/ui_helpers.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  Future<void> _doLogin() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final authService = ref.read(authServiceProvider);
+      final identification = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+
+      if (identification.isEmpty || password.isEmpty) {
+        throw Exception('Por favor ingresa identificación y contraseña');
+      }
+
+      final success = await authService.login(identification, password);
+      if (success && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TwoStepAuthScreen(
+              identification: identification,
+            ),
+          ),
+        );
+      } else if (mounted) {
+        throw Exception('Credenciales inválidas');
+      }
+    } catch (e) {
+      if (mounted) {
+        UIHelpers.showError(
+          context,
+          message: e.toString().replaceAll('Exception: ', ''),
+          onRetry: _doLogin,
+          onCancel: () {},
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -169,14 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         height: 62,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const TwoStepAuthScreen(),
-                              ),
-                            );
-                          },
+                          onPressed: _isLoading ? null : _doLogin,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryNavy,
                             foregroundColor: Colors.white,
@@ -185,14 +223,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(40),
                             ),
                           ),
-                          child: const Text(
-                            'Iniciar Sesión',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isLoading 
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text(
+                                'Iniciar Sesión',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                         ),
                       ),
 
