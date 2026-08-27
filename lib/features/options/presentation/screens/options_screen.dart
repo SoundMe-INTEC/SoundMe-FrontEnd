@@ -1,16 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
+import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/permissions_screen.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/translation_list_screen.dart';
+import 'package:soundme_frontend/features/dictionary/presentation/screens/dictionary_screen.dart';
 
-class OptionsScreen extends StatelessWidget {
+class OptionsScreen extends ConsumerWidget {
   const OptionsScreen({super.key});
 
+  /// Converts [MockSignEntry] list to [TranslationItem] list for the UI.
+  List<TranslationItem> _toTranslationItems(List<MockSignEntry> entries) {
+    return entries
+        .map((e) => TranslationItem(
+              id: e.id.toString(),
+              text: e.palabra,
+              imageUrl: e.imagenAsset,
+            ))
+        .toList();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final greetings = ref.watch(mockGreetingsProvider);
+    final commonPhrases = ref.watch(mockCommonPhrasesProvider);
+    final emergencies = ref.watch(mockEmergenciesProvider);
+    final allSigns = ref.watch(allMockSignsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -20,7 +39,7 @@ class OptionsScreen extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            child: AdminHeaderBackground(),
+            child: AdminHeaderBackground(title: 'Opciones'),
           ),
 
           SafeArea(
@@ -29,54 +48,27 @@ class OptionsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 50),
 
-                  // Título de la pantalla
-                  const Text(
-                    'Opciones',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryNavy,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Tarjeta: Historial
+                  // Tarjeta: Historial (now with real mockup data)
                   _buildOptionCard(
                     icon: Icons.history,
                     title: 'Historial',
                     subtitle: 'Revisa tus traducciones pasadas',
                     onTap: () {
+                      // Use the first 10 mockup entries as "history"
+                      final historyItems = allSigns.whenOrNull(
+                        data: (signs) => _toTranslationItems(
+                          signs.take(10).toList(),
+                        ),
+                      );
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const TranslationListScreen(
+                          builder: (context) => TranslationListScreen(
                             title: 'Historial',
-                            items: [
-                              TranslationItem(
-                                id: '1',
-                                text: 'Quiero ir a comprar pan con jamón...',
-                                imageUrl: '',
-                              ),
-                              TranslationItem(
-                                id: '2',
-                                text: 'No me gusta el minecraft, soy más de LoL...',
-                                imageUrl: '',
-                              ),
-                              TranslationItem(
-                                id: '3',
-                                text: 'Definitivamente, la raíz de 2...',
-                                imageUrl: '',
-                              ),
-                              TranslationItem(
-                                id: '4',
-                                text: 'Me gusta comer pizza de día...',
-                                imageUrl: '',
-                              ),
-                            ],
+                            items: historyItems ?? const [],
                           ),
                         ),
                       );
@@ -86,7 +78,12 @@ class OptionsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Bloque: Diccionario y Categorías
-                  _buildDictionaryGroup(context),
+                  _buildDictionaryGroup(
+                    context,
+                    greetings: greetings,
+                    commonPhrases: commonPhrases,
+                    emergencies: emergencies,
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -105,7 +102,7 @@ class OptionsScreen extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
 
                   // Widget del Logo oficial de SoundMe
                   const Center(
@@ -134,6 +131,8 @@ class OptionsScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    Color? iconColor,
+    Color? titleColor,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -141,31 +140,38 @@ class OptionsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        leading: Icon(icon, color: AppColors.primaryNavy, size: 36),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 12,
+        ),
+        leading: Icon(
+          icon,
+          color: iconColor ?? AppColors.primaryNavy,
+          size: 36,
+        ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: AppColors.primaryNavy,
+            color: titleColor ?? AppColors.primaryNavy,
           ),
         ),
         subtitle: subtitle.isNotEmpty
             ? Text(
-          subtitle,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 13,
-            fontWeight: FontWeight.w300,
-            color: AppColors.primaryNavy.withOpacity(0.8),
-          ),
-        )
+                subtitle,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w300,
+                  color: (titleColor ?? AppColors.primaryNavy).withAlpha(204),
+                ),
+              )
             : null,
-        trailing: const Icon(
+        trailing: Icon(
           Icons.arrow_forward_ios,
-          color: AppColors.primaryNavy,
+          color: iconColor ?? AppColors.primaryNavy,
           size: 18,
         ),
         onTap: onTap,
@@ -173,8 +179,13 @@ class OptionsScreen extends StatelessWidget {
     );
   }
 
-  // Grupo colapsable / desplegado del Diccionario
-  Widget _buildDictionaryGroup(BuildContext context) {
+  // Grupo colapsable / desplegado del Diccionario — now with real data
+  Widget _buildDictionaryGroup(
+    BuildContext context, {
+    required AsyncValue<List<MockSignEntry>> greetings,
+    required AsyncValue<List<MockSignEntry>> commonPhrases,
+    required AsyncValue<List<MockSignEntry>> emergencies,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.cardFillColor,
@@ -184,76 +195,77 @@ class OptionsScreen extends StatelessWidget {
       child: Column(
         children: [
           // Cabecera del Diccionario
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.menu_book,
-                  color: AppColors.primaryNavy,
-                  size: 32,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Diccionario',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryNavy,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Busca las palabras/frases que gustes y su interpretación en señas',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300,
-                          color: AppColors.primaryNavy.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: AppColors.primaryNavy,
-                ),
-              ],
-            ),
-          ),
-
-          // Sub-elementos integrados
-          _buildSubCategoryItem(
-            title: 'Saludos básicos',
+          InkWell(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TranslationListScreen(
+                  builder: (context) => const DictionaryScreen(),
+                ),
+              );
+            },
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.menu_book,
+                    color: AppColors.primaryNavy,
+                    size: 32,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Diccionario',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryNavy,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Busca las palabras/frases que gustes y su interpretación en señas (completo)',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300,
+                            color: AppColors.primaryNavy.withAlpha(204),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.primaryNavy,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Sub-elementos integrados — now loading real mockup data
+          _buildSubCategoryItem(
+            title: 'Saludos básicos',
+            onTap: () {
+              final items = greetings.whenOrNull(
+                data: (data) => _toTranslationItems(data),
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TranslationListScreen(
                     title: 'Saludos Básicos',
-                    items: [
-                      TranslationItem(
-                        id: 's1',
-                        text: 'Hola, ¿cómo estás?',
-                        imageUrl: '',
-                      ),
-                      TranslationItem(
-                        id: 's2',
-                        text: 'Buenos días a todos',
-                        imageUrl: '',
-                      ),
-                      TranslationItem(
-                        id: 's3',
-                        text: 'Mucho gusto en conocerte',
-                        imageUrl: '',
-                      ),
-                    ],
+                    items: items ?? const [],
                   ),
                 ),
               );
@@ -262,28 +274,15 @@ class OptionsScreen extends StatelessWidget {
           _buildSubCategoryItem(
             title: 'Frases comunes',
             onTap: () {
+              final items = commonPhrases.whenOrNull(
+                data: (data) => _toTranslationItems(data),
+              );
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TranslationListScreen(
+                  builder: (context) => TranslationListScreen(
                     title: 'Frases Comunes',
-                    items: [
-                      TranslationItem(
-                        id: 'f1',
-                        text: '¿Dónde está el baño?',
-                        imageUrl: '',
-                      ),
-                      TranslationItem(
-                        id: 'f2',
-                        text: 'Muchas gracias por la ayuda',
-                        imageUrl: '',
-                      ),
-                      TranslationItem(
-                        id: 'f3',
-                        text: '¿Cuánto cuesta esto?',
-                        imageUrl: '',
-                      ),
-                    ],
+                    items: items ?? const [],
                   ),
                 ),
               );
@@ -293,28 +292,15 @@ class OptionsScreen extends StatelessWidget {
             title: 'Emergencias',
             isLast: true,
             onTap: () {
+              final items = emergencies.whenOrNull(
+                data: (data) => _toTranslationItems(data),
+              );
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TranslationListScreen(
+                  builder: (context) => TranslationListScreen(
                     title: 'Emergencias',
-                    items: [
-                      TranslationItem(
-                        id: 'e1',
-                        text: 'Necesito ayuda urgente',
-                        imageUrl: '',
-                      ),
-                      TranslationItem(
-                        id: 'e2',
-                        text: 'Por favor, llama a una ambulancia',
-                        imageUrl: '',
-                      ),
-                      TranslationItem(
-                        id: 'e3',
-                        text: 'Me siento mal, necesito un médico',
-                        imageUrl: '',
-                      ),
-                    ],
+                    items: items ?? const [],
                   ),
                 ),
               );
@@ -339,9 +325,9 @@ class OptionsScreen extends StatelessWidget {
         ),
         borderRadius: isLast
             ? const BorderRadius.only(
-          bottomLeft: Radius.circular(15),
-          bottomRight: Radius.circular(15),
-        )
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
+              )
             : null,
       ),
       child: ListTile(

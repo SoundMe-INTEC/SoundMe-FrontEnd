@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/admin/presentation/screens/admin_home_screen.dart';
+import 'package:soundme_frontend/features/auth/data/auth_service.dart';
+import 'package:soundme_frontend/core/utils/ui_helpers.dart';
 
-class TwoStepAuthScreen extends StatefulWidget {
-  const TwoStepAuthScreen({super.key});
+class TwoStepAuthScreen extends ConsumerStatefulWidget {
+  final String identification;
+
+  const TwoStepAuthScreen({
+    super.key,
+    required this.identification,
+  });
 
   @override
-  State<TwoStepAuthScreen> createState() => _TwoStepAuthScreenState();
+  ConsumerState<TwoStepAuthScreen> createState() => _TwoStepAuthScreenState();
 }
 
-class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
+class _TwoStepAuthScreenState extends ConsumerState<TwoStepAuthScreen> {
   final List<TextEditingController> _controllers =
-  List.generate(6, (_) => TextEditingController());
+      List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -32,30 +41,69 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
     return _controllers.map((c) => c.text).join();
   }
 
+  Future<void> _verifyOtp() async {
+    final code = _getVerificationCode();
+    if (code.length < 6) return;
+
+    // Ocultar teclado
+    FocusScope.of(context).unfocus();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = ref.read(authServiceProvider);
+      final success = await authService.verifyOtp(widget.identification, code);
+
+      if (success && mounted) {
+        UIHelpers.showSuccess(context, '¡Sesión iniciada correctamente!');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AdminHomeScreen(),
+          ),
+          (route) => false,
+        );
+      } else if (mounted) {
+        throw Exception('Código inválido');
+      }
+    } catch (e) {
+      if (mounted) {
+        UIHelpers.showError(
+          context,
+          message: e.toString().replaceAll('Exception: ', ''),
+          onRetry: _verifyOtp,
+          onCancel: () {
+            // Limpiar inputs si cancela
+            for (var c in _controllers) {
+              c.clear();
+            }
+            _focusNodes[0].requestFocus();
+          },
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. HEADER DECORATIVO LIMPIO
           const HeaderBackground(),
-
-          // 2. CONTENIDO PRINCIPAL
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 26.0),
               child: Column(
                 children: [
                   const Spacer(flex: 2),
-
-                  // LOGO Y SUBTÍTULO
                   const SizedBox(height: 60),
                   const SoundMeLogo(),
-
                   const Spacer(flex: 1),
-
-                  // TEXTO INSTRUCTIVO
                   const Text(
                     'Ingresa el código que hemos enviado a tu correo electrónico.',
                     textAlign: TextAlign.center,
@@ -67,10 +115,7 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                       height: 1.2,
                     ),
                   ),
-
                   const SizedBox(height: 24),
-
-                  // INPUTS DEL CÓDIGO (6 CASILLAS)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(6, (index) {
@@ -96,7 +141,8 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                             counterText: '',
                             filled: true,
                             fillColor: AppColors.inputFillColor,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 20),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide.none,
@@ -108,6 +154,7 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                                 _focusNodes[index + 1].requestFocus();
                               } else {
                                 _focusNodes[index].unfocus();
+                                _verifyOtp(); // Auto-verificar si llena todo
                               }
                             } else if (value.isEmpty && index > 0) {
                               _focusNodes[index - 1].requestFocus();
@@ -117,23 +164,12 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                       );
                     }),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // BOTÓN VERIFICAR
                   SizedBox(
                     width: double.infinity,
                     height: 62,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AdminHomeScreen(),
-                          ),
-                              (route) => false,
-                        );
-                      },
+                      onPressed: _isLoading ? null : _verifyOtp,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryNavy,
                         foregroundColor: Colors.white,
@@ -142,20 +178,19 @@ class _TwoStepAuthScreenState extends State<TwoStepAuthScreen> {
                           borderRadius: BorderRadius.circular(40),
                         ),
                       ),
-                      child: const Text(
-                        'Verificar',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Verificar',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
-
                   const Spacer(flex: 3),
-
-                  // COPYRIGHT FOOTER
                   const Text(
                     '© 2026 SoundMe. Todos los derechos reservados.',
                     textAlign: TextAlign.center,

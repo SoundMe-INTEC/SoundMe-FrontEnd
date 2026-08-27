@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
-import 'package:soundme_frontend/core/widgets/header_background_2.dart';
+import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
 import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 
 class TranslationListScreen extends StatefulWidget {
@@ -27,13 +27,24 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
     _filteredItems = List.from(widget.items);
   }
 
+  String _normalize(String input) {
+    var text = input.trim().toUpperCase();
+    text = text.replaceAll(RegExp(r'[ÁÀÄÂ]'), 'A');
+    text = text.replaceAll(RegExp(r'[ÉÈËÊ]'), 'E');
+    text = text.replaceAll(RegExp(r'[ÍÌÏÎ]'), 'I');
+    text = text.replaceAll(RegExp(r'[ÓÒÖÔ]'), 'O');
+    text = text.replaceAll(RegExp(r'[ÚÙÜÛ]'), 'U');
+    return text;
+  }
+
   void _filterItems(String query) {
     setState(() {
       if (query.isEmpty) {
         _filteredItems = List.from(widget.items);
       } else {
+        final normalizedQuery = _normalize(query);
         _filteredItems = widget.items
-            .where((item) => item.text.toLowerCase().contains(query.toLowerCase()))
+            .where((item) => _normalize(item.text).contains(normalizedQuery))
             .toList();
       }
     });
@@ -51,11 +62,11 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          const Positioned(
+          Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: AdminHeaderBackground(),
+            child: HeaderWithBackButton(title: widget.title),
           ),
           SafeArea(
             child: Padding(
@@ -63,18 +74,7 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-                  // Título Dinámico
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryNavy,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 50),
                   _buildSearchBar(),
                   const SizedBox(height: 16),
                   Expanded(
@@ -141,17 +141,79 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
     );
   }
 
-  Widget _buildCard(TranslationItem item) {
-    return Container(
-      height: 115,
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppColors.cardFillColor,
-        borderRadius: BorderRadius.circular(15),
+  void _showImageModal(BuildContext context, TranslationItem item) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      item.text,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryNavy,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.primaryNavy),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.asset(
+                  item.imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        color: AppColors.primaryNavy,
+                        size: 60,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Row(
-        children: [
-          const SizedBox(width: 9),
+    );
+  }
+
+  Widget _buildCard(TranslationItem item) {
+    return GestureDetector(
+      onTap: () => _showImageModal(context, item),
+      child: Container(
+        height: 118,
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: AppColors.cardFillColor,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 9),
           Container(
             width: 100,
             height: 100,
@@ -192,13 +254,13 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Icon(
-              Icons.arrow_forward_ios,
+              Icons.zoom_in,
               color: AppColors.primaryNavy,
-              size: 18,
+              size: 24,
             ),
           ),
         ],
       ),
-    );
+    ));
   }
 }

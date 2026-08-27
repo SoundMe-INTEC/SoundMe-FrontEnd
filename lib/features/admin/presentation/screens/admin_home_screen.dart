@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
+import 'package:soundme_frontend/data/local/mockup_data_service.dart';
+import 'package:soundme_frontend/features/auth/data/auth_service.dart';
+import 'package:soundme_frontend/features/auth/presentation/screens/login_screen.dart';
+import 'package:soundme_frontend/features/dictionary/presentation/screens/dictionary_screen.dart';
 
-class AdminHomeScreen extends StatelessWidget {
+class AdminHomeScreen extends ConsumerWidget {
   const AdminHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mockData = ref.watch(allMockSignsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -17,7 +24,7 @@ class AdminHomeScreen extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            child: AdminHeaderBackground(),
+            child: AdminHeaderBackground(title: 'Panel de Administración'),
           ),
 
           // 2. CONTENIDO PRINCIPAL
@@ -27,20 +34,9 @@ class AdminHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 11),
-
-                  // TÍTULOS
+                  const SizedBox(height: 50),
                   const Text(
-                    'Panel de Administración',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const Text(
-                    '¡Bienvenido!',
+                    '¡Bienvenido, Administrador!',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
@@ -51,20 +47,34 @@ class AdminHomeScreen extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // CARD: USUARIOS ACTIVOS
-                  _buildStatCard(
-                    title: 'Usuarios Activos',
-                    value: '1,234',
-                    backgroundColor: AppColors.primaryNavy,
-                    icon: Icons.group,
+                  // CARD: SEÑAS EN DICCIONARIO (dato dinámico del mockup)
+                  mockData.when(
+                    data: (signs) => _buildStatCard(
+                      title: 'Señas en Diccionario',
+                      value: '${signs.length}',
+                      backgroundColor: AppColors.primaryNavy,
+                      icon: Icons.menu_book,
+                    ),
+                    loading: () => _buildStatCard(
+                      title: 'Señas en Diccionario',
+                      value: '...',
+                      backgroundColor: AppColors.primaryNavy,
+                      icon: Icons.menu_book,
+                    ),
+                    error: (_, __) => _buildStatCard(
+                      title: 'Señas en Diccionario',
+                      value: '—',
+                      backgroundColor: AppColors.primaryNavy,
+                      icon: Icons.menu_book,
+                    ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // CARD: TRADUCCIONES REALIZADAS
+                  // CARD: TRADUCCIONES (mockup)
                   _buildStatCard(
                     title: 'Traducciones Realizadas',
-                    value: '5,678',
+                    value: '128',
                     backgroundColor: AppColors.cardBlue,
                     icon: Icons.g_translate,
                   ),
@@ -84,13 +94,18 @@ class AdminHomeScreen extends StatelessWidget {
 
                   const SizedBox(height: 14),
 
-                  // BOTÓN: GESTIONAR DICCIONARIO
+                  // BOTÓN: GESTIONAR DICCIONARIO — Ahora navega a DictionaryScreen
                   SizedBox(
                     width: double.infinity,
                     height: 59,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        // TODO: Ir a Diccionario
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DictionaryScreen(),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryNavy,
@@ -144,33 +159,31 @@ class AdminHomeScreen extends StatelessWidget {
 
                   const SizedBox(height: 14),
 
-                  // BOTÓN: CERRAR SESIÓN
-                  Center(
-                    child: SizedBox(
-                      width: 189,
-                      height: 38,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // Lógica de logout -> Regresar al Home o Login
-                          Navigator.of(context).popUntil((route) => route.isFirst);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.accentRed,
-                          side: const BorderSide(color: AppColors.accentRed, width: 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                        ),
-                        child: const Text(
-                          'Cerrar Sesión',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
+                  // Tarjeta: Cerrar sesión
+                  _buildOptionCard(
+                    icon: Icons.logout,
+                    title: 'Cerrar Sesión',
+                    subtitle: 'Cierra tu sesión en este dispositivo',
+                    iconColor: Colors.red,
+                    titleColor: Colors.red,
+                    onTap: () async {
+                      try {
+                        await ref.read(authServiceProvider).logout();
+                        if (context.mounted) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al cerrar sesión: $e')),
+                          );
+                        }
+                      }
+                    },
                   ),
 
                   const SizedBox(height: 24),
@@ -206,30 +219,32 @@ class AdminHomeScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 32,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Icon(
             icon,
@@ -237,6 +252,60 @@ class AdminHomeScreen extends StatelessWidget {
             color: Colors.white.withAlpha(180),
           ),
         ],
+      ),
+    );
+  }
+
+  // Widget reutilizable para tarjetas de opciones
+  Widget _buildOptionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color? iconColor,
+    Color? titleColor,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardFillColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 12,
+        ),
+        leading: Icon(
+          icon,
+          color: iconColor ?? AppColors.primaryNavy,
+          size: 36,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: titleColor ?? AppColors.primaryNavy,
+          ),
+        ),
+        subtitle: subtitle.isNotEmpty
+            ? Text(
+                subtitle,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w300,
+                  color: (titleColor ?? AppColors.primaryNavy).withAlpha(204),
+                ),
+              )
+            : null,
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          color: iconColor ?? AppColors.primaryNavy,
+          size: 18,
+        ),
+        onTap: onTap,
       ),
     );
   }
