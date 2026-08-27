@@ -1,7 +1,7 @@
 class ApiEndpoints {
   // Configuración base (Para ambiente local en emulador Android = 10.0.2.2, para web/iOS = localhost)
   // TODO: Mover la baseUrl a variables de entorno (.env) en un futuro cercano.
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String baseUrl = 'http://10.79.148.145:8000/api';
 
   // ==========================================
   // USUARIOS (Auth)

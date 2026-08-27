@@ -45,6 +45,7 @@ dependencies:
   sqflite_sqlcipher: ^3.1.0+1
   path: ^1.9.1
   permission_handler: ^13.0.1
+  speech_to_text: ^7.4.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/mockup_signs/
+    - assets/mockup/
     - .env
 
   # To add assets to your application, add an assets section, like this:

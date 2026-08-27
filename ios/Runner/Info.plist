@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Requerimos acceso al reconocimiento de voz para transcribir tus palabras a texto y mostrar su equivalente en lenguaje de señas.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Requerimos acceso al micrófono para escuchar tu voz.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

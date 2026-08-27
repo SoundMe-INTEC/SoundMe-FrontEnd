@@ -47,9 +47,9 @@ class DioApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(milliseconds: 5000),
-        receiveTimeout: const Duration(milliseconds: 3000),
-        sendTimeout: const Duration(milliseconds: 5000),
+        connectTimeout: const Duration(milliseconds: 15000),
+        receiveTimeout: const Duration(milliseconds: 15000),
+        sendTimeout: const Duration(milliseconds: 15000),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
