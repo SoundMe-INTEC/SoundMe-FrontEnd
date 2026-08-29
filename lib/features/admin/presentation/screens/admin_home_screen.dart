@@ -61,7 +61,7 @@ class AdminHomeScreen extends ConsumerWidget {
                       backgroundColor: AppColors.primaryNavy,
                       icon: Icons.menu_book,
                     ),
-                    error: (_, __) => _buildStatCard(
+                    error: (_, _) => _buildStatCard(
                       title: 'Señas en Diccionario',
                       value: '—',
                       backgroundColor: AppColors.primaryNavy,
@@ -140,12 +140,19 @@ class AdminHomeScreen extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
                         backgroundColor: Colors.white,
-                        side: const BorderSide(color: AppColors.textGray, width: 2),
+                        side: const BorderSide(
+                          color: AppColors.textGray,
+                          width: 2,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40),
                         ),
                       ),
-                      icon: const Icon(Icons.rate_review, size: 28, color: Colors.black),
+                      icon: const Icon(
+                        Icons.rate_review,
+                        size: 28,
+                        color: Colors.black,
+                      ),
                       label: const Text(
                         'Revisar Valoraciones',
                         style: TextStyle(
@@ -172,14 +179,18 @@ class AdminHomeScreen extends ConsumerWidget {
                         if (context.mounted) {
                           Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
                             (route) => false,
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al cerrar sesión: $e')),
+                            SnackBar(
+                              content: Text('Error al cerrar sesión: $e'),
+                            ),
                           );
                         }
                       }
@@ -246,11 +257,7 @@ class AdminHomeScreen extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(
-            icon,
-            size: 70,
-            color: Colors.white.withAlpha(180),
-          ),
+          Icon(icon, size: 70, color: Colors.white.withAlpha(180)),
         ],
       ),
     );

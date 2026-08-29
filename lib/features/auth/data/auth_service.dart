@@ -12,6 +12,10 @@ final authServiceProvider = Provider<AuthService>((ref) {
   );
 });
 
+class AccountNotVerifiedException implements Exception {
+  const AccountNotVerifiedException();
+}
+
 class AuthService {
   final DioApiClient _apiClient;
   final TokenStorage _tokenStorage;
@@ -19,19 +23,25 @@ class AuthService {
   AuthService({
     required DioApiClient apiClient,
     required TokenStorage tokenStorage,
-  })  : _apiClient = apiClient,
-        _tokenStorage = tokenStorage;
-        // ignore_for_file: prefer_initializing_formals
+  }) : _apiClient = apiClient,
+       _tokenStorage = tokenStorage;
+  // ignore_for_file: prefer_initializing_formals
 
   /// Inicia sesión con el backend y guarda los tokens JWT localmente
-  Future<bool> login(String identification, String password) async {
+  Future<bool> login(
+    String identification,
+    String password, {
+    String? otp,
+  }) async {
     try {
+      final requestData = {
+        'identification': identification,
+        'password': password,
+      };
+      if (otp != null) requestData['otp'] = otp;
       final response = await _apiClient.post(
         ApiEndpoints.login,
-        data: {
-          'identification': identification,
-          'password': password,
-        },
+        data: requestData,
       );
 
       final data = response.data;
@@ -44,56 +54,18 @@ class AuthService {
       }
       return false;
     } on DioException catch (e) {
+      final message = e.response?.data is Map<String, dynamic>
+          ? e.response?.data['message'] as String?
+          : null;
+      if (message == 'OTP verification required') {
+        throw const AccountNotVerifiedException();
+      }
       if (e.response?.statusCode == 400 || e.response?.statusCode == 401) {
-        throw Exception('Credenciales inválidas. Verifica tu identificación y contraseña.');
+        throw Exception(
+          'Credenciales inválidas. Verifica tu identificación y contraseña.',
+        );
       }
       throw Exception('Ocurrió un error inesperado al iniciar sesión.');
-    }
-  }
-
-  /// Verifica el código OTP en el backend
-  Future<bool> verifyOtp(String identification, String otp) async {
-    try {
-      final response = await _apiClient.post(
-        ApiEndpoints.verifyOtp,
-        data: {
-          'identification': identification,
-          'otp': otp,
-        },
-      );
-      
-      return response.statusCode == 200;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 400) {
-        throw Exception('Código OTP inválido.');
-      }
-      throw Exception('Ocurrió un error al verificar el OTP.');
-    }
-  }
-
-  /// Crea una nueva cuenta de usuario
-  Future<bool> signup({
-    required String identification,
-    required String identificationType,
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await _apiClient.post(
-        ApiEndpoints.signup,
-        data: {
-          'identification': identification,
-          'identification_type': identificationType,
-          'email': email,
-          'password': password,
-        },
-      );
-      return response.statusCode == 200 || response.statusCode == 201;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 400) {
-        throw Exception('Datos inválidos o el usuario ya existe.');
-      }
-      throw Exception('Error al registrar usuario.');
     }
   }
 
@@ -102,10 +74,7 @@ class AuthService {
     try {
       final response = await _apiClient.post(
         ApiEndpoints.resetPassword,
-        data: {
-          'identification': identification,
-          'new_password': newPassword,
-        },
+        data: {'identification': identification, 'new_password': newPassword},
       );
       return response.statusCode == 200;
     } on DioException catch (e) {

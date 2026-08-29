@@ -10,10 +10,12 @@ import 'package:soundme_frontend/core/utils/ui_helpers.dart';
 
 class TwoStepAuthScreen extends ConsumerStatefulWidget {
   final String identification;
+  final String password;
 
   const TwoStepAuthScreen({
     super.key,
     required this.identification,
+    required this.password,
   });
 
   @override
@@ -21,8 +23,10 @@ class TwoStepAuthScreen extends ConsumerStatefulWidget {
 }
 
 class _TwoStepAuthScreenState extends ConsumerState<TwoStepAuthScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   bool _isLoading = false;
 
@@ -52,15 +56,17 @@ class _TwoStepAuthScreenState extends ConsumerState<TwoStepAuthScreen> {
 
     try {
       final authService = ref.read(authServiceProvider);
-      final success = await authService.verifyOtp(widget.identification, code);
+      final success = await authService.login(
+        widget.identification,
+        widget.password,
+        otp: code,
+      );
 
       if (success && mounted) {
         UIHelpers.showSuccess(context, '¡Sesión iniciada correctamente!');
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (context) => const AdminHomeScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
           (route) => false,
         );
       } else if (mounted) {
@@ -141,8 +147,9 @@ class _TwoStepAuthScreenState extends ConsumerState<TwoStepAuthScreen> {
                             counterText: '',
                             filled: true,
                             fillColor: AppColors.inputFillColor,
-                            contentPadding:
-                                const EdgeInsets.symmetric(vertical: 20),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 20,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide.none,

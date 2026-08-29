@@ -40,16 +40,20 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
       onStatus: (status) {
         if (status == 'done' || status == 'notListening') {
           if (mounted && _isListening) {
-             setState(() { _isListening = false; });
-             _translateText();
+            setState(() {
+              _isListening = false;
+            });
+            _translateText();
           }
         }
       },
       onError: (error) {
-         if (mounted && _isListening) {
-             setState(() { _isListening = false; });
-         }
-      }
+        if (mounted && _isListening) {
+          setState(() {
+            _isListening = false;
+          });
+        }
+      },
     );
     if (mounted) setState(() {});
   }
@@ -89,7 +93,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
     setState(() {
       _matchedSigns = found;
       _currentSignIndex = 0;
-      
+
       if (found.isEmpty) {
         _statusText = 'No se encontró coincidencia exacta para: $text';
       } else {
@@ -113,16 +117,20 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
         onStatus: (status) {
           if (status == 'done' || status == 'notListening') {
             if (mounted && _isListening) {
-               setState(() { _isListening = false; });
-               _translateText();
+              setState(() {
+                _isListening = false;
+              });
+              _translateText();
             }
           }
         },
         onError: (error) {
-           if (mounted && _isListening) {
-               setState(() { _isListening = false; });
-           }
-        }
+          if (mounted && _isListening) {
+            setState(() {
+              _isListening = false;
+            });
+          }
+        },
       );
       setState(() {
         _speechEnabled = initialized;
@@ -205,8 +213,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentSign =
-        _matchedSigns.isNotEmpty ? _matchedSigns[_currentSignIndex] : null;
+    final currentSign = _matchedSigns.isNotEmpty
+        ? _matchedSigns[_currentSignIndex]
+        : null;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -249,8 +258,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                                       child: Image.asset(
                                         currentSign.imagenAsset,
                                         fit: BoxFit.contain,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Icon(
+                                        errorBuilder: (_, _, _) => const Icon(
                                           Icons.image_not_supported_outlined,
                                           size: 80,
                                           color: AppColors.primaryNavy,
@@ -261,7 +269,10 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(
-                                      bottom: 8, left: 12, right: 12),
+                                    bottom: 8,
+                                    left: 12,
+                                    right: 12,
+                                  ),
                                   child: Text(
                                     currentSign.palabra,
                                     textAlign: TextAlign.center,
@@ -276,7 +287,10 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                                 if (currentSign.gesto.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(
-                                        bottom: 8, left: 12, right: 12),
+                                      bottom: 8,
+                                      left: 12,
+                                      right: 12,
+                                    ),
                                     child: Text(
                                       currentSign.gesto,
                                       textAlign: TextAlign.center,
@@ -382,8 +396,10 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.send_rounded,
-                                  color: AppColors.primaryNavy),
+                              icon: const Icon(
+                                Icons.send_rounded,
+                                color: AppColors.primaryNavy,
+                              ),
                               onPressed: _translateText,
                               iconSize: 22,
                               padding: EdgeInsets.zero,
@@ -405,22 +421,32 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.play_arrow,
-                                color: AppColors.primaryNavy, size: 28),
-                            onPressed:
-                                _matchedSigns.isNotEmpty ? _startPlayback : null,
+                            icon: const Icon(
+                              Icons.play_arrow,
+                              color: AppColors.primaryNavy,
+                              size: 28,
+                            ),
+                            onPressed: _matchedSigns.isNotEmpty
+                                ? _startPlayback
+                                : null,
                           ),
                           IconButton(
-                            icon: const Icon(Icons.pause,
-                                color: AppColors.primaryNavy, size: 28),
-                            onPressed:
-                                _isPlaying ? _pausePlayback : null,
+                            icon: const Icon(
+                              Icons.pause,
+                              color: AppColors.primaryNavy,
+                              size: 28,
+                            ),
+                            onPressed: _isPlaying ? _pausePlayback : null,
                           ),
                           IconButton(
-                            icon: const Icon(Icons.stop,
-                                color: AppColors.primaryNavy, size: 28),
-                            onPressed:
-                                _matchedSigns.isNotEmpty ? _stopPlayback : null,
+                            icon: const Icon(
+                              Icons.stop,
+                              color: AppColors.primaryNavy,
+                              size: 28,
+                            ),
+                            onPressed: _matchedSigns.isNotEmpty
+                                ? _stopPlayback
+                                : null,
                           ),
                         ],
                       ),
@@ -428,7 +454,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                       // Dropdown / Selector de Velocidad
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.cardFillColor,
                           borderRadius: BorderRadius.circular(20),
@@ -436,23 +464,26 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                         child: DropdownButton<String>(
                           value: _selectedSpeed,
                           underline: const SizedBox(),
-                          icon: const Icon(Icons.arrow_drop_down,
-                              color: AppColors.textGray),
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: AppColors.textGray,
+                          ),
                           style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 14,
                             color: AppColors.textGray,
                           ),
-                          items: <String>[
-                            'Lento (3s)',
-                            'Normal (2s)',
-                            'Rápido (1s)'
-                          ].map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
+                          items:
+                              <String>[
+                                'Lento (3s)',
+                                'Normal (2s)',
+                                'Rápido (1s)',
+                              ].map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
                           onChanged: (newValue) {
                             if (newValue != null) {
                               setState(() => _selectedSpeed = newValue);
@@ -473,15 +504,17 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                       width: _isListening ? 100 : 80,
                       height: _isListening ? 100 : 80,
                       decoration: BoxDecoration(
-                        color:
-                            _isListening ? Colors.red : AppColors.primaryNavy,
+                        color: _isListening
+                            ? Colors.red
+                            : AppColors.primaryNavy,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: (_isListening
-                                    ? Colors.red
-                                    : AppColors.primaryNavy)
-                                .withAlpha(80),
+                            color:
+                                (_isListening
+                                        ? Colors.red
+                                        : AppColors.primaryNavy)
+                                    .withAlpha(80),
                             blurRadius: _isListening ? 20 : 10,
                             spreadRadius: _isListening ? 4 : 2,
                           ),

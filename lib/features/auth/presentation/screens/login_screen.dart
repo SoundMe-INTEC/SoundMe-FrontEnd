@@ -5,6 +5,7 @@ import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/auth/data/auth_service.dart';
 import 'package:soundme_frontend/features/auth/presentation/screens/two_step_auth_screen.dart';
+import 'package:soundme_frontend/features/admin/presentation/screens/admin_home_screen.dart';
 import 'package:soundme_frontend/core/utils/ui_helpers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -22,11 +23,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _doLogin() async {
     setState(() => _isLoading = true);
-    
+    final identification = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
     try {
       final authService = ref.read(authServiceProvider);
-      final identification = _emailController.text.trim();
-      final password = _passwordController.text.trim();
 
       if (identification.isEmpty || password.isEmpty) {
         throw Exception('Por favor ingresa identificación y contraseña');
@@ -34,16 +35,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       final success = await authService.login(identification, password);
       if (success && mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
+          (route) => false,
+        );
+      } else if (mounted) {
+        throw Exception('Credenciales inválidas');
+      }
+    } on AccountNotVerifiedException {
+      if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => TwoStepAuthScreen(
               identification: identification,
+              password: password,
             ),
           ),
         );
-      } else if (mounted) {
-        throw Exception('Credenciales inválidas');
       }
     } catch (e) {
       if (mounted) {
@@ -223,16 +233,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               borderRadius: BorderRadius.circular(40),
                             ),
                           ),
-                          child: _isLoading 
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text(
-                                'Iniciar Sesión',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  'Iniciar Sesión',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
                         ),
                       ),
 
