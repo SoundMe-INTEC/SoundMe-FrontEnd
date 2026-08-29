@@ -33,18 +33,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         throw Exception('Por favor ingresa identificación y contraseña');
       }
 
-      final success = await authService.login(identification, password);
-      if (success && mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
-          (route) => false,
-        );
-      } else if (mounted) {
-        throw Exception('Credenciales inválidas');
-      }
-    } on AccountNotVerifiedException {
-      if (mounted) {
+      final requiresOtp = await authService.checkCredentials(
+        identification,
+        password,
+      );
+      if (!mounted) return;
+
+      if (requiresOtp) {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -53,6 +48,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               password: password,
             ),
           ),
+        );
+      } else {
+        final success = await authService.login(identification, password);
+        if (!success) {
+          throw Exception('No se pudo iniciar sesión.');
+        }
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
+          (route) => false,
         );
       }
     } catch (e) {
