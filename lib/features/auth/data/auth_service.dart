@@ -27,6 +27,42 @@ class AuthService {
        _tokenStorage = tokenStorage;
   // ignore_for_file: prefer_initializing_formals
 
+  String _extractErrorMessage(DioException e, String defaultMessage) {
+    final data = e.response?.data;
+    if (data is Map) {
+      if (data['message'] != null) {
+        final msg = data['message'].toString();
+        if (msg.contains('Invalid credentials')) {
+          return 'Credenciales inválidas. Verifica tu identificación y contraseña.';
+        }
+        if (msg.contains('Invalid or expired OTP')) {
+          return 'El código OTP es inválido o ha expirado. Por favor solicita uno nuevo.';
+        }
+        if (msg.contains('OTP verification required')) {
+          return 'Se requiere verificación por código OTP.';
+        }
+        if (msg.contains('User is already verified')) {
+          return 'El usuario ya ha sido verificado.';
+        }
+        return msg;
+      }
+      if (data['detail'] != null) {
+        return data['detail'].toString();
+      }
+      for (final val in data.values) {
+        if (val is List && val.isNotEmpty) {
+          return val.first.toString();
+        } else if (val is String) {
+          return val;
+        }
+      }
+    }
+    if (e.response?.statusCode == 503) {
+      return 'No se pudo enviar el código al correo. Intenta de nuevo más tarde.';
+    }
+    return defaultMessage;
+  }
+
   /// Valida credenciales y solicita un OTP si la cuenta aún no está verificada.
   Future<bool> checkCredentials(String identification, String password) async {
     try {
@@ -36,12 +72,12 @@ class AuthService {
       );
       return response.data['requires_otp'] == true;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 400 || e.response?.statusCode == 401) {
-        throw Exception(
+      throw Exception(
+        _extractErrorMessage(
+          e,
           'Credenciales inválidas. Verifica tu identificación y contraseña.',
-        );
-      }
-      throw Exception('No se pudo comprobar la cuenta.');
+        ),
+      );
     }
   }
 
@@ -72,12 +108,29 @@ class AuthService {
       }
       return false;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 400 || e.response?.statusCode == 401) {
-        throw Exception(
-          'Credenciales inválidas. Verifica tu identificación y contraseña.',
-        );
-      }
-      throw Exception('Ocurrió un error inesperado al iniciar sesión.');
+      throw Exception(
+        _extractErrorMessage(
+          e,
+          otp != null
+              ? 'El código OTP es inválido o ha expirado.'
+              : 'Credenciales inválidas. Verifica tu identificación y contraseña.',
+        ),
+      );
+    }
+  }
+
+  /// Valida un código OTP de forma independiente (sin iniciar sesión)
+  Future<bool> verifyOtp(String identification, String otp) async {
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.verifyOtp,
+        data: {'identification': identification, 'otp': otp},
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      throw Exception(
+        _extractErrorMessage(e, 'Error al verificar el código OTP.'),
+      );
     }
   }
 

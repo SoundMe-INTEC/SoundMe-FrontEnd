@@ -39,28 +39,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       if (!mounted) return;
 
-      if (requiresOtp) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TwoStepAuthScreen(
-              identification: identification,
-              password: password,
-            ),
+      // Paso de verificación OTP obligatorio para visualizar y validar la pantalla
+      // Se muestra SIEMPRE aunque check responda "requires_otp: false"
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TwoStepAuthScreen(
+            identification: identification,
+            password: password,
+            requiresOtp: requiresOtp,
           ),
-        );
-      } else {
-        final success = await authService.login(identification, password);
-        if (!success) {
-          throw Exception('No se pudo iniciar sesión.');
-        }
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
-              (route) => false,
-        );
-      }
+        ),
+      );
     } catch (e) {
       if (mounted) {
         UIHelpers.showError(
@@ -98,45 +88,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
             // 2. CONTENIDO INTERACTIVO
             SafeArea(
-              child: Column(
+              child: Stack(
                 children: [
-                  // MARGEN SUPERIOR FIJO PARA EL LOGO
-                  const SizedBox(height: 150),
-
-                  // LOGO Y SUBTÍTULO (Se mantiene fijo arriba)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32.0),
-                    child: SoundMeLogo(),
-                  ),
-
                   // FORMULARIO CON SCROLL INDEPENDIENTE (Evita el overflow al abrir el teclado)
-                  Expanded(
-                    child: CustomScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      slivers: [
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Espaciado entre el logo y el formulario
-                                const Spacer(flex: 1),
+                  CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const SizedBox(height: 60),
 
-                                // CAMPO: IDENTIFICACIÓN
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Identificación',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: AppColors.textGray,
-                                    ),
+                              // LOGO Y SUBTÍTULO
+                              const SoundMeLogo(),
+
+                              // Espaciado entre el logo y el formulario
+                              const SizedBox(height: 24),
+
+                              // CAMPO: IDENTIFICACIÓN
+                              const Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Identificación',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.textGray,
                                   ),
                                 ),
+                              ),
                                 const SizedBox(height: 6),
                                 TextField(
                                   controller: _emailController,
@@ -306,12 +291,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ],
                     ),
-                  ),
-                ],
+
+                    // BOTÓN DE REGRESO A INICIO (al final del Stack para recibir toques)
+                    Positioned(
+                      top: 8,
+                      left: 16,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryNavy.withAlpha(200),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                          tooltip: 'Regresar',
+                          onPressed: () {
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ),
     );
   }

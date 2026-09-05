@@ -7,7 +7,7 @@ import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/permissions_screen.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/translation_list_screen.dart';
-import 'package:soundme_frontend/features/dictionary/presentation/screens/dictionary_screen.dart';
+import 'package:soundme_frontend/features/dictionary/presentation/dictionary_screen.dart';
 
 class OptionsScreen extends ConsumerWidget {
   const OptionsScreen({super.key});
@@ -19,6 +19,7 @@ class OptionsScreen extends ConsumerWidget {
               id: e.id.toString(),
               text: e.palabra,
               imageUrl: e.imagenAsset,
+              sign: e,
             ))
         .toList();
   }
@@ -48,7 +49,7 @@ class OptionsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 65),
 
                   // Tarjeta: Historial (now with real mockup data)
                   _buildOptionCard(
@@ -105,15 +106,7 @@ class OptionsScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
 
                   // Widget del Logo oficial de SoundMe
-                  const Center(
-                    child: SizedBox(
-                      width: 290,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: SoundMeLogo(),
-                      ),
-                    ),
-                  ),
+                  const Center(child: SoundMeLogo()),
 
                   const SizedBox(height: 20),
                 ],
@@ -134,11 +127,10 @@ class OptionsScreen extends ConsumerWidget {
     Color? iconColor,
     Color? titleColor,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardFillColor,
-        borderRadius: BorderRadius.circular(15),
-      ),
+    return Material(
+      color: AppColors.cardFillColor,
+      borderRadius: BorderRadius.circular(15),
+      clipBehavior: Clip.antiAlias,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
@@ -164,8 +156,8 @@ class OptionsScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 13,
-                  fontWeight: FontWeight.w300,
-                  color: (titleColor ?? AppColors.primaryNavy).withAlpha(204),
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textGray,
                 ),
               )
             : null,
@@ -317,37 +309,42 @@ class OptionsScreen extends ConsumerWidget {
     required VoidCallback onTap,
     bool isLast = false,
   }) {
+    final borderRadius = isLast
+        ? const BorderRadius.only(
+            bottomLeft: Radius.circular(15),
+            bottomRight: Radius.circular(15),
+          )
+        : BorderRadius.zero;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
         border: Border(
           top: BorderSide(color: Colors.grey.shade300, width: 0.8),
         ),
-        borderRadius: isLast
-            ? const BorderRadius.only(
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
-              )
-            : null,
       ),
-      child: ListTile(
-        dense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: AppColors.primaryNavy,
+      child: Material(
+        color: Colors.white,
+        borderRadius: borderRadius,
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.primaryNavy,
+            ),
           ),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            color: AppColors.primaryNavy,
+            size: 14,
+          ),
+          onTap: onTap,
         ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          color: AppColors.primaryNavy,
-          size: 14,
-        ),
-        onTap: onTap,
       ),
     );
   }

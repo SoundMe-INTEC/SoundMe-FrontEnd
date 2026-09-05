@@ -45,8 +45,8 @@ void main() {
     await tester.pump();
 
     // After tapping, it should initialize and turn red / show mic_off
-    // Because initialize is async, we need to pumpAndSettle
-    await tester.pumpAndSettle();
+    // Use pump with duration rather than pumpAndSettle because _pulseController.repeat() animates indefinitely
+    await tester.pump(const Duration(milliseconds: 300));
 
     // The icon should change to mic_off.
     expect(find.byIcon(Icons.mic_off), findsOneWidget);

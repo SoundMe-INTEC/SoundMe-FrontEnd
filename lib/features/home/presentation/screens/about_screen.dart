@@ -17,16 +17,18 @@ class AboutScreen extends StatelessWidget {
 
           // 2. CONTENIDO PRINCIPAL SCROLLABLE
           SafeArea(
-            child: Column(
+            child: Stack(
               children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 100),
+                Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 80),
 
                         // LOGO Y SUBTÍTULO
                         const SoundMeLogo(),
@@ -103,9 +105,32 @@ class AboutScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
+
+            // BOTÓN DE REGRESO (al final del Stack para recibir toques)
+            Positioned(
+              top: 8,
+              left: 16,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.primaryNavy.withAlpha(200),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                  tooltip: 'Regresar',
+                  onPressed: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    );
+    ],
+  ),
+);
   }
 }

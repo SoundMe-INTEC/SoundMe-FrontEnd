@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
+import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -79,7 +80,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   void dispose() {
     _textController.dispose();
     _playTimer?.cancel();
-    _speechToText.stop();
+    if (_isListening) {
+      _speechToText.stop();
+    }
     _pulseController.dispose();
     super.dispose();
   }
@@ -103,34 +106,25 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     _pausePlayback();
 
     final service = ref.read(mockupDataServiceProvider);
-    final words = text.toUpperCase().split(RegExp(r'[\s,¿?¡!]+'));
-    final List<MockSignEntry> found = [];
-    final List<String> notFound = [];
-
-    for (final word in words) {
-      if (word.isEmpty) continue;
-      final exact = await service.findFlexible(word);
-      if (exact != null) {
-        found.add(exact);
-      } else {
-        notFound.add(word);
-      }
-    }
+    final result = await service.translatePhrase(text);
 
     setState(() {
-      _matchedSigns = found;
+      _matchedSigns = result.matchedSigns;
       _currentSignIndex = 0;
-      if (found.isEmpty) {
+      if (result.matchedSigns.isEmpty) {
         _statusText = 'No se encontró coincidencia para: $text';
       } else {
-        _statusText = 'Frase de ${found.length} señas';
-        if (notFound.isNotEmpty) {
-          _statusText += ' - Faltan: ${notFound.join(", ")}';
+        _statusText = 'Frase de ${result.matchedSigns.length} señas';
+        if (result.spelledWords.isNotEmpty) {
+          _statusText += ' (deletreo: ${result.spelledWords.join(", ")})';
+        }
+        if (result.notFoundWords.isNotEmpty) {
+          _statusText += ' - Faltan: ${result.notFoundWords.join(", ")}';
         }
       }
     });
 
-    if (found.isNotEmpty) _startPlayback();
+    if (result.matchedSigns.isNotEmpty) _startPlayback();
   }
 
   void _toggleMicrophone() async {
@@ -227,12 +221,13 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   @override
   Widget build(BuildContext context) {
     final currentSign = _matchedSigns.isNotEmpty ? _matchedSigns[_currentSignIndex] : null;
+    final isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          const Positioned(top: 0, left: 0, right: 0, child: AdminHeaderBackground()),
+          const Positioned(top: 0, left: 0, right: 0, child: AdminHeaderBackground(title: 'Traductor')),
           SafeArea(
             child: Column(
               children: [
@@ -260,10 +255,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                     padding: const EdgeInsets.all(16.0),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(16),
-                                      child: Image.asset(
-                                        currentSign.imagenAsset,
+                                      child: SignImage(
+                                        sign: currentSign,
                                         fit: BoxFit.contain,
-                                        errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported_outlined, size: 80, color: AppColors.primaryNavy),
                                       ),
                                     ),
                                   ),
@@ -274,6 +268,36 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(fontFamily: 'Inter', fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primaryNavy),
                                 ),
+                                if (currentSign.categoria == 'Deletreo' || currentSign.infoAdicional == 'Deletreo')
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2.0),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accentRed.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        'Deletreo Dactilológico',
+                                        style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accentRed),
+                                      ),
+                                    ),
+                                  )
+                                else if (currentSign.gestoFacial != null && currentSign.gestoFacial!.isNotEmpty && currentSign.gestoFacial != 'Neutral')
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2.0),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.cardBlue.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Gesto facial: ${currentSign.gestoFacial}',
+                                        style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primaryNavy),
+                                      ),
+                                    ),
+                                  ),
                                 if (currentSign.gesto.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
@@ -371,13 +395,16 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                               ],
                             )
                           : const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.g_translate, size: 80, color: AppColors.primaryNavy),
-                                  SizedBox(height: 8),
-                                  Text('Escribe o usa una sugerencia\npara traducir', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.textGray)),
-                                ],
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.g_translate, size: 64, color: AppColors.primaryNavy),
+                                    SizedBox(height: 8),
+                                    Text('Escribe o usa una sugerencia\npara traducir', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.textGray)),
+                                  ],
+                                ),
                               ),
                             ),
                     ),
@@ -442,70 +469,72 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                           ),
                         ),
                       
-                      const SizedBox(height: 24),
-                      
-                      // BIG MIC BUTTON
-                      GestureDetector(
-                        onTap: _toggleMicrophone,
-                        child: ScaleTransition(
-                          scale: _isListening ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: _isListening ? Colors.red : AppColors.primaryNavy,
-                              shape: BoxShape.circle,
-                              boxShadow: _isListening ? [
-                                BoxShadow(
-                                  color: Colors.red.withValues(alpha: 0.5),
-                                  blurRadius: 20,
-                                  spreadRadius: 8,
-                                )
-                              ] : [
-                                BoxShadow(
-                                  color: AppColors.primaryNavy.withValues(alpha: 0.3),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                )
-                              ],
+                      if (!isKeyboardOpen) ...[
+                        const SizedBox(height: 16),
+                        
+                        // BIG MIC BUTTON
+                        GestureDetector(
+                          onTap: _toggleMicrophone,
+                          child: ScaleTransition(
+                            scale: _isListening ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: 76,
+                              height: 76,
+                              decoration: BoxDecoration(
+                                color: _isListening ? Colors.red : AppColors.primaryNavy,
+                                shape: BoxShape.circle,
+                                boxShadow: _isListening ? [
+                                  BoxShadow(
+                                    color: Colors.red.withValues(alpha: 0.5),
+                                    blurRadius: 20,
+                                    spreadRadius: 8,
+                                  )
+                                ] : [
+                                  BoxShadow(
+                                    color: AppColors.primaryNavy.withValues(alpha: 0.3),
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
+                                  )
+                                ],
+                              ),
+                              child: Icon(_isListening ? Icons.mic_off : Icons.mic, color: Colors.white, size: 36),
                             ),
-                            child: Icon(_isListening ? Icons.mic_off : Icons.mic, color: Colors.white, size: 40),
                           ),
                         ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // ORACIONES SUGERIDAS (CHIPS)
-                      SizedBox(
-                        height: 40,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _suggestedSentences.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ActionChip(
-                                backgroundColor: Colors.white,
-                                elevation: 1,
-                                shadowColor: Colors.black12,
-                                label: Text(
-                                  _suggestedSentences[index],
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    color: AppColors.primaryNavy,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
+                        
+                        const SizedBox(height: 16),
+                        
+                        // ORACIONES SUGERIDAS (CHIPS)
+                        SizedBox(
+                          height: 38,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _suggestedSentences.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: ActionChip(
+                                  backgroundColor: Colors.white,
+                                  elevation: 1,
+                                  shadowColor: Colors.black12,
+                                  label: Text(
+                                    _suggestedSentences[index],
+                                    style: const TextStyle(
+                                      fontFamily: 'Inter',
+                                      color: AppColors.primaryNavy,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
                                   ),
+                                  onPressed: () => _translateText(_suggestedSentences[index]),
                                 ),
-                                onPressed: () => _translateText(_suggestedSentences[index]),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
+                      ],
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),

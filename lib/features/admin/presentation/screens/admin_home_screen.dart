@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
-import 'package:soundme_frontend/core/widgets/header_background_2.dart';
+import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/auth/data/auth_service.dart';
 import 'package:soundme_frontend/features/auth/presentation/screens/login_screen.dart';
-import 'package:soundme_frontend/features/dictionary/presentation/screens/dictionary_screen.dart';
+import 'package:soundme_frontend/features/home/presentation/screens/home_screen.dart';
+import 'package:soundme_frontend/features/dictionary/presentation/dictionary_screen.dart';
 
 class AdminHomeScreen extends ConsumerWidget {
   const AdminHomeScreen({super.key});
@@ -19,22 +20,14 @@ class AdminHomeScreen extends ConsumerWidget {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. BANNER SUPERIOR DE ADMIN
-          const Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: AdminHeaderBackground(title: 'Panel de Administración'),
-          ),
-
-          // 2. CONTENIDO PRINCIPAL
+          // 1. CONTENIDO PRINCIPAL
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 18.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 65),
                   const Text(
                     '¡Bienvenido, Administrador!',
                     style: TextStyle(
@@ -71,12 +64,13 @@ class AdminHomeScreen extends ConsumerWidget {
 
                   const SizedBox(height: 20),
 
-                  // CARD: TRADUCCIONES (mockup)
+                  // CARD: TRADUCCIONES (mockup con texto navy accesible WCAG AA 4.89:1)
                   _buildStatCard(
                     title: 'Traducciones Realizadas',
                     value: '128',
                     backgroundColor: AppColors.cardBlue,
                     icon: Icons.g_translate,
+                    textColor: AppColors.cardBlueText,
                   ),
 
                   const SizedBox(height: 20),
@@ -207,6 +201,26 @@ class AdminHomeScreen extends ConsumerWidget {
               ),
             ),
           ),
+
+          // 2. BANNER SUPERIOR DE ADMIN CON RETORNO (al final del Stack para recibir toques)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: HeaderWithBackButton(
+              title: 'Panel de Administración',
+              onBack: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -218,11 +232,12 @@ class AdminHomeScreen extends ConsumerWidget {
     required String value,
     required Color backgroundColor,
     required IconData icon,
+    Color textColor = Colors.white,
   }) {
     return Container(
       width: double.infinity,
-      height: 127,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      constraints: const BoxConstraints(minHeight: 110),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(15),
@@ -234,30 +249,31 @@ class AdminHomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 32,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
               ],
             ),
           ),
-          Icon(icon, size: 70, color: Colors.white.withAlpha(180)),
+          Icon(icon, size: 70, color: textColor.withAlpha(180)),
         ],
       ),
     );
@@ -272,11 +288,10 @@ class AdminHomeScreen extends ConsumerWidget {
     Color? iconColor,
     Color? titleColor,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardFillColor,
-        borderRadius: BorderRadius.circular(15),
-      ),
+    return Material(
+      color: AppColors.cardFillColor,
+      borderRadius: BorderRadius.circular(15),
+      clipBehavior: Clip.antiAlias,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
