@@ -72,7 +72,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/images/mockup_signs/
+    - assets/images/mockup/
     - assets/mockup/
     - .env
 

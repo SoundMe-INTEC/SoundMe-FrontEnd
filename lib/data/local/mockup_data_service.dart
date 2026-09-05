@@ -28,12 +28,16 @@ class MockSignEntry {
   });
 
   factory MockSignEntry.fromJson(Map<String, dynamic> json) {
+    String imgAsset = json['imagen_asset'] as String? ?? '';
+    if (imgAsset.isEmpty && json['imagePaths'] != null && (json['imagePaths'] as List).isNotEmpty) {
+      imgAsset = (json['imagePaths'] as List).first.toString();
+    }
     return MockSignEntry(
       id: json['id'] as int? ?? 0,
       palabra: json['palabra'] as String? ?? '',
       descripcion: json['descripcion'] as String? ?? '',
       gesto: json['gesto'] as String? ?? '',
-      imagenAsset: json['imagen_asset'] as String? ?? '',
+      imagenAsset: imgAsset,
       seccion: json['seccion'] as String? ?? '',
       infoAdicional: json['info_adicional'] as String? ?? '',
     );
@@ -56,13 +60,16 @@ class MockupDataService {
     if (_cache != null) return _cache!;
 
     final jsonStr =
-        await rootBundle.loadString('assets/mockup/diccionario_mockup.json');
+        await rootBundle.loadString('assets/mockup/mock_dictionary.json');
     final List<dynamic> jsonList = json.decode(jsonStr) as List<dynamic>;
     _cache = jsonList
         .map((e) => MockSignEntry.fromJson(e as Map<String, dynamic>))
         .toList();
+
     return _cache!;
   }
+
+
 
   /// Searches entries by word (case-insensitive, partial match, ignoring accents).
   Future<List<MockSignEntry>> search(String query) async {

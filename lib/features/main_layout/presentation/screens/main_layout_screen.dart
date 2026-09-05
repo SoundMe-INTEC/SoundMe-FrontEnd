@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:soundme_frontend/core/widgets/main_taskbar.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/options_screen.dart';
 import 'package:soundme_frontend/features/translator/presentation/screens/translator_screen.dart';
+import 'package:soundme_frontend/features/dictionary/presentation/dictionary_screen.dart';
 
 class MainLayoutScreen extends StatefulWidget {
   final int initialIndex;
@@ -25,9 +26,10 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   }
 
   final List<Widget> _screens = const [
-    SizedBox(), // Índice 0: Si toca "Inicio" en el taskbar se maneja en el onTap
-    TranslatorScreen(), // Índice 1
-    OptionsScreen(),    // Índice 2: Pantalla de Opciones renderizada
+    SizedBox(), // Índice 0: Inicio
+    TranslatorScreen(), // Índice 1: Traductor
+    DictionaryScreen(), // Índice 2: Diccionario
+    OptionsScreen(),    // Índice 3: Opciones
   ];
 
   @override
