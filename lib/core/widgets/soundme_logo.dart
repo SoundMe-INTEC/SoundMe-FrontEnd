@@ -10,10 +10,7 @@ class SoundMeLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 315,
-            maxHeight: 180,
-          ),
+          constraints: const BoxConstraints(maxWidth: 315, maxHeight: 180),
           child: AspectRatio(
             aspectRatio: 315 / 180,
             child: Image.asset(

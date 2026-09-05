@@ -4,7 +4,6 @@ import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/auth/data/auth_service.dart';
-import 'package:soundme_frontend/features/auth/presentation/screens/two_step_auth_screen.dart';
 import 'package:soundme_frontend/features/admin/presentation/screens/admin_home_screen.dart';
 import 'package:soundme_frontend/core/utils/ui_helpers.dart';
 
@@ -33,23 +32,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         throw Exception('Por favor ingresa identificación y contraseña');
       }
 
-      final requiresOtp = await authService.checkCredentials(
-        identification,
-        password,
-      );
+      final success = await authService.login(identification, password);
       if (!mounted) return;
 
-      // Paso de verificación OTP obligatorio para visualizar y validar la pantalla
-      // Se muestra SIEMPRE aunque check responda "requires_otp: false"
-      Navigator.push(
+      if (!success) {
+        throw Exception('No se pudo iniciar sesión.');
+      }
+
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => TwoStepAuthScreen(
-            identification: identification,
-            password: password,
-            requiresOtp: requiresOtp,
-          ),
-        ),
+        MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
+        (route) => false,
       );
     } catch (e) {
       if (mounted) {
@@ -101,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const SizedBox(height: 60),
+                              const SizedBox(height: 120),
 
                               // LOGO Y SUBTÍTULO
                               const SoundMeLogo(),
@@ -122,146 +115,97 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
                               ),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  decoration: InputDecoration(
-                                    hintText: 'XXXXXXXXXXX',
-                                    hintStyle: const TextStyle(
-                                      fontFamily: 'Inter',
-                                      color: AppColors.textGray,
-                                      fontSize: 14,
-                                    ),
-                                    filled: true,
-                                    fillColor: AppColors.inputFillColor,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 18,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide.none,
-                                    ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: InputDecoration(
+                                  hintText: 'XXXXXXXXXXX',
+                                  hintStyle: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    color: AppColors.textGray,
+                                    fontSize: 14,
+                                  ),
+                                  filled: true,
+                                  fillColor: AppColors.inputFillColor,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 18,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                    borderSide: BorderSide.none,
                                   ),
                                 ),
+                              ),
 
-                                const SizedBox(height: 16),
+                              const SizedBox(height: 16),
 
-                                // CAMPO: CONTRASEÑA
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Contraseña',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: AppColors.textGray,
-                                    ),
+                              // CAMPO: CONTRASEÑA
+                              const Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Contraseña',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.textGray,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  decoration: InputDecoration(
-                                    hintText: '••••••••••••',
-                                    hintStyle: const TextStyle(
-                                      color: AppColors.textGray,
-                                      fontSize: 18,
-                                      letterSpacing: 2,
-                                    ),
-                                    filled: true,
-                                    fillColor: AppColors.inputFillColor,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 16,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscurePassword
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                        color: AppColors.primaryNavy,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscurePassword = !_obscurePassword;
-                                        });
-                                      },
-                                    ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  hintText: '••••••••••••',
+                                  hintStyle: const TextStyle(
+                                    color: AppColors.textGray,
+                                    fontSize: 18,
+                                    letterSpacing: 2,
                                   ),
-                                ),
-
-                                // LINK: OLVIDASTE TU CONTRASEÑA
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
+                                  filled: true,
+                                  fillColor: AppColors.inputFillColor,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: AppColors.primaryNavy,
+                                    ),
                                     onPressed: () {
-                                      // TODO: Lógica de recuperación
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
                                     },
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: const Text(
-                                      '¿Olvidaste tu contraseña?',
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 14,
-                                        color: AppColors.primaryNavy,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
                                   ),
                                 ),
+                              ),
 
-                                const SizedBox(height: 24),
-
-                                // BOTÓN INICIAR SESIÓN
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 62,
-                                  child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _doLogin,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primaryNavy,
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(40),
-                                      ),
-                                    ),
-                                    child: _isLoading
-                                        ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                        : const Text(
-                                      'Iniciar Sesión',
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(height: 12),
-
-                                // LINK DE AYUDA
-                                TextButton(
+                              // LINK: OLVIDASTE TU CONTRASEÑA
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
                                   onPressed: () {
-                                    // TODO: Lógica de ayuda
+                                    // TODO: Lógica de recuperación
                                   },
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
                                   child: const Text(
-                                    '¿No eres Administrador? ¡Ayúdanos!',
+                                    '¿Olvidaste tu contraseña?',
                                     style: TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 14,
@@ -270,53 +214,107 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
                                 ),
+                              ),
 
-                                // Espaciador dinámico inferior
-                                const Spacer(flex: 2),
+                              const SizedBox(height: 24),
 
-                                // COPYRIGHT FOOTER
-                                const Text(
-                                  '© 2026 SoundMe. Todos los derechos reservados.',
-                                  textAlign: TextAlign.center,
+                              // BOTÓN INICIAR SESIÓN
+                              SizedBox(
+                                width: double.infinity,
+                                height: 62,
+                                child: ElevatedButton(
+                                  onPressed: _isLoading ? null : _doLogin,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryNavy,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                  ),
+                                  child: _isLoading
+                                      ? const CircularProgressIndicator(
+                                          color: Colors.white,
+                                        )
+                                      : const Text(
+                                          'Iniciar Sesión',
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // LINK DE AYUDA
+                              TextButton(
+                                onPressed: () {
+                                  // TODO: Lógica de ayuda
+                                },
+                                child: const Text(
+                                  '¿No eres Administrador? ¡Ayúdanos!',
                                   style: TextStyle(
                                     fontFamily: 'Inter',
                                     fontSize: 14,
-                                    color: AppColors.textGray,
+                                    color: AppColors.primaryNavy,
+                                    decoration: TextDecoration.underline,
                                   ),
                                 ),
-                                const SizedBox(height: 16),
-                              ],
-                            ),
+                              ),
+
+                              // Espaciador dinámico inferior
+                              const Spacer(flex: 2),
+
+                              // COPYRIGHT FOOTER
+                              const Text(
+                                '© 2026 SoundMe. Todos los derechos reservados.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  color: AppColors.textGray,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
 
-                    // BOTÓN DE REGRESO A INICIO (al final del Stack para recibir toques)
-                    Positioned(
-                      top: 8,
-                      left: 16,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryNavy.withAlpha(200),
-                          shape: BoxShape.circle,
+                  // BOTÓN DE REGRESO A INICIO (al final del Stack para recibir toques)
+                  Positioned(
+                    top: 8,
+                    left: 16,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryNavy.withAlpha(200),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.white,
+                          size: 20,
                         ),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-                          tooltip: 'Regresar',
-                          onPressed: () {
-                            if (Navigator.canPop(context)) {
-                              Navigator.pop(context);
-                            }
-                          },
-                        ),
+                        tooltip: 'Regresar',
+                        onPressed: () {
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          }
+                        },
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
   }

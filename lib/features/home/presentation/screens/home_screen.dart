@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       // LOGO Y SUBTÍTULO
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 160),
                       const SoundMeLogo(),
                       const SizedBox(height: 32),
 
@@ -41,21 +41,8 @@ class HomeScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MainLayoutScreen(initialIndex: 1),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildSecondaryButton(
-                        text: 'Diccionario',
-                        icon: Icons.menu_book_rounded,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MainLayoutScreen(initialIndex: 2),
+                              builder: (context) =>
+                                  const MainLayoutScreen(initialIndex: 1),
                             ),
                           );
                         },
@@ -69,7 +56,8 @@ class HomeScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MainLayoutScreen(initialIndex: 3),
+                              builder: (context) =>
+                                  const MainLayoutScreen(initialIndex: 3),
                             ),
                           );
                         },
@@ -168,7 +156,10 @@ class HomeScreen extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.black,
           backgroundColor: Colors.white,
-          side: const BorderSide(color: AppColors.textGray, width: 2), // Uso de AppColors
+          side: const BorderSide(
+            color: AppColors.textGray,
+            width: 2,
+          ), // Uso de AppColors
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(40),
           ),
@@ -194,16 +185,18 @@ class HomeScreen extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: const [
           SizedBox(height: 10),
-          Icon(Icons.manage_accounts_outlined, color: AppColors.primaryNavy, size: 40), // Uso de AppColors
+          Icon(
+            Icons.manage_accounts_outlined,
+            color: AppColors.primaryNavy,
+            size: 40,
+          ), // Uso de AppColors
         ],
       ),
     );
