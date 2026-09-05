@@ -7,6 +7,7 @@ class ApiEndpoints {
   // USUARIOS (Auth)
   // ==========================================
   static const String signup = '/signup';
+  static const String check = '/check';
   static const String login = '/login';
   static const String verifyOtp = '/verify-otp';
   static const String profile = '/profile';

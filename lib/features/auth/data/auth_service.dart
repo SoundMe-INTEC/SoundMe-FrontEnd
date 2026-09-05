@@ -27,6 +27,24 @@ class AuthService {
        _tokenStorage = tokenStorage;
   // ignore_for_file: prefer_initializing_formals
 
+  /// Valida credenciales y solicita un OTP si la cuenta aún no está verificada.
+  Future<bool> checkCredentials(String identification, String password) async {
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.check,
+        data: {'identification': identification, 'password': password},
+      );
+      return response.data['requires_otp'] == true;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400 || e.response?.statusCode == 401) {
+        throw Exception(
+          'Credenciales inválidas. Verifica tu identificación y contraseña.',
+        );
+      }
+      throw Exception('No se pudo comprobar la cuenta.');
+    }
+  }
+
   /// Inicia sesión con el backend y guarda los tokens JWT localmente
   Future<bool> login(
     String identification,
@@ -54,12 +72,6 @@ class AuthService {
       }
       return false;
     } on DioException catch (e) {
-      final message = e.response?.data is Map<String, dynamic>
-          ? e.response?.data['message'] as String?
-          : null;
-      if (message == 'OTP verification required') {
-        throw const AccountNotVerifiedException();
-      }
       if (e.response?.statusCode == 400 || e.response?.statusCode == 401) {
         throw Exception(
           'Credenciales inválidas. Verifica tu identificación y contraseña.',
