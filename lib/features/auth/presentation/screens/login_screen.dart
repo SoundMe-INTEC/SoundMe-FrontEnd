@@ -58,7 +58,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
-          (route) => false,
+              (route) => false,
         );
       }
     } catch (e) {
@@ -88,210 +88,230 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // 1. FONDO DECORATIVO
-          const HeaderBackground(),
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Stack(
+          children: [
+            // 1. FONDO DECORATIVO
+            const HeaderBackground(),
 
-          // 2. CONTENIDO INTERACTIVO
-          SafeArea(
-            child: Stack(
-              children: [
-                // FORMULARIO PRINCIPAL
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
+            // 2. CONTENIDO INTERACTIVO
+            SafeArea(
+              child: Column(
+                children: [
+                  // MARGEN SUPERIOR FIJO PARA EL LOGO
+                  const SizedBox(height: 150),
 
-                      // LOGO Y SUBTÍTULO
-                      const SizedBox(height: 60),
-                      const SoundMeLogo(),
+                  // LOGO Y SUBTÍTULO (Se mantiene fijo arriba)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 32.0),
+                    child: SoundMeLogo(),
+                  ),
 
-                      const Spacer(flex: 1),
+                  // FORMULARIO CON SCROLL INDEPENDIENTE (Evita el overflow al abrir el teclado)
+                  Expanded(
+                    child: CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Espaciado entre el logo y el formulario
+                                const Spacer(flex: 1),
 
-                      // CAMPO: IDENTIFICACIÓN
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Identificación',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textGray,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          hintText: 'XXXXXXXXXXX',
-                          hintStyle: const TextStyle(
-                            fontFamily: 'Inter',
-                            color: AppColors.textGray,
-                            fontSize: 14,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.inputFillColor,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 18,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // CAMPO: CONTRASEÑA
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Contraseña',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textGray,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          hintText: '••••••••••••',
-                          hintStyle: const TextStyle(
-                            color: AppColors.textGray,
-                            fontSize: 18,
-                            letterSpacing: 2,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.inputFillColor,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.primaryNavy,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-
-                      // LINK: OLVIDASTE TU CONTRASEÑA
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            // TODO: Lógica de recuperación
-                          },
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text(
-                            '¿Olvidaste tu contraseña?',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 14,
-                              color: AppColors.primaryNavy,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // BOTÓN INICIAR SESIÓN
-                      SizedBox(
-                        width: double.infinity,
-                        height: 62,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _doLogin,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryNavy,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : const Text(
-                                  'Iniciar Sesión',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
+                                // CAMPO: IDENTIFICACIÓN
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Identificación',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.textGray,
+                                    ),
                                   ),
                                 ),
-                        ),
-                      ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: InputDecoration(
+                                    hintText: 'XXXXXXXXXXX',
+                                    hintStyle: const TextStyle(
+                                      fontFamily: 'Inter',
+                                      color: AppColors.textGray,
+                                      fontSize: 14,
+                                    ),
+                                    filled: true,
+                                    fillColor: AppColors.inputFillColor,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 18,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                ),
 
-                      const SizedBox(height: 12),
+                                const SizedBox(height: 16),
 
-                      // LINK DE AYUDA
-                      TextButton(
-                        onPressed: () {
-                          // TODO: Lógica de ayuda
-                        },
-                        child: const Text(
-                          '¿No eres Administrador? ¡Ayúdanos!',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 14,
-                            color: AppColors.primaryNavy,
-                            decoration: TextDecoration.underline,
+                                // CAMPO: CONTRASEÑA
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Contraseña',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.textGray,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: _passwordController,
+                                  obscureText: _obscurePassword,
+                                  decoration: InputDecoration(
+                                    hintText: '••••••••••••',
+                                    hintStyle: const TextStyle(
+                                      color: AppColors.textGray,
+                                      fontSize: 18,
+                                      letterSpacing: 2,
+                                    ),
+                                    filled: true,
+                                    fillColor: AppColors.inputFillColor,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                        color: AppColors.primaryNavy,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _obscurePassword = !_obscurePassword;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+
+                                // LINK: OLVIDASTE TU CONTRASEÑA
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      // TODO: Lógica de recuperación
+                                    },
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: Size.zero,
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: const Text(
+                                      '¿Olvidaste tu contraseña?',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 14,
+                                        color: AppColors.primaryNavy,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                // BOTÓN INICIAR SESIÓN
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 62,
+                                  child: ElevatedButton(
+                                    onPressed: _isLoading ? null : _doLogin,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primaryNavy,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                      ),
+                                    ),
+                                    child: _isLoading
+                                        ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                        : const Text(
+                                      'Iniciar Sesión',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                // LINK DE AYUDA
+                                TextButton(
+                                  onPressed: () {
+                                    // TODO: Lógica de ayuda
+                                  },
+                                  child: const Text(
+                                    '¿No eres Administrador? ¡Ayúdanos!',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 14,
+                                      color: AppColors.primaryNavy,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+
+                                // Espaciador dinámico inferior
+                                const Spacer(flex: 2),
+
+                                // COPYRIGHT FOOTER
+                                const Text(
+                                  '© 2026 SoundMe. Todos los derechos reservados.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    color: AppColors.textGray,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-
-                      const Spacer(flex: 3),
-
-                      // COPYRIGHT FOOTER
-                      const Text(
-                        '© 2026 SoundMe. Todos los derechos reservados.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          color: AppColors.textGray,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
