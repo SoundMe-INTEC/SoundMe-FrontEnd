@@ -22,25 +22,16 @@ class HomeScreen extends StatelessWidget {
           SafeArea(
             child: Stack(
               children: [
-                // BOTÓN DE ADMINISTRADORES
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: _buildAdminButton(context),
-                ),
-
-                // CONTENIDO PRINCIPAL
-                Padding(
+                // CONTENIDO PRINCIPAL SCROLLABLE
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 32.0),
                   child: Column(
                     children: [
-                      const Spacer(flex: 2),
-
                       // LOGO Y SUBTÍTULO
                       const SizedBox(height: 60),
                       const SoundMeLogo(),
-
-                      const Spacer(flex: 2),
+                      const SizedBox(height: 32),
 
                       // BOTONES DE ACCIÓN
                       _buildPrimaryButton(
@@ -55,11 +46,11 @@ class HomeScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
                       _buildSecondaryButton(
-                        text: 'Opciones',
-                        icon: Icons.settings_outlined,
+                        text: 'Diccionario',
+                        icon: Icons.menu_book_rounded,
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -69,7 +60,21 @@ class HomeScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+
+                      _buildSecondaryButton(
+                        text: 'Opciones',
+                        icon: Icons.settings_outlined,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MainLayoutScreen(initialIndex: 3),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
                       _buildSecondaryButton(
                         text: 'Sobre Nosotros',
@@ -84,7 +89,7 @@ class HomeScreen extends StatelessWidget {
                         },
                       ),
 
-                      const Spacer(flex: 3),
+                      const SizedBox(height: 40),
 
                       // COPYRIGHT FOOTER
                       const Text(
@@ -93,12 +98,19 @@ class HomeScreen extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 14,
-                          color: AppColors.textGray, // Uso de AppColors
+                          color: AppColors.textGray,
                         ),
                       ),
                       const SizedBox(height: 16),
                     ],
                   ),
+                ),
+
+                // BOTÓN DE ADMINISTRADORES (encima del scroll para recibir toques)
+                Positioned(
+                  top: 12,
+                  right: 16,
+                  child: _buildAdminButton(context),
                 ),
               ],
             ),

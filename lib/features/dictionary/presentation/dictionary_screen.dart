@@ -130,11 +130,18 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       color: Colors.grey.shade100,
-                      image: DecorationImage(
-                        image: AssetImage(word.imagePaths.first),
-                        fit: BoxFit.cover,
-                      ),
+                      image: word.imagePaths.isNotEmpty
+                          ? DecorationImage(
+                              image: AssetImage(word.imagePaths.first),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
+                    child: word.imagePaths.isEmpty
+                        ? const Center(
+                            child: Icon(Icons.image_not_supported_outlined, color: Colors.grey),
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 16),

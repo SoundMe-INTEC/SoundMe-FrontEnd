@@ -134,56 +134,53 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Use Column with Spacer instead of scroll — content fits in one screen
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
+          // 1. CONTENIDO PRINCIPAL SCROLLABLE
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 70),
+                    _buildToggleCard(
+                      icon: Icons.notifications_none,
+                      title: 'Notificaciones',
+                      subtitle: 'Activa las notificaciones de la aplicación.',
+                      value: _notificationsEnabled,
+                      onChanged: _toggleNotifications,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildToggleCard(
+                      icon: Icons.mic_none,
+                      title: 'Micrófono',
+                      subtitle: 'Permite a la app usar tu micrófono.',
+                      value: _microphoneEnabled,
+                      onChanged: _toggleMicrophone,
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    // Logo adaptativo
+                    const Center(child: SoundMeLogo()),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 2. HEADER CON BOTÓN DE REGRESO (al final del Stack para recibir toques)
           const Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: HeaderWithBackButton(title: 'Permisos'),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 80),
-                  _buildToggleCard(
-                    icon: Icons.notifications_none,
-                    title: 'Notificaciones',
-                    subtitle: 'Activa las notificaciones de la aplicación.',
-                    value: _notificationsEnabled,
-                    onChanged: _toggleNotifications,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildToggleCard(
-                    icon: Icons.mic_none,
-                    title: 'Micrófono',
-                    subtitle: 'Permite a la app usar tu micrófono.',
-                    value: _microphoneEnabled,
-                    onChanged: _toggleMicrophone,
-                  ),
-
-                  const Spacer(),
-
-                  // Logo at the bottom — adapts to screen
-                  const Center(
-                    child: SizedBox(
-                      width: 270,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: SoundMeLogo(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
           ),
         ],
       ),

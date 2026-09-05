@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:soundme_frontend/core/theme/app_colors.dart';
 
 class SoundMeLogo extends StatelessWidget {
   const SoundMeLogo({super.key});
@@ -8,11 +9,23 @@ class SoundMeLogo extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          'assets/images/soundme_logo.png',
-          width: 315,
-          height: 180,
-          fit: BoxFit.contain,
+        ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 315,
+            maxHeight: 180,
+          ),
+          child: AspectRatio(
+            aspectRatio: 315 / 180,
+            child: Image.asset(
+              'assets/images/soundme_logo.png',
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                Icons.hearing,
+                size: 60,
+                color: AppColors.primaryNavy,
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         const Text(
@@ -22,7 +35,7 @@ class SoundMeLogo extends StatelessWidget {
             fontFamily: 'Inter',
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF747474),
+            color: AppColors.textGray,
             height: 1.2,
           ),
         ),

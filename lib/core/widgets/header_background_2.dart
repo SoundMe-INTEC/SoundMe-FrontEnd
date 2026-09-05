@@ -7,25 +7,31 @@ class AdminHeaderBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: double.infinity,
-          height: 60, // Increased slightly for text visibility
+          padding: EdgeInsets.only(top: topPadding),
           color: const Color(0xFF002D62),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.only(bottom: 8),
-          child: title != null
-              ? Text(
-                  title!,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                )
-              : const SizedBox(),
+          child: SizedBox(
+            height: 52,
+            child: Center(
+              child: title != null
+                  ? Text(
+                      title!,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const SizedBox(),
+            ),
+          ),
         ),
         Container(
           width: double.infinity,

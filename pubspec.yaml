@@ -74,6 +74,7 @@ flutter:
     - assets/images/
     - assets/images/mockup/
     - assets/mockup/
+    - assets/matrices/
     - .env
 
   # To add assets to your application, add an assets section, like this:
