@@ -37,9 +37,16 @@ class MainTaskbar extends StatelessWidget {
               label: 'Traductor',
             ),
 
-            // 3. BOTÓN OPCIONES
+            // 3. BOTÓN DICCIONARIO
             _buildNavItem(
               index: 2,
+              icon: Icons.menu_book_rounded,
+              label: 'Diccionario',
+            ),
+
+            // 4. BOTÓN OPCIONES
+            _buildNavItem(
+              index: 3,
               icon: Icons.settings_rounded,
               label: 'Opciones',
             ),

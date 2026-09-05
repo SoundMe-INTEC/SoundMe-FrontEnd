@@ -1,488 +1,68 @@
 [
   {
-    "id": 2,
-    "palabra": "A",
-    "descripcion": "Primera letra del abecedario del español",
-    "gesto": "La mano se cierra con la palma hacia afuera y el pulgar apuntando hacia arriba",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo femenino"
+    "id": 2, "palabra": "A", "descripcion": "Primera letra del abecedario del español", "gesto": "La mano se cierra con la palma hacia afuera y el pulgar apuntando hacia arriba", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "A", "info_adicional": "Sustantivo femenino"
   },
   {
-    "id": 56,
-    "palabra": "ADIÓS",
-    "descripcion": "Se usa como despedida",
-    "gesto": "La mano en forma de 5 con la palma hacia afuera se mueve reiteradamente de derecha a izquierda",
-    "imagen_asset": "assets/images/mockup_signs/senia_0055.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo femenino"
+    "id": 56, "palabra": "ADIÓS", "descripcion": "Se usa como despedida", "gesto": "La mano en forma de 5 con la palma hacia afuera se mueve reiteradamente de derecha a izquierda", "imagen_asset": "assets/images/mockup_signs/senia_0055.png", "seccion": "A", "info_adicional": "Sustantivo femenino"
   },
   {
-    "id": 84,
-    "palabra": "AGUA",
-    "descripcion": "Líquido transparente sin color, sin sabor y sin olor",
-    "gesto": "El índice de la mano en forma de A abierta con la palma hacia el centro apunta hacia la boca repetidas veces",
-    "imagen_asset": "assets/images/mockup_signs/senia_0083.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo femenino"
+    "id": 84, "palabra": "AGUA", "descripcion": "Líquido transparente sin color, sin sabor y sin olor", "gesto": "El índice de la mano en forma de A abierta con la palma hacia el centro apunta hacia la boca repetidas veces", "imagen_asset": "assets/images/mockup_signs/senia_0083.png", "seccion": "A", "info_adicional": "Sustantivo femenino"
   },
   {
-    "id": 142,
-    "palabra": "AMOR",
-    "descripcion": "Sentimiento intenso de afecto",
-    "gesto": "Los brazos y las manos en forma de S se cruzan sobre el pecho con los puños a nivel de los hombros",
-    "imagen_asset": "assets/images/mockup_signs/senia_0141.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo masculino"
+    "id": 142, "palabra": "AMOR", "descripcion": "Sentimiento intenso de afecto", "gesto": "Los brazos y las manos en forma de S se cruzan sobre el pecho con los puños a nivel de los hombros", "imagen_asset": "assets/images/mockup_signs/senia_0141.png", "seccion": "A", "info_adicional": "Sustantivo masculino"
   },
   {
-    "id": 259,
-    "palabra": "AZUL",
-    "descripcion": "Referido a un color, parecido al cielo despejado durante el día",
-    "gesto": "La mano en forma de B gira reiteradamente hacia afuera y hacia adentro a nivel del pecho",
-    "imagen_asset": "assets/images/mockup_signs/senia_0258.png",
-    "seccion": "A",
-    "info_adicional": "Adjetivo / Sustantivo"
+    "id": 260, "palabra": "AYUDA", "descripcion": "Cooperación en caso de necesidad o peligro", "gesto": "", "imagen_asset": "assets/images/mockup_signs/senia_0259.png", "seccion": "A", "info_adicional": "Sustantivo femenino"
   },
   {
-    "id": 260,
-    "palabra": "AYUDA",
-    "descripcion": "Cooperación en caso de necesidad o peligro",
-    "gesto": "",
-    "imagen_asset": "assets/images/mockup_signs/senia_0259.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo femenino"
+    "id": 315, "palabra": "BIEN", "descripcion": "En buen estado de salud o de ánimo", "gesto": "El pulgar de la mano en forma plana con la palma hacia el centro toca el centro del pecho varias veces", "imagen_asset": "assets/images/mockup_signs/senia_0053.png", "seccion": "B", "info_adicional": "Adverbio"
   },
   {
-    "id": 263,
-    "palabra": "B",
-    "descripcion": "Segunda letra del abecedario del español, de nombre be o be larga",
-    "gesto": "La mano en forma de B con la palma hacia afuera",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "B",
-    "info_adicional": "Sustantivo femenino"
+    "id": 443, "palabra": "CASA", "descripcion": "Vivienda, edificio en el que se habita, generalmente unifamiliar", "gesto": "Las manos planas con las palmas hacia el centro, inclinadas 45º, tocan las puntas de los dedos en el centro varias veces", "imagen_asset": "assets/images/mockup_signs/senia_0074.png", "seccion": "C", "info_adicional": "Sustantivo femenino"
   },
   {
-    "id": 315,
-    "palabra": "BIEN",
-    "descripcion": "En buen estado de salud o de ánimo",
-    "gesto": "El pulgar de la mano en forma plana con la palma hacia el centro toca el centro del pecho varias veces",
-    "imagen_asset": "assets/images/mockup_signs/senia_0053.png",
-    "seccion": "B",
-    "info_adicional": "Adverbio"
+    "id": 974, "palabra": "FAMILIA", "descripcion": "Grupo de personas que están emparentadas entre sí", "gesto": "Las manos en forma de F con las palmas hacia afuera...", "imagen_asset": "assets/images/mockup_signs/senia_0009.png", "seccion": "F", "info_adicional": "Sustantivo femenino"
   },
   {
-    "id": 370,
-    "palabra": "C",
-    "descripcion": "Tercera letra del abecedario del español, de nombre ce",
-    "gesto": "La mano curva con todos los dedos juntos formando una representación de la letra C",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "C",
-    "info_adicional": "Sustantivo femenino"
+    "id": 989, "palabra": "FELIZ", "descripcion": "Alegre, que siente alegría, felicidad", "gesto": "Las manos planas con las palmas hacia adentro se mueven simultáneamente tocando el pecho de abajo hacia arriba.", "imagen_asset": "assets/images/mockup_signs/senia_0024.png", "seccion": "F", "info_adicional": "Adjetivo"
   },
   {
-    "id": 443,
-    "palabra": "CASA",
-    "descripcion": "Vivienda, edificio en el que se habita, generalmente unifamiliar",
-    "gesto": "Las manos planas con las palmas hacia el centro, inclinadas 45º, tocan las puntas de los dedos en el centro varias veces",
-    "imagen_asset": "assets/images/mockup_signs/senia_0074.png",
-    "seccion": "C",
-    "info_adicional": "Sustantivo femenino"
+    "id": 1066, "palabra": "GRACIAS", "descripcion": "Se usa para expresar agradecimiento", "gesto": "La mano en forma plana con la palma hacia adentro y los dedos hacia arriba toca la barbilla y se mueve hacia delante.", "imagen_asset": "assets/images/mockup_signs/senia_0033.png", "seccion": "G", "info_adicional": "Fórmula"
   },
   {
-    "id": 673,
-    "palabra": "D",
-    "descripcion": "Cuarta letra del abecedario del español, de nombre de",
-    "gesto": "Se forma con el índice apuntando hacia arriba y el resto de los dedos haciendo un círculo",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "D",
-    "info_adicional": "Sustantivo femenino"
+    "id": 1140, "palabra": "HOLA", "descripcion": "Se usa como saludo", "gesto": "Las manos en forma de B con las palmas hacia el centro en diagonal tocan la frente y se desplazan hacia delante alternadamente", "imagen_asset": "assets/images/mockup_signs/senia_0042.png", "seccion": "H", "info_adicional": "Interjección"
   },
   {
-    "id": 757,
-    "palabra": "DINERO",
-    "descripcion": "Medio legal de pago en forma de monedas o billetes",
-    "gesto": "La mano dominante en forma de O doblada y la palma hacia arriba toca con el dorso la palma de la otra varias veces",
-    "imagen_asset": "assets/images/mockup_signs/senia_0085.png",
-    "seccion": "D",
-    "info_adicional": "Sustantivo masculino"
+    "id": 1518, "palabra": "NO", "descripcion": "Negación", "gesto": "La mano en forma de 3 cerrado con la palma hacia afuera...", "imagen_asset": "assets/images/mockup_signs/senia_0029.png", "seccion": "N", "info_adicional": "Adverbio"
   },
   {
-    "id": 794,
-    "palabra": "DOS",
-    "descripcion": "Sustantivo masculino",
-    "gesto": "La mano en forma de V con la palma hacia afuera. 1. Número natural que indica uno más uno. 2. Uno más uno",
-    "imagen_asset": "assets/images/mockup_signs/senia_0122.png",
-    "seccion": "D",
-    "info_adicional": "Adjetivo"
+    "id": 1682, "palabra": "PERDÓN", "descripcion": "Fórmula", "gesto": "La mano en forma de A con la palma hacia dentro roza el pecho moviéndose en pequeño círculo y con expresión de tristeza.", "imagen_asset": "assets/images/mockup_signs/senia_0085.png", "seccion": "P", "info_adicional": "Verbo transitivo"
   },
   {
-    "id": 802,
-    "palabra": "E",
-    "descripcion": "Quinta letra del abecedario del español",
-    "gesto": "Se forma presionando todos los dedos juntos hacia en centro de la palma de la mano",
-    "imagen_asset": "assets/images/mockup_signs/senia_0004.png",
-    "seccion": "E",
-    "info_adicional": "Sustantivo femenino"
+    "id": 1753, "palabra": "POLICÍA", "descripcion": "Sustantivo femenino", "gesto": "La mano en forma de C con la palma hacia el centro toca con el borde superior un lado del pecho.", "imagen_asset": "assets/images/mockup_signs/senia_0156.png", "seccion": "P", "info_adicional": "Sustantivo común"
   },
   {
-    "id": 904,
-    "palabra": "ESCUELA",
-    "descripcion": "Centro escolar donde se imparte enseñanza, generalmente primaria",
-    "gesto": "Las manos planas con las palmas enfrentadas; la mano dominante arriba con los dedos hacia afuera sobre la otra mano con los dedos hacia el costado, aplauden suavemente varias veces",
-    "imagen_asset": "assets/images/mockup_signs/senia_0106.png",
-    "seccion": "E",
-    "info_adicional": "Sustantivo femenino"
+    "id": 1988, "palabra": "SÍ", "descripcion": "Afirmación", "gesto": "La mano en forma de S, con la palma hacia abajo, gira la muñeca hacia arriba y abajo repetidas veces. Expresión de afirmación", "imagen_asset": "assets/images/mockup_signs/senia_0064.png", "seccion": "S", "info_adicional": "Adverbio"
   },
   {
-    "id": 966,
-    "palabra": "F",
-    "descripcion": "Sexta letra del abecedario del español, de nombre efe",
-    "gesto": "La punta de los dedos índice y pulgar se tocan dejando los demás dedos juntos apuntando hacia arriba. La palma hacia afuera",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "F",
-    "info_adicional": "Sustantivo femenino"
+    "id": 9000, "palabra": "YO", "descripcion": "Pronombre personal", "gesto": "Gesto de ejemplo", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "Y", "info_adicional": "Prueba de secuencia"
   },
   {
-    "id": 974,
-    "palabra": "FAMILIA",
-    "descripcion": "Grupo de personas que están emparentadas entre sí",
-    "gesto": "Las manos en forma de F con las palmas hacia afuera y tocan los índices y pulgares, a partir de donde se desplazan simultáneamente hacia adelante describiendo sendos semicírculos que cierran con la unión de los meñiques",
-    "imagen_asset": "assets/images/mockup_signs/senia_0009.png",
-    "seccion": "F",
-    "info_adicional": "Sustantivo femenino"
+    "id": 9001, "palabra": "ESTOY", "descripcion": "Verbo estar", "gesto": "Gesto de ejemplo", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "E", "info_adicional": "Prueba de secuencia"
   },
   {
-    "id": 989,
-    "palabra": "FELIZ",
-    "descripcion": "Alegre, que siente alegría, felicidad",
-    "gesto": "Las manos planas con las palmas hacia adentro se mueven simultáneamente tocando el pecho de abajo hacia arriba. Expresión feliz",
-    "imagen_asset": "assets/images/mockup_signs/senia_0024.png",
-    "seccion": "F",
-    "info_adicional": "Adjetivo"
+    "id": 9004, "palabra": "COMO", "descripcion": "Mockup", "gesto": "Gesto de ejemplo", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "C", "info_adicional": "Prueba de secuencia"
   },
   {
-    "id": 1034,
-    "palabra": "G",
-    "descripcion": "Séptima letra del abecedario del español, de nombre ge",
-    "gesto": "La mano en forma G, con la palma hacia el centro a nivel del hombro",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "G",
-    "info_adicional": "Sustantivo femenino"
+    "id": 9005, "palabra": "ESTÁS", "descripcion": "Mockup", "gesto": "Gesto de ejemplo", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "E", "info_adicional": "Prueba de secuencia"
   },
   {
-    "id": 1066,
-    "palabra": "GRACIAS",
-    "descripcion": "Se usa para expresar agradecimiento",
-    "gesto": "La mano en forma plana con la palma hacia adentro y los dedos hacia arriba toca la barbilla y se mueve hacia delante. Expresión de sonrisa",
-    "imagen_asset": "assets/images/mockup_signs/senia_0033.png",
-    "seccion": "G",
-    "info_adicional": "Fórmula"
+    "id": 9006, "palabra": "MUY", "descripcion": "Mockup", "gesto": "Gesto de ejemplo", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "M", "info_adicional": "Prueba de secuencia"
   },
   {
-    "id": 1099,
-    "palabra": "H",
-    "descripcion": "Octava letra del abecedario del español, de nombre hache",
-    "gesto": "Se forma con la mano cerrada, las palmas hacia adentro con los dedos índice y medio apuntando hacia el centro",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "H",
-    "info_adicional": "Sustantivo femenino"
+    "id": 9007, "palabra": "POR", "descripcion": "Mockup", "gesto": "Gesto de ejemplo", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "P", "info_adicional": "Prueba de secuencia"
   },
   {
-    "id": 1140,
-    "palabra": "HOLA",
-    "descripcion": "Se usa como saludo",
-    "gesto": "Las manos en forma de B con las palmas hacia el centro en diagonal tocan la frente y se desplazan hacia delante alternadamente",
-    "imagen_asset": "assets/images/mockup_signs/senia_0042.png",
-    "seccion": "H",
-    "info_adicional": "Interjección"
-  },
-  {
-    "id": 1143,
-    "palabra": "HOMBRE",
-    "descripcion": "Persona de sexo masculino",
-    "gesto": "1. La mano en forma de O aplanada con la palma hacia el centro abre y cierra una vez en la frente. 2. Luego en forma de de 5 con la palma hacia el centro, toca el pecho con el pulgar",
-    "imagen_asset": "assets/images/mockup_signs/senia_0045.png",
-    "seccion": "H",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 1152,
-    "palabra": "HOSPITAL",
-    "descripcion": "Institución destinada al tratamiento de las personas que necesitan atención médica",
-    "gesto": "La mano en forma de H con la palma hacia adentro describe una cruz sobre el hombro contrario",
-    "imagen_asset": "assets/images/mockup_signs/senia_0054.png",
-    "seccion": "H",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 1165,
-    "palabra": "I",
-    "descripcion": "Novena letra del abecedario del español",
-    "gesto": "Se forma con la mano cerrada con el meñique apuntando hacia arriba",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "I",
-    "info_adicional": "Sustantivo femenino"
-  },
-  {
-    "id": 1233,
-    "palabra": "J",
-    "descripcion": "Décima letra del abecedario del español, de nombre jota",
-    "gesto": "La mano en forma de I con la palma hacia afuera desciende describiendo una curva que termina con la palma hacia adentro con un giro de muñeca",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "J",
-    "info_adicional": "Sustantivo femenino"
-  },
-  {
-    "id": 1352,
-    "palabra": "MAL",
-    "descripcion": "Lo contrario al bien, lo que se aparta de lo lícito y honesto",
-    "gesto": "La mano en forma de Y con la palma hacia dentro toca la barbilla con los nudillos. Expresión de desaprobación",
-    "imagen_asset": "assets/images/mockup_signs/senia_0012.png",
-    "seccion": "M",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 1476,
-    "palabra": "MUJER",
-    "descripcion": "Persona de sexo femenino",
-    "gesto": "La mano en forma de A abierta roza con el pulgar la mejilla al desplazarse hacia delante y hacia abajo mientras abre. Termina tocando el pecho con el pulgar",
-    "imagen_asset": "assets/images/mockup_signs/senia_0136.png",
-    "seccion": "M",
-    "info_adicional": "Sustantivo femenino"
-  },
-  {
-    "id": 1518,
-    "palabra": "NO",
-    "descripcion": "Negación",
-    "gesto": "La mano en forma de 3 cerrado con la palma hacia afuera, une los dedos mayor, índice y pulgar, en un movimiento breve que se repite dos veces. Expresión de negación",
-    "imagen_asset": "assets/images/mockup_signs/senia_0029.png",
-    "seccion": "N",
-    "info_adicional": "Adverbio"
-  },
-  {
-    "id": 1520,
-    "palabra": "NOMBRE",
-    "descripcion": "Palabra que designa o identifica seres animados o inanimados",
-    "gesto": "Ambas manos en forma de H con las palmas 45º hacia adentro, con los dedos mayor e índice extendidos y juntos, tocan dos o tres veces con la mano dominante encima de la no dominante",
-    "imagen_asset": "assets/images/mockup_signs/senia_0031.png",
-    "seccion": "N",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 1682,
-    "palabra": "PERDÓN",
-    "descripcion": "Fórmula",
-    "gesto": "La mano en forma de A con la palma hacia dentro roza el pecho moviéndose en pequeño círculo y con expresión de tristeza. 1. Se usa para pedir disculpas o para mostrar compasión. 2. Discúlpame, no tengas en cuenta el error o la ofensa que he cometido",
-    "imagen_asset": "assets/images/mockup_signs/senia_0085.png",
-    "seccion": "P",
-    "info_adicional": "Verbo transitivo"
-  },
-  {
-    "id": 1753,
-    "palabra": "POLICÍA",
-    "descripcion": "Sustantivo femenino",
-    "gesto": "La mano en forma de C con la palma hacia el centro toca con el borde superior un lado del pecho. 1. Cuerpo armado destinado a velar por el mantenimiento del orden público y la seguridad 2. Persona que pertenece al cuerpo de Policía",
-    "imagen_asset": "assets/images/mockup_signs/senia_0156.png",
-    "seccion": "P",
-    "info_adicional": "Sustantivo común"
-  },
-  {
-    "id": 1988,
-    "palabra": "SÍ",
-    "descripcion": "Afirmación",
-    "gesto": "La mano en forma de S, con la palma hacia abajo, gira la muñeca hacia arriba y abajo repetidas veces. Expresión de afirmación",
-    "imagen_asset": "assets/images/mockup_signs/senia_0064.png",
-    "seccion": "S",
-    "info_adicional": "Adverbio"
-  },
-  {
-    "id": 2112,
-    "palabra": "TIEMPO",
-    "descripcion": "Duración de las cosas",
-    "gesto": "La mano dominante en forma de X toca con el índice la muñeca de la otra que está cerrada en forma de S con la palma hacia abajo",
-    "imagen_asset": "assets/images/mockup_signs/senia_0067.png",
-    "seccion": "T",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 2141,
-    "palabra": "TRABAJO",
-    "descripcion": "Acción, física o intelectual, que se realiza, generalmente a cambio de una remuneración",
-    "gesto": "Las manos en forma de S con las palmas hacia abajo; la dominante golpea desde arriba a la otra varias veces",
-    "imagen_asset": "assets/images/mockup_signs/senia_0096.png",
-    "seccion": "T",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 2161,
-    "palabra": "TRISTE",
-    "descripcion": "Que siente o produce tristeza o pesar",
-    "gesto": "",
-    "imagen_asset": "assets/images/mockup_signs/senia_0116.png",
-    "seccion": "T",
-    "info_adicional": "Adjetivo"
-  },
-  {
-    "id": 2165,
-    "palabra": "TRES",
-    "descripcion": "Sustantivo masculino",
-    "gesto": "La mano en forma de 3 con la palma hacia afuera. Los dedos mayor, índice y pulgar hacia arriba. 1. Número natural que sigue al dos. 2. Dos más uno",
-    "imagen_asset": "assets/images/mockup_signs/senia_0120.png",
-    "seccion": "T",
-    "info_adicional": "Adjetivo"
-  },
-  {
-    "id": 2228,
-    "palabra": "VERDE",
-    "descripcion": "Sustantivo masculino",
-    "gesto": "La mano en forma de V con la palma hacia afuera toca la mejilla con dedo índice varias veces. 1. Color parecido al de la hierba fresca. 2. Referido a un color, parecido al de la hierba fresca. 3. De color verde",
-    "imagen_asset": "assets/images/mockup_signs/senia_0040.png",
-    "seccion": "V",
-    "info_adicional": "Adjetivo"
-  },
-  {
-    "id": 2305,
-    "palabra": "BUENAS NOCHES",
-    "descripcion": "Se usa como saludo por la noche",
-    "gesto": "1. Las manos en forma plana con las palmas hacia adentro; la dominante toca la barbilla y se mueve hacia delante hasta tocar con el dorso la otra palma. 2. Luego en forma doblada toca el dorso de la otra que permanece horizontal",
-    "imagen_asset": "assets/images/mockup_signs/senia_0012.png",
-    "seccion": "LOCUCIONES",
-    "info_adicional": "Fórmula"
-  },
-  {
-    "id": 2307,
-    "palabra": "BUENAS TARDES",
-    "descripcion": "Se usa como saludo por la tarde",
-    "gesto": "1. Las manos en forma plana con las palmas hacia adentro; la dominante toca la barbilla y se mueve hacia delante hasta tocar con el dorso la otra palma. 2. Luego en forma de H toca varias veces la muñeca de Ia otra, que ahora está horizontal",
-    "imagen_asset": "assets/images/mockup_signs/senia_0014.png",
-    "seccion": "LOCUCIONES",
-    "info_adicional": "Fórmula"
-  },
-  {
-    "id": 2309,
-    "palabra": "BUENOS DÍAS",
-    "descripcion": "Se usa como saludo por la mañana",
-    "gesto": "1. Las manos en forma plana con las palmas hacia adentro; la dominante toca la barbilla y se mueve hacia delante hasta tocar con el dorso la otra palma. 2. Luego en forma de D, apoyado el codo sobre el dorso de la otra mano que está en posición horizontal, baja hasta descansar sore el otro brazo",
-    "imagen_asset": "assets/images/mockup_signs/senia_0016.png",
-    "seccion": "LOCUCIONES",
-    "info_adicional": "Fórmula"
-  },
-  {
-    "id": 2373,
-    "palabra": "POR FAVOR",
-    "descripcion": "Se usa para mostrar cortesía en una solicitud",
-    "gesto": "La mano plana con la palma hacia adentro se mueve en círculos sobre el pecho",
-    "imagen_asset": "assets/images/mockup_signs/senia_0080.png",
-    "seccion": "LOCUCIONES",
-    "info_adicional": "Fórmula"
-  },
-  {
-    "id": 3,
-    "palabra": "ABAJO, DEBAJO",
-    "descripcion": "Debajo de alguien o de algo",
-    "gesto": "Ambas manos planas con las palmas hacia abajo con los dedos en posición contraria (hacia la dereha y la izquierda), una encima de la otra. La mano dominante hace un movimiento circular continuo dos o tres veces",
-    "imagen_asset": "assets/images/mockup_signs/senia_0002.png",
-    "seccion": "A",
-    "info_adicional": "Advervio"
-  },
-  {
-    "id": 4,
-    "palabra": "A TRAVÉS",
-    "descripcion": "Por medio de",
-    "gesto": "La mano dominante en forma plana con la palma hacia el centro se desplaza en línea recta hacia delante entre los dedos mayor y anular de la mano contraria abierta con la palma hacia adentro",
-    "imagen_asset": "assets/images/mockup_signs/senia_0003.png",
-    "seccion": "A",
-    "info_adicional": "Locución preposicional"
-  },
-  {
-    "id": 5,
-    "palabra": "ABANDONAR",
-    "descripcion": "Aparteser de algo o de alguein y dejarlo solo",
-    "gesto": "Ambas manos enfrentadas en forma de 5 con los dedos hacia arriba giran las muñecas desplazándose bruscamente hacia afuera a nivel del hombro. Las cejas ligeramente fruncidas",
-    "imagen_asset": "assets/images/mockup_signs/senia_0004.png",
-    "seccion": "A",
-    "info_adicional": "Verbo transitivo"
-  },
-  {
-    "id": 6,
-    "palabra": "ABAJO",
-    "descripcion": "En un lugar más bajo o inferior",
-    "gesto": "La mano en forma de 1 con el índice hacia abajo se desplaza en línea hacia piso",
-    "imagen_asset": "assets/images/mockup_signs/senia_0005.png",
-    "seccion": "A",
-    "info_adicional": "Advervio"
-  },
-  {
-    "id": 7,
-    "palabra": "ABANICO",
-    "descripcion": "Ventilador, aparato eléctrico que impulsa o mueve el aire",
-    "gesto": "Una mano en forma de garra oscila de afuera y hacia adentro dos o tres veces a nivel del hombro",
-    "imagen_asset": "assets/images/mockup_signs/senia_0006.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 8,
-    "palabra": "ABECEDARIO",
-    "descripcion": "Conjunto de las letras de una lengua dispuestas en forma ordenada",
-    "gesto": "La mano dominante en forma de 5 con la palma hacia abajo y los dedos hacia adelante se desplaza desde el centro hacia la derecha (los zurdos hacia la izquierda). Los dedos realizan movimiento vibratorio a nivel del hombro",
-    "imagen_asset": "assets/images/mockup_signs/senia_0007.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 9,
-    "palabra": "ABORTAR",
-    "descripcion": "Interrumpir un embarazo",
-    "gesto": "",
-    "imagen_asset": "assets/images/mockup_signs/senia_0008.png",
-    "seccion": "A",
-    "info_adicional": "Verbo transitivo"
-  },
-  {
-    "id": 10,
-    "palabra": "ABORTO",
-    "descripcion": "Interrupción de un embarazo",
-    "gesto": "La mano dominante simula recoger algo de la mano contraria en el centro del cuerpo y lo lanza con la mano en forma de S hacia abajo. Termina el movimiento con la mano abierta",
-    "imagen_asset": "assets/images/mockup_signs/senia_0009.png",
-    "seccion": "A",
-    "info_adicional": "Sustantivo masculino"
-  },
-  {
-    "id": 9000,
-    "palabra": "YO",
-    "descripcion": "Mockup word para probar frase: YO",
-    "gesto": "Gesto de ejemplo",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "Y",
-    "info_adicional": "Prueba de secuencia"
-  },
-  {
-    "id": 9001,
-    "palabra": "ESTOY",
-    "descripcion": "Mockup word para probar frase: ESTOY",
-    "gesto": "Gesto de ejemplo",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "E",
-    "info_adicional": "Prueba de secuencia"
-  },
-  {
-    "id": 9002,
-    "palabra": "MI",
-    "descripcion": "Mockup word para probar frase: MI",
-    "gesto": "Gesto de ejemplo",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "M",
-    "info_adicional": "Prueba de secuencia"
-  },
-  {
-    "id": 9003,
-    "palabra": "ES",
-    "descripcion": "Mockup word para probar frase: ES",
-    "gesto": "Gesto de ejemplo",
-    "imagen_asset": "assets/images/mockup_signs/senia_0001.png",
-    "seccion": "E",
-    "info_adicional": "Prueba de secuencia"
+    "id": 9008, "palabra": "TU", "descripcion": "Mockup", "gesto": "Gesto de ejemplo", "imagen_asset": "assets/images/mockup_signs/senia_0001.png", "seccion": "T", "info_adicional": "Prueba de secuencia"
   }
 ]
