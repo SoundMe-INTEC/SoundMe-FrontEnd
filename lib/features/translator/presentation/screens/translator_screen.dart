@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
+import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -26,6 +27,8 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   int _currentSignIndex = 0;
   bool _isPlaying = false;
   Timer? _playTimer;
+  Timer? _debounceTimer;
+  Timer? _silenceTimer;
   String _statusText = '';
 
   late AnimationController _pulseController;
@@ -57,6 +60,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     _speechEnabled = await _speechToText.initialize(
       onStatus: (status) {
         if (status == 'done' || status == 'notListening') {
+          _silenceTimer?.cancel();
           if (mounted && _isListening) {
             setState(() {
               _isListening = false;
@@ -68,6 +72,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
         }
       },
       onError: (error) {
+        _silenceTimer?.cancel();
         if (mounted && _isListening) {
           setState(() {
             _isListening = false;
@@ -82,6 +87,8 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
 
   @override
   void dispose() {
+    _silenceTimer?.cancel();
+    _debounceTimer?.cancel();
     _focusNode.dispose();
     _textController.dispose();
     _playTimer?.cancel();
@@ -92,8 +99,32 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     super.dispose();
   }
 
-  Future<void> _translateText([String? predefinedText]) async {
-    _focusNode.unfocus();
+  void _onTextChanged(String value) {
+    _debounceTimer?.cancel();
+    final text = value.trim();
+    if (text.isEmpty) {
+      _pausePlayback();
+      setState(() {
+        _matchedSigns = [];
+        _currentSignIndex = 0;
+        _statusText = '';
+      });
+      return;
+    }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 380), () {
+      if (mounted && _textController.text.trim().isNotEmpty) {
+        _translateText(null, false);
+      }
+    });
+  }
+
+  Future<void> _translateText([String? predefinedText, bool unfocus = true]) async {
+    _debounceTimer?.cancel();
+    _silenceTimer?.cancel();
+    if (unfocus) {
+      _focusNode.unfocus();
+    }
     if (_isListening) {
       await _speechToText.stop();
       setState(() {
@@ -107,30 +138,56 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
       _textController.text = predefinedText;
     }
     final text = _textController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+      _pausePlayback();
+      setState(() {
+        _matchedSigns = [];
+        _currentSignIndex = 0;
+        _statusText = '';
+      });
+      return;
+    }
 
     _pausePlayback();
 
     final service = ref.read(mockupDataServiceProvider);
-    final result = await service.translatePhrase(text);
+    final isExplicit = ref.read(explicitTranslationProvider);
+    final result = await service.translatePhrase(text, explicit: isExplicit);
+
+    if (!mounted) return;
 
     setState(() {
       _matchedSigns = result.matchedSigns;
       _currentSignIndex = 0;
       if (result.matchedSigns.isEmpty) {
-        _statusText = 'No se encontró coincidencia para: $text';
+        _statusText = 'No se encontró coincidencia para: "$text"';
       } else {
-        _statusText = 'Frase de ${result.matchedSigns.length} señas';
+        _statusText = 'Traducción: ${result.matchedSigns.length} ${result.matchedSigns.length == 1 ? "seña" : "señas"}';
         if (result.spelledWords.isNotEmpty) {
           _statusText += ' (deletreo: ${result.spelledWords.join(", ")})';
         }
         if (result.notFoundWords.isNotEmpty) {
-          _statusText += ' - Faltan: ${result.notFoundWords.join(", ")}';
+          _statusText += ' - No encontradas: ${result.notFoundWords.join(", ")}';
         }
       }
     });
 
     if (result.matchedSigns.isNotEmpty) _startPlayback();
+  }
+
+  void _resetSilenceTimer() {
+    _silenceTimer?.cancel();
+    _silenceTimer = Timer(const Duration(seconds: 3), () {
+      if (_isListening && mounted) {
+        _speechToText.stop();
+        setState(() {
+          _isListening = false;
+          _pulseController.stop();
+          _pulseController.value = 0.0;
+        });
+        _translateText();
+      }
+    });
   }
 
   void _toggleMicrophone() async {
@@ -142,6 +199,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     }
 
     if (_speechToText.isListening) {
+      _silenceTimer?.cancel();
       await _speechToText.stop();
       setState(() {
         _isListening = false;
@@ -155,11 +213,15 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
         _textController.clear();
         _pulseController.repeat(reverse: true);
       });
+      _resetSilenceTimer();
       await _speechToText.listen(
         onResult: (result) {
-          setState(() {
-            _textController.text = result.recognizedWords;
-          });
+          if (mounted) {
+            setState(() {
+              _textController.text = result.recognizedWords;
+            });
+            _resetSilenceTimer();
+          }
         },
         listenOptions: stt.SpeechListenOptions(
           cancelOnError: true,
@@ -306,12 +368,26 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                 // Imagen de la Seña
                                 Expanded(
                                   child: Padding(
-                                    padding: EdgeInsets.all(isUltraCompact ? 4.0 : (isCompact ? 8.0 : 16.0)),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: SignImage(
-                                        sign: currentSign,
-                                        fit: BoxFit.contain,
+                                    padding: EdgeInsets.all(isUltraCompact ? 4.0 : (isCompact ? 8.0 : 14.0)),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.04),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: SignImage(
+                                          sign: currentSign,
+                                          fit: BoxFit.contain,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -499,13 +575,19 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                   maxLines: 2,
                                   minLines: 1,
                                   style: const TextStyle(fontFamily: 'Inter', fontSize: 16, color: Colors.black),
-                                  decoration: const InputDecoration(
-                                    hintText: 'Escribe aquí para traducir...',
-                                    hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 16, color: AppColors.textGray),
+                                  decoration: InputDecoration(
+                                    hintText: _isListening ? 'Escuchando (habla ahora)...' : 'Escribe aquí para traducir...',
+                                    hintStyle: TextStyle(
+                                      fontFamily: 'Inter', 
+                                      fontSize: 16, 
+                                      color: _isListening ? AppColors.accentRed : AppColors.textGray,
+                                      fontWeight: _isListening ? FontWeight.bold : FontWeight.normal,
+                                    ),
                                     border: InputBorder.none,
                                     isDense: true,
                                   ),
-                                  onSubmitted: (_) => _translateText(),
+                                  onChanged: _onTextChanged,
+                                  onSubmitted: (_) => _translateText(null, true),
                                 ),
                               ),
                               Container(
@@ -515,7 +597,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                 ),
                                 child: IconButton(
                                   icon: const Icon(Icons.send_rounded, color: Colors.white),
-                                  onPressed: () => _translateText(),
+                                  onPressed: () => _translateText(null, true),
                                   iconSize: 20,
                                 ),
                               )
@@ -536,34 +618,50 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                           const SizedBox(height: 16),
                           
                           // BIG MIC BUTTON
-                          GestureDetector(
-                            onTap: _toggleMicrophone,
-                            child: ScaleTransition(
-                              scale: _isListening ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                width: 76,
-                                height: 76,
-                                decoration: BoxDecoration(
-                                  color: _isListening ? Colors.red : AppColors.primaryNavy,
-                                  shape: BoxShape.circle,
-                                  boxShadow: _isListening ? [
-                                    BoxShadow(
-                                      color: Colors.red.withValues(alpha: 0.5),
-                                      blurRadius: 20,
-                                      spreadRadius: 8,
-                                    )
-                                  ] : [
-                                    BoxShadow(
-                                      color: AppColors.primaryNavy.withValues(alpha: 0.3),
-                                      blurRadius: 10,
-                                      spreadRadius: 2,
-                                    )
-                                  ],
+                          Column(
+                            children: [
+                              GestureDetector(
+                                onTap: _toggleMicrophone,
+                                child: ScaleTransition(
+                                  scale: _isListening ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    width: _isListening ? 86 : 76,
+                                    height: _isListening ? 86 : 76,
+                                    decoration: BoxDecoration(
+                                      color: _isListening ? AppColors.accentRed : AppColors.primaryNavy,
+                                      shape: BoxShape.circle,
+                                      boxShadow: _isListening ? [
+                                        BoxShadow(
+                                          color: AppColors.accentRed.withValues(alpha: 0.5),
+                                          blurRadius: 24,
+                                          spreadRadius: 10,
+                                        ),
+                                        BoxShadow(
+                                          color: AppColors.accentRed.withValues(alpha: 0.3),
+                                          blurRadius: 40,
+                                          spreadRadius: 20,
+                                        )
+                                      ] : [
+                                        BoxShadow(
+                                          color: AppColors.primaryNavy.withValues(alpha: 0.3),
+                                          blurRadius: 10,
+                                          spreadRadius: 2,
+                                        )
+                                      ],
+                                    ),
+                                    child: Icon(_isListening ? Icons.mic : Icons.mic_none, color: Colors.white, size: _isListening ? 42 : 36),
+                                  ),
                                 ),
-                                child: Icon(_isListening ? Icons.mic_off : Icons.mic, color: Colors.white, size: 36),
                               ),
-                            ),
+                              if (_isListening) ...[
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Escuchando...',
+                                  style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.accentRed, fontWeight: FontWeight.bold),
+                                )
+                              ]
+                            ],
                           ),
                           
                           const SizedBox(height: 16),

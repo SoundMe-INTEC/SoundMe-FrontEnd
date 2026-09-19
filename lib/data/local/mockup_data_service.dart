@@ -121,13 +121,10 @@ class MockSignEntry {
   }
 
   static String _deducirSeccionDesdeMatriz(String filename) {
-    // Ejemplos: matriz_a_01.webp -> A, matriz_locuciones_01.webp -> LOCUCIONES
+    // Ejemplos: matriz_a_01.webp -> A, matriz_locuciones_01.webp -> LOCUCIONES, matriz_nombres_historicos.webp -> NOMBRES_HISTORICOS
     final clean = filename.replaceAll('matriz_', '').replaceAll('.webp', '').replaceAll('.svg', '');
-    final parts = clean.split('_');
-    if (parts.isNotEmpty) {
-      return parts.first.toUpperCase();
-    }
-    return '';
+    final withoutDigits = clean.replaceAll(RegExp(r'_\d+$'), '');
+    return withoutDigits.toUpperCase();
   }
 }
 
@@ -156,25 +153,110 @@ class TranslationResult {
 /// Carga las 2,427 señas del JSON de matrices con Sprite Sheets WebP ultraligeras,
 /// ofreciendo búsqueda flexible por n-gramas, plurales, variantes de género y tildes.
 class MockupDataService {
+  final String? defaultDictionaryPath;
   List<MockSignEntry>? _cache;
   Map<String, MockSignEntry>? _normalizedIndex;
+  Map<String, MockSignEntry>? _phoneticIndex;
   Map<String, MockSignEntry>? _alphabetIndex;
+
+  MockupDataService({this.defaultDictionaryPath});
+
+  /// Diccionario de sinónimos comunes del español mapeados a señas canónicas del diccionario LSRD.
+  static const Map<String, String> _commonSynonyms = {
+    'HALLAR': 'ENCONTRAR',
+    'HAYAR': 'ENCONTRAR',
+    'AUTO': 'CARRO',
+    'AUTOMOVIL': 'CARRO',
+    'VEHICULO': 'CARRO',
+    'CAN': 'PERRO',
+    'DOCENTE': 'MAESTRO',
+    'PROFESOR': 'MAESTRO',
+    'PROFESORA': 'MAESTRO',
+    'CHICO': 'NIÑO',
+    'CHICA': 'NIÑA',
+    'NENE': 'NIÑO',
+    'NENA': 'NIÑA',
+    'PADRE': 'PAPÁ',
+    'MADRE': 'MAMÁ',
+    'BEBIDA': 'AGUA',
+    'CHARLAR': 'HABLAR',
+    'PLATICAR': 'HABLAR',
+    'OBSEQUIO': 'REGALO',
+    'REGALAR': 'REGALO',
+    'EMPLEO': 'TRABAJO',
+    'LABOR': 'TRABAJO',
+    'MEDICO': 'DOCTOR',
+    'MEDICA': 'DOCTORA',
+    'VELOZ': 'RÁPIDO',
+    'PRONTO': 'RÁPIDO',
+    'FINALIZAR': 'TERMINAR',
+    'CONCLUIR': 'TERMINAR',
+    'INICIAR': 'EMPEZAR',
+    'COMENZAR': 'EMPEZAR',
+    'RETORNAR': 'REGRESAR',
+    'VOLVER': 'REGRESAR',
+  };
+
+  /// Normaliza variaciones ortográficas y homófonas comunes en español (B/V, LL/Y, C/S/Z, H).
+  static String _spanishPhonetic(String text) {
+    var s = text.toUpperCase();
+    // Eliminar H muda
+    s = s.replaceAll('H', '');
+    // B y V son homófonas en español
+    s = s.replaceAll('V', 'B');
+    // Yeísmo: LL e Y
+    s = s.replaceAll('LL', 'Y');
+    // Seseo: Z, CE, CI y S
+    s = s.replaceAll('Z', 'S');
+    s = s.replaceAll('CE', 'SE').replaceAll('CI', 'SI');
+    // J y GE/GI
+    s = s.replaceAll('GE', 'JE').replaceAll('GI', 'JI');
+    // QU, K y C dura
+    s = s.replaceAll('QU', 'K').replaceAll('C', 'K');
+    return s;
+  }
+
+  /// Calcula la distancia de edición Levenshtein entre dos cadenas.
+  static int _levenshtein(String s1, String s2) {
+    if (s1 == s2) return 0;
+    if (s1.isEmpty) return s2.length;
+    if (s2.isEmpty) return s1.length;
+
+    List<int> v0 = List<int>.generate(s2.length + 1, (i) => i);
+    List<int> v1 = List<int>.filled(s2.length + 1, 0);
+
+    for (int i = 0; i < s1.length; i++) {
+      v1[0] = i + 1;
+      for (int j = 0; j < s2.length; j++) {
+        int cost = (s1[i] == s2[j]) ? 0 : 1;
+        v1[j + 1] = [v1[j] + 1, v0[j + 1] + 1, v0[j] + cost].reduce((a, b) => a < b ? a : b);
+      }
+      for (int j = 0; j <= s2.length; j++) {
+        v0[j] = v1[j];
+      }
+    }
+    return v1[s2.length];
+  }
 
   /// Carga y cachea todas las entradas del diccionario.
   Future<List<MockSignEntry>> getAll() async {
     if (_cache != null) return _cache!;
 
     String jsonStr;
-    try {
-      // Prioridad 1: Diccionario Vectorial SVG Nativo (2,427 señas de alta fidelidad)
-      jsonStr = await rootBundle.loadString('assets/matrices/diccionario_matrices_svg.json');
-    } catch (_) {
+    if (defaultDictionaryPath != null) {
+      jsonStr = await rootBundle.loadString(defaultDictionaryPath!);
+    } else {
       try {
-        // Fallback 1: Diccionario de matrices WebP
-        jsonStr = await rootBundle.loadString('assets/matrices/diccionario_matrices.json');
+        // Prioridad 1: Diccionario Vectorial SVG Oficial (2,427 señas vectoriales)
+        jsonStr = await rootBundle.loadString('assets/matrices/diccionario_matrices_svg.json');
       } catch (_) {
-        // Fallback 2: Mockup básico
-        jsonStr = await rootBundle.loadString('assets/mockup/mock_dictionary.json');
+        try {
+          // Fallback 1: Diccionario de Matrices WebP
+          jsonStr = await rootBundle.loadString('assets/matrices/diccionario_matrices.json');
+        } catch (_) {
+          // Fallback 2: Mockup básico
+          jsonStr = await rootBundle.loadString('assets/mockup/mock_dictionary.json');
+        }
       }
     }
 
@@ -191,29 +273,126 @@ class MockupDataService {
 
   void _buildNormalizedIndex(List<MockSignEntry> list) {
     final map = <String, MockSignEntry>{};
+    final phoneticMap = <String, MockSignEntry>{};
     final alphabet = <String, MockSignEntry>{};
 
+    void addKey(String rawKey, MockSignEntry entry) {
+      final k = _normalize(rawKey);
+      if (k.isNotEmpty && !map.containsKey(k)) {
+        map[k] = entry;
+        final ph = _spanishPhonetic(k);
+        if (ph.isNotEmpty && !phoneticMap.containsKey(ph)) {
+          phoneticMap[ph] = entry;
+        }
+      }
+    }
+
     for (final entry in list) {
-      final norm = _normalize(entry.palabra);
-      map.putIfAbsent(norm, () => entry);
+      final raw = entry.palabra.trim();
+      final norm = _normalize(raw);
+      addKey(norm, entry);
 
       // Si es una letra individual del abecedario (A-Z, Ñ), indexarla para dactilología
-      final trimmed = entry.palabra.trim().toUpperCase();
+      final trimmed = raw.toUpperCase();
       if (trimmed.length == 1 && RegExp(r'^[A-ZÑ]$').hasMatch(trimmed)) {
         alphabet.putIfAbsent(trimmed, () => entry);
       }
 
-      // Si tiene variantes como "AMIGO, GA" o "ABUELO, LA" indexar también la forma base
-      if (norm.contains(',')) {
-        final base = norm.split(',').first.trim();
-        map.putIfAbsent(base, () => entry);
+      // 1. Manejar aclaraciones y sinónimos entre paréntesis: ej. "BANCO (FINANCIERO)", "ANULAR (CANCELAR)"
+      if (raw.contains('(') && raw.contains(')')) {
+        final openIdx = raw.indexOf('(');
+        final closeIdx = raw.indexOf(')');
+        if (openIdx >= 0 && closeIdx > openIdx) {
+          final beforeParen = raw.substring(0, openIdx).trim();
+          final insideParen = raw.substring(openIdx + 1, closeIdx).trim();
+          addKey(beforeParen, entry);
+          if (insideParen.isNotEmpty &&
+              !insideParen.contains(RegExp(r'\d')) &&
+              insideParen.split(RegExp(r'\s+')).length <= 2) {
+            addKey(insideParen, entry);
+          }
+        }
       }
-      if (norm.contains('/')) {
-        final base = norm.split('/').first.trim();
-        map.putIfAbsent(base, () => entry);
+
+      // 2. Manejar variantes con coma: ej. "AMIGO, GA", "UNO, UNA", "BAÑAR, SE"
+      if (raw.contains(',')) {
+        final parts = raw.split(',').map((p) => p.trim()).where((p) => p.isNotEmpty).toList();
+        if (parts.isNotEmpty) {
+          final base = parts[0];
+          addKey(base, entry);
+
+          if (parts.length > 1) {
+            final suffix = parts[1];
+            final sufUpper = suffix.toUpperCase();
+            final baseUpper = base.toUpperCase();
+
+            // Verbo reflexivo: "BAÑAR, SE" -> "BAÑARSE"
+            if (sufUpper == 'SE') {
+              addKey('${base}SE', entry);
+            }
+            // Palabra completa o sinónimo: "ABAJO, DEBAJO", "UNO, UNA", "PIJAMA, PIYAMA"
+            else if (suffix.length >= 3 &&
+                (suffix.contains(' ') || suffix.length >= base.length - 2)) {
+              addKey(suffix, entry);
+            }
+            // Sufijo de flexión de género:
+            else {
+              if (sufUpper == 'A' && (baseUpper.endsWith('O') || baseUpper.endsWith('E'))) {
+                addKey('${base.substring(0, base.length - 1)}A', entry);
+              } else if (sufUpper.startsWith('R') && baseUpper.endsWith('R')) {
+                // DOCTOR, RA -> DOCTORA
+                addKey('$base${suffix.substring(1)}', entry);
+              } else if (sufUpper.length == 2 &&
+                  sufUpper.endsWith('A') &&
+                  RegExp(r'(DO|TO|NO|RO|SO|VO|JO|MO|CO|GO|LO|ZO|FO)$').hasMatch(baseUpper)) {
+                // ABOGADO, DA -> ABOGADA; AMIGO, GA -> AMIGA; GATO, TA -> GATA
+                addKey('${base.substring(0, base.length - 2)}$suffix', entry);
+              } else if (sufUpper.length == 3 &&
+                  RegExp(r'(LLO|TRO|RIO|BIO|CIO|ÑCO)$').hasMatch(baseUpper)) {
+                // AMARILLO, LLA -> AMARILLA; MAESTRO, TRA -> MAESTRA
+                addKey('${base.substring(0, base.length - 3)}$suffix', entry);
+              } else if (sufUpper == 'TRIZ' && baseUpper.endsWith('TOR')) {
+                // ACTOR, TRIZ -> ACTRIZ
+                addKey('${base.substring(0, base.length - 3)}TRIZ', entry);
+              } else if (sufUpper == 'SA' && baseUpper.endsWith('DE')) {
+                // ALCALDE, SA -> ALCALDESA
+                addKey('${base.substring(0, base.length - 2)}DESA', entry);
+              } else {
+                if (baseUpper.endsWith('O') && sufUpper.endsWith('A')) {
+                  addKey('${base.substring(0, base.length - 1)}A', entry);
+                }
+                addKey('$base$suffix', entry);
+              }
+            }
+          }
+        }
+      }
+
+      // 3. Mapeo de apócopes y formas comunes del español
+      final rawUpper = raw.toUpperCase();
+      if (rawUpper.contains('UNO, UNA') || rawUpper == 'UNO') {
+        addKey('UN', entry);
+        addKey('UNO', entry);
+        addKey('UNA', entry);
+      }
+      if (rawUpper.contains('BUENO, NA') || rawUpper == 'BUENO') {
+        addKey('BUEN', entry);
+      }
+      if (rawUpper.contains('PRIMERO, RA') || rawUpper == 'PRIMERO') {
+        addKey('PRIMER', entry);
+      }
+      if (rawUpper.contains('TERCERO, RA') || rawUpper == 'TERCERO') {
+        addKey('TERCER', entry);
+      }
+      if (rawUpper.contains('GRANDE')) {
+        addKey('GRAN', entry);
+      }
+      if (rawUpper.contains('CIENTO')) {
+        addKey('CIEN', entry);
       }
     }
     _normalizedIndex = map;
+    _phoneticIndex = phoneticMap;
     _alphabetIndex = alphabet;
   }
 
@@ -291,35 +470,72 @@ class MockupDataService {
   }
 
   /// Búsqueda flexible de una sola palabra o término.
-  Future<MockSignEntry?> findFlexible(String word) async {
+  ///
+  /// Si [explicit] es `true`, solo se aceptan coincidencias literales exactas.
+  /// Si [explicit] es `false`, se activan autocorrecciones fonéticas (ej. avogado -> abogado),
+  /// resolución de sinónimos conceptuales (ej. hallar -> encontrar) y distancia de edición Levenshtein.
+  Future<MockSignEntry?> findFlexible(String word, {bool explicit = false}) async {
     final all = await getAll();
     final w = _normalize(word);
     if (w.isEmpty) return null;
 
-    // 1. Coincidencia exacta desde índice rápido
+    // 1. Coincidencia exacta desde índice rápido optimizado
     if (_normalizedIndex != null && _normalizedIndex!.containsKey(w)) {
       return _normalizedIndex![w];
     }
 
-    // 2. Coincidencia por inicio de palabra con coma (ej. "AMIGO" -> "AMIGO, GA")
+    // 2. Coincidencia exacta recorriendo lista por si no estaba en índice
     for (final entry in all) {
       final norm = _normalize(entry.palabra);
       if (norm == w) return entry;
-      if (norm.startsWith('$w ') || norm.startsWith('$w,') || norm.startsWith('$w/')) {
-        return entry;
-      }
     }
 
     // 3. Fallback para plurales en español (ej. "AMIGOS" -> "AMIGO", "CASAS" -> "CASA")
     if (w.endsWith('ES') && w.length > 3) {
       final singular = w.substring(0, w.length - 2);
-      final found = await findFlexible(singular);
+      final found = await findFlexible(singular, explicit: true);
       if (found != null) return found;
     }
     if (w.endsWith('S') && w.length > 2) {
       final singular = w.substring(0, w.length - 1);
-      final found = await findFlexible(singular);
+      final found = await findFlexible(singular, explicit: true);
       if (found != null) return found;
+    }
+
+    // Si el modo explícito está activado, finalizar aquí sin autocorrecciones
+    if (explicit) {
+      return null;
+    }
+
+    // -------------------------------------------------------------------------
+    // MODO INTELIGENTE / FLEXIBLE (Solo si la palabra no existe de forma exacta)
+    // -------------------------------------------------------------------------
+
+    // 4. Búsqueda por similitud fonética en español (B/V, LL/Y, Z/S, H muda)
+    if (_phoneticIndex != null) {
+      final ph = _spanishPhonetic(w);
+      if (_phoneticIndex!.containsKey(ph)) {
+        return _phoneticIndex![ph];
+      }
+    }
+
+    // 5. Búsqueda por tabla de sinónimos comunes del español
+    if (_commonSynonyms.containsKey(w)) {
+      final synonymTarget = _commonSynonyms[w]!;
+      final synonymSign = await findFlexible(synonymTarget, explicit: true);
+      if (synonymSign != null) return synonymSign;
+    }
+
+    // 6. Búsqueda por distancia Levenshtein (<= 1 para palabras de longitud >= 4)
+    if (_normalizedIndex != null && w.length >= 4) {
+      for (final entry in _normalizedIndex!.entries) {
+        final key = entry.key;
+        if ((key.length - w.length).abs() <= 1) {
+          if (_levenshtein(w, key) == 1) {
+            return entry.value;
+          }
+        }
+      }
     }
 
     return null;
@@ -337,7 +553,7 @@ class MockupDataService {
   ///
   /// Si una palabra no existe en el diccionario, se convierte automáticamente en una
   /// sucesión de letras (deletreo dactilológico) utilizando el alfabeto oficial de señas.
-  Future<TranslationResult> translatePhrase(String phrase) async {
+  Future<TranslationResult> translatePhrase(String phrase, {bool explicit = false}) async {
     await getAll();
     final normalized = _normalize(phrase);
     if (normalized.isEmpty) {
@@ -354,7 +570,7 @@ class MockupDataService {
       // 1. Probar trigrama (ej. "MUCHAS GRACIAS AMIGO" o "ZONA FRANCA SUR")
       if (i + 2 < tokens.length) {
         final triGram = '${tokens[i]} ${tokens[i + 1]} ${tokens[i + 2]}';
-        final sign = await findFlexible(triGram);
+        final sign = await findFlexible(triGram, explicit: explicit);
         if (sign != null) {
           matched.add(sign);
           i += 3;
@@ -365,7 +581,7 @@ class MockupDataService {
       // 2. Probar bigrama (ej. "BUENOS DIAS", "COMO ESTAS", "POR FAVOR", "A TRAVES")
       if (i + 1 < tokens.length) {
         final biGram = '${tokens[i]} ${tokens[i + 1]}';
-        final sign = await findFlexible(biGram);
+        final sign = await findFlexible(biGram, explicit: explicit);
         if (sign != null) {
           matched.add(sign);
           i += 2;
@@ -375,7 +591,7 @@ class MockupDataService {
 
       // 3. Probar palabra individual (unigrama)
       final singleWord = tokens[i];
-      final sign = await findFlexible(singleWord);
+      final sign = await findFlexible(singleWord, explicit: explicit);
       if (sign != null) {
         matched.add(sign);
       } else {

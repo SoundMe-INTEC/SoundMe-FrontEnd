@@ -7,6 +7,7 @@ import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/permissions_screen.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/translation_list_screen.dart';
+import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/features/dictionary/presentation/dictionary_screen.dart';
 
 class OptionsScreen extends ConsumerWidget {
@@ -30,6 +31,7 @@ class OptionsScreen extends ConsumerWidget {
     final commonPhrases = ref.watch(mockCommonPhrasesProvider);
     final emergencies = ref.watch(mockEmergenciesProvider);
     final allSigns = ref.watch(allMockSignsProvider);
+    final isExplicit = ref.watch(explicitTranslationProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -85,6 +87,11 @@ class OptionsScreen extends ConsumerWidget {
                     commonPhrases: commonPhrases,
                     emergencies: emergencies,
                   ),
+
+                  const SizedBox(height: 16),
+
+                  // Tarjeta: Configuración de Modo de Traducción
+                  _buildExplicitTranslationCard(context, ref, isExplicit),
 
                   const SizedBox(height: 16),
 
@@ -344,6 +351,72 @@ class OptionsScreen extends ConsumerWidget {
             size: 14,
           ),
           onTap: onTap,
+        ),
+      ),
+    );
+  }
+
+  // Tarjeta interactiva con interruptor (Switch) para activar/desactivar traducción explícita
+  Widget _buildExplicitTranslationCard(
+    BuildContext context,
+    WidgetRef ref,
+    bool isExplicit,
+  ) {
+    return Material(
+      color: AppColors.cardFillColor,
+      borderRadius: BorderRadius.circular(15),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.spellcheck,
+              color: AppColors.primaryNavy,
+              size: 34,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Traducción Explícita',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryNavy,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isExplicit
+                        ? 'Modo estricto activo: Solo traduce coincidencias exactas sin sinónimos ni autocorrección.'
+                        : 'Modo flexible activo: Autocorrige erratas (ej. avogado -> abogado) y busca sinónimos si la palabra no existe.',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textGray,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Switch(
+              value: isExplicit,
+              activeThumbColor: AppColors.primaryNavy,
+              activeTrackColor: AppColors.primaryNavy.withAlpha(100),
+              inactiveThumbColor: Colors.grey.shade400,
+              inactiveTrackColor: Colors.grey.shade200,
+              onChanged: (val) {
+                ref.read(translationSettingsProvider.notifier).setExplicitTranslation(val);
+              },
+            ),
+          ],
         ),
       ),
     );

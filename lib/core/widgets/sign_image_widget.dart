@@ -3,12 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 
-/// Widget especializado en renderizar una celda unitaria de una Sprite Sheet (matriz WebP).
-///
-/// Utiliza transformación y recorte por hardware (GPU) sin decodificación extra en CPU,
-/// aprovechando el [ImageCache] nativo de Flutter para un rendimiento óptimo de 60/120 FPS.
+/// Widget especializado en renderizar una celda unitaria de una Sprite Sheet o Matriz Vectorial SVG.
 class MatrixSignImage extends StatelessWidget {
-  /// Ruta del asset de la matriz (ej. 'assets/matrices/matriz_a_01.webp').
+  /// Ruta del asset de la matriz (ej. 'assets/matrices/mega_matriz_v2.svg').
   final String matrixAsset;
 
   /// Coordenadas de la celda dentro de la matriz en píxeles (x, y, width, height).
@@ -36,6 +33,7 @@ class MatrixSignImage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Celda de tamaño exacto a las coordenadas (ej. 200x200 px),
     // desplazando la matriz mediante Transform.translate para que solo la celda deseada sea visible.
+    final isSvg = matrixAsset.toLowerCase().endsWith('.svg');
     final Widget cell = SizedBox(
       width: coordinates.width,
       height: coordinates.height,
@@ -48,12 +46,19 @@ class MatrixSignImage extends StatelessWidget {
           maxHeight: double.infinity,
           child: Transform.translate(
             offset: Offset(-coordinates.left, -coordinates.top),
-            child: Image.asset(
-              matrixAsset,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.medium,
-              errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-            ),
+            child: isSvg
+                ? SvgPicture.asset(
+                    matrixAsset,
+                    alignment: Alignment.topLeft,
+                    placeholderBuilder: (context) => _buildPlaceholder(),
+                  )
+                : Image.asset(
+                    matrixAsset,
+                    alignment: Alignment.topLeft,
+                    filterQuality: FilterQuality.medium,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildPlaceholder(),
+                  ),
           ),
         ),
       ),
@@ -62,10 +67,7 @@ class MatrixSignImage extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: FittedBox(
-        fit: fit,
-        child: cell,
-      ),
+      child: FittedBox(fit: fit, child: cell),
     );
   }
 
@@ -85,10 +87,7 @@ class MatrixSignImage extends StatelessWidget {
   }
 }
 
-/// Widget unificado para renderizar cualquier seña de la app.
-///
-/// Soporta automáticamente tanto las señas modernas por matriz WebP como
-/// las señas heredadas con ruta de imagen PNG individual.
+/// Widget unificado para renderizar cualquier seña de la app, permitiendo zoom de alta fidelidad.
 class SignImage extends StatelessWidget {
   final MockSignEntry sign;
   final BoxFit fit;
@@ -105,7 +104,15 @@ class SignImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Renderizado prioritario de Señas Vectoriales SVG (Alta fidelidad, centrado perfecto y transparencia)
+    return InteractiveViewer(
+      minScale: 1.0,
+      maxScale: 5.0,
+      child: _buildImageContent(),
+    );
+  }
+
+  Widget _buildImageContent() {
+    // 1. Renderizado prioritario de Señas Vectoriales SVG individuales (Calidad máxima, 100% nítida y sin artifacts)
     if (sign.isSvg) {
       return SizedBox(
         width: width,
@@ -120,8 +127,8 @@ class SignImage extends StatelessWidget {
       );
     }
 
-    // 2. Renderizado por Sprite Sheet WebP recortada (legacy fallback)
-    if (sign.isMatrixSign) {
+    // 2. Renderizado por Matriz Raster (WebP/PNG Sprite Sheets)
+    if (sign.isMatrixSign && !sign.archivoMatriz!.toLowerCase().endsWith('.svg')) {
       final assetPath = sign.archivoMatriz!.startsWith('assets/')
           ? sign.archivoMatriz!
           : 'assets/matrices/${sign.archivoMatriz}';
@@ -157,10 +164,10 @@ class SignImage extends StatelessWidget {
       height: height,
       child: const Center(
         child: SizedBox(
-          width: 24,
-          height: 24,
+          width: 28,
+          height: 28,
           child: CircularProgressIndicator(
-            strokeWidth: 2,
+            strokeWidth: 2.5,
             color: AppColors.primaryNavy,
           ),
         ),
@@ -172,11 +179,27 @@ class SignImage extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: const Center(
-        child: Icon(
-          Icons.image_not_supported_outlined,
-          size: 60,
-          color: AppColors.primaryNavy,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.sign_language_rounded,
+              size: 48,
+              color: AppColors.primaryNavy,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              sign.palabra,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textGray,
+              ),
+            ),
+          ],
         ),
       ),
     );

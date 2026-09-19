@@ -11,7 +11,9 @@ void main() {
     late MockupDataService service;
 
     setUp(() {
-      service = MockupDataService();
+      service = MockupDataService(
+        defaultDictionaryPath: 'assets/matrices/diccionario_matrices_svg.json',
+      );
     });
 
     test('1. Diccionario completo carga 2,427 señas vectoriales SVG', () async {
@@ -87,12 +89,23 @@ void main() {
         sampleEntry = entries.firstWhere((e) => e.palabra == 'A');
       });
 
+      final svgOnlyEntry = MockSignEntry(
+        id: sampleEntry.id,
+        palabra: sampleEntry.palabra,
+        descripcion: sampleEntry.descripcion,
+        gesto: sampleEntry.gesto,
+        imagenAsset: sampleEntry.imagenAsset,
+        seccion: sampleEntry.seccion,
+        infoAdicional: sampleEntry.infoAdicional,
+        svgAsset: sampleEntry.svgAsset,
+      );
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: Center(
               child: SignImage(
-                sign: sampleEntry,
+                sign: svgOnlyEntry,
                 width: 200,
                 height: 200,
                 fit: BoxFit.contain,
