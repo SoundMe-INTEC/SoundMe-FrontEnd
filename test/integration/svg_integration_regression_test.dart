@@ -81,8 +81,11 @@ void main() {
     });
 
     testWidgets('4. SignImage renderiza SvgPicture sin excepciones visuales ni errores de parser', (tester) async {
-      final entries = await service.getAll();
-      final sampleEntry = entries.firstWhere((e) => e.palabra == 'A');
+      late MockSignEntry sampleEntry;
+      await tester.runAsync(() async {
+        final entries = await service.getAll();
+        sampleEntry = entries.firstWhere((e) => e.palabra == 'A');
+      });
 
       await tester.pumpWidget(
         MaterialApp(
