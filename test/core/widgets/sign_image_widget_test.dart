@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
@@ -86,6 +87,36 @@ void main() {
 
       expect(find.byType(MatrixSignImage), findsNothing);
       expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('SignImage delegates to SvgPicture when sign is SVG', (tester) async {
+      const svgSign = MockSignEntry(
+        id: 3,
+        palabra: 'A',
+        descripcion: 'Letra A',
+        gesto: 'Mano cerrada',
+        imagenAsset: '',
+        seccion: 'A',
+        infoAdicional: 'Letra',
+        svgAsset: 'assets/senias_svg/sena_0000_a.svg',
+      );
+
+      expect(svgSign.isSvg, isTrue);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SignImage(
+              sign: svgSign,
+              width: 200,
+              height: 200,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(MatrixSignImage), findsNothing);
+      expect(find.byType(SvgPicture), findsOneWidget);
     });
   });
 }

@@ -7,7 +7,7 @@ import '../data/mock_dictionary_repository.dart';
 class WordDetailScreen extends StatefulWidget {
   final MockDictionaryWord word;
 
-  const WordDetailScreen({Key? key, required this.word}) : super(key: key);
+  const WordDetailScreen({super.key, required this.word});
 
   @override
   State<WordDetailScreen> createState() => _WordDetailScreenState();

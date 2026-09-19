@@ -24,7 +24,8 @@
     "gesto": "La mano dominante en forma plana con la palma hacia el centro se desplaza en línea recta hacia delante entre los dedos mayor y anular de la mano contraria abierta con la palma hacia adentro",
     "imagePaths": [
       "assets/images/mockup/senia_0003.png"
-    ]
+    ],
+    "sinonimos": ["cruzando", "carretera", "via"]
   },
   {
     "id": 5,
@@ -51,7 +52,8 @@
     "gesto": "Una mano en forma de garra oscila de afuera y hacia adentro dos o tres veces a nivel del hombro",
     "imagePaths": [
       "assets/images/mockup/senia_0006.png"
-    ]
+    ],
+    "sinonimos": ["ventilador", "aire"]
   },
   {
     "id": 8,
@@ -744,7 +746,8 @@
     "gesto": "El índice de la mano en forma de A abierta con la palma hacia el centro apunta hacia la boca repetidas veces",
     "imagePaths": [
       "assets/images/mockup/senia_0083.png"
-    ]
+    ],
+    "sinonimos": ["liquido", "hidratarse", "sed"]
   },
   {
     "id": 85,

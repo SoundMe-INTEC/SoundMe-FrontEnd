@@ -46,6 +46,7 @@ dependencies:
   path: ^1.9.1
   permission_handler: ^13.0.1
   speech_to_text: ^7.4.0
+  flutter_svg: ^2.0.17
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,7 @@ flutter:
     - assets/images/mockup/
     - assets/mockup/
     - assets/matrices/
+    - assets/senias_svg/
     - .env
 
   # To add assets to your application, add an assets section, like this:

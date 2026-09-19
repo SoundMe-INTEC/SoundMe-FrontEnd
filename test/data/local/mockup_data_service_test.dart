@@ -52,6 +52,28 @@ void main() {
       expect(entry.imagenAsset, 'assets/images/mockup/senia_0010.png');
       expect(entry.seccion, 'H');
     });
+
+    test('parses SVG vector format correctly', () {
+      final json = {
+        'id': 1,
+        'palabra_clave': 'A',
+        'svg_asset': 'assets/senias_svg/sena_0000_a.svg',
+        'seccion': 'A',
+        'descripcion': 'La mano se cierra con la palma hacia afuera',
+        'gesto_facial': 'Neutral',
+        'categoria': 'Educación',
+      };
+
+      final entry = MockSignEntry.fromJson(json, 1);
+
+      expect(entry.id, 1);
+      expect(entry.palabra, 'A');
+      expect(entry.isSvg, isTrue);
+      expect(entry.svgAsset, 'assets/senias_svg/sena_0000_a.svg');
+      expect(entry.seccion, 'A');
+      expect(entry.gestoFacial, 'Neutral');
+      expect(entry.categoria, 'Educación');
+    });
   });
 
   group('MockupDataService Functional Tests', () {

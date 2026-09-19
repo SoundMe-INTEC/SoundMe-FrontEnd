@@ -56,9 +56,9 @@ void main() {
     double transform(double c) {
       return (c <= 0.03928) ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4).toDouble();
     }
-    final r = transform(color.red / 255.0);
-    final g = transform(color.green / 255.0);
-    final b = transform(color.blue / 255.0);
+    final r = transform(color.r);
+    final g = transform(color.g);
+    final b = transform(color.b);
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   }
 
@@ -271,6 +271,27 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('LoginScreen does not overflow on 360x640 compact screen with keyboard', (tester) async {
+      tester.view.physicalSize = const Size(360 * 2.0, 640 * 2.0);
+      tester.view.devicePixelRatio = 2.0;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280 * 2.0);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetViewInsets();
+      });
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: LoginScreen(),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('TwoStepAuthScreen does not overflow when virtual keyboard opens', (tester) async {
       await testWithKeyboard(
         tester,
@@ -282,6 +303,97 @@ void main() {
 
     testWidgets('TranslatorScreen does not overflow when virtual keyboard opens', (tester) async {
       await testWithKeyboard(tester, const TranslatorScreen(), 'TranslatorScreen with Keyboard');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('MainLayoutScreen does not overflow when virtual keyboard opens', (tester) async {
+      await testWithKeyboard(tester, const MainLayoutScreen(initialIndex: 1), 'MainLayoutScreen with Keyboard');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('TranslatorScreen with active sign does not overflow with keyboard on Pixel 10', (tester) async {
+      tester.view.physicalSize = const Size(pixelWidth * pixelDpr, pixelHeight * pixelDpr);
+      tester.view.devicePixelRatio = pixelDpr;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetViewInsets();
+      });
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: TranslatorScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Trigger translation using suggestion chip
+      await tester.tap(find.text('HOLA CÓMO ESTÁS'));
+      await tester.pumpAndSettle();
+
+      // Simulate keyboard opening
+      tester.view.viewInsets = const FakeViewPadding(bottom: 335 * pixelDpr);
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(tester.takeException(), isNull,
+          reason: 'RenderFlex overflow when keyboard opens while sign is displayed');
+    });
+
+    testWidgets('TranslatorScreen with active sign does not overflow on compact 360x640 with keyboard', (tester) async {
+      tester.view.physicalSize = const Size(360 * 2.0, 640 * 2.0);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetViewInsets();
+      });
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: TranslatorScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Trigger translation
+      await tester.tap(find.text('HOLA CÓMO ESTÁS'));
+      await tester.pumpAndSettle();
+
+      // Simulate keyboard opening
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280 * 2.0);
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(tester.takeException(), isNull,
+          reason: 'RenderFlex overflow on ultra-compact 360x640 screen with active sign and keyboard');
+    });
+
+    testWidgets('DictionaryScreen shows friendly empty state when search has no results', (tester) async {
+      tester.view.physicalSize = const Size(pixelWidth * pixelDpr, pixelHeight * pixelDpr);
+      tester.view.devicePixelRatio = pixelDpr;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: DictionaryScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Enter query with no match
+      await tester.enterText(find.byType(TextField), 'PalabraInexistente999');
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.search_off_rounded), findsOneWidget);
+      expect(find.text('No se encontraron señas para "PalabraInexistente999"'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

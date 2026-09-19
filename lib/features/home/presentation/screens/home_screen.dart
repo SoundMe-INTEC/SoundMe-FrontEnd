@@ -23,6 +23,7 @@ class HomeScreen extends StatelessWidget {
             child: Stack(
               children: [
                 // CONTENIDO PRINCIPAL SCROLLABLE
+<<<<<<< Updated upstream
                 SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -91,6 +92,93 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                     ],
+=======
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      child: Column(
+                        children: [
+                          // LOGO Y SUBTÍTULO
+                          const SizedBox(height: 60),
+                          const SoundMeLogo(),
+                          const SizedBox(height: 32),
+
+                          // BOTONES DE ACCIÓN
+                          _buildPrimaryButton(
+                            text: 'Traductor',
+                            icon: Icons.g_translate,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MainLayoutScreen(initialIndex: 1),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildSecondaryButton(
+                            text: 'Diccionario',
+                            icon: Icons.menu_book_rounded,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MainLayoutScreen(initialIndex: 2),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildSecondaryButton(
+                            text: 'Opciones',
+                            icon: Icons.settings_outlined,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MainLayoutScreen(initialIndex: 3),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildSecondaryButton(
+                            text: 'Sobre Nosotros',
+                            icon: Icons.info_outline,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AboutScreen(),
+                                ),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          // COPYRIGHT FOOTER
+                          const Text(
+                            '© 2026 SoundMe. Todos los derechos reservados.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 14,
+                              color: AppColors.textGray,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+>>>>>>> Stashed changes
                   ),
                 ),
 

@@ -3,7 +3,7 @@ import '../data/mock_dictionary_repository.dart';
 import 'word_detail_screen.dart';
 
 class DictionaryScreen extends StatefulWidget {
-  const DictionaryScreen({Key? key}) : super(key: key);
+  const DictionaryScreen({super.key});
 
   @override
   State<DictionaryScreen> createState() => _DictionaryScreenState();
@@ -48,9 +48,24 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
             );
           }
 
-          final words = MockDictionaryRepository.mockWords.where((word) {
+          bool foundBySynonym = false;
+          String suggestedWordName = '';
+
+          var words = MockDictionaryRepository.mockWords.where((word) {
             return word.palabra.toLowerCase().contains(_searchQuery.toLowerCase());
           }).toList();
+
+          if (words.isEmpty && _searchQuery.isNotEmpty) {
+            final synWords = MockDictionaryRepository.mockWords.where((word) {
+              return word.sinonimos.any((syn) => syn.toLowerCase().contains(_searchQuery.toLowerCase()));
+            }).toList();
+            
+            if (synWords.isNotEmpty) {
+              words = synWords;
+              foundBySynonym = true;
+              suggestedWordName = synWords.first.palabra;
+            }
+          }
 
           return Column(
             children: [
@@ -75,15 +90,96 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                   ),
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
+              if (foundBySynonym)
+                Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  itemCount: words.length,
-                  itemBuilder: (context, index) {
-                    final word = words[index];
-                    return _buildWordCard(context, word);
-                  },
+                  width: double.infinity,
+                  color: Colors.blue.shade50,
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'No se encontró "$_searchQuery", mostrando términos relacionados (ej. $suggestedWordName)',
+                          style: TextStyle(
+                            color: Colors.blue.shade800,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              Expanded(
+                child: words.isEmpty
+                    ? Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 64,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _searchQuery.isNotEmpty
+                                    ? 'No se encontraron señas para "$_searchQuery"'
+                                    : 'No hay señas disponibles',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Intenta con otra palabra o verifica la ortografía.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth >= 600) {
+                            return GridView.builder(
+                              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 400,
+                                mainAxisExtent: 120, // 80 image + 24 padding + 16 bottom margin
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 0,
+                              ),
+                              itemCount: words.length,
+                              itemBuilder: (context, index) {
+                                final word = words[index];
+                                return _buildWordCard(context, word);
+                              },
+                            );
+                          }
+                          return ListView.builder(
+                            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            itemCount: words.length,
+                            itemBuilder: (context, index) {
+                              final word = words[index];
+                              return _buildWordCard(context, word);
+                            },
+                          );
+                        },
+                      ),
               ),
             ],
           );

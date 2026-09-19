@@ -4,7 +4,11 @@ import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/auth/data/auth_service.dart';
+<<<<<<< Updated upstream
 import 'package:soundme_frontend/features/admin/presentation/screens/admin_home_screen.dart';
+=======
+import 'package:soundme_frontend/features/auth/presentation/screens/two_step_auth_screen.dart';
+>>>>>>> Stashed changes
 import 'package:soundme_frontend/core/utils/ui_helpers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -84,6 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Stack(
                 children: [
                   // FORMULARIO CON SCROLL INDEPENDIENTE (Evita el overflow al abrir el teclado)
+<<<<<<< Updated upstream
                   CustomScrollView(
                     physics: const BouncingScrollPhysics(),
                     slivers: [
@@ -95,6 +100,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               const SizedBox(height: 120),
+=======
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: IntrinsicHeight(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                              const SizedBox(height: 60),
+>>>>>>> Stashed changes
 
                               // LOGO Y SUBTÍTULO
                               const SoundMeLogo(),
@@ -283,8 +303,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
+<<<<<<< Updated upstream
                     ],
                   ),
+=======
+                    );
+                  },
+                ),
+>>>>>>> Stashed changes
 
                   // BOTÓN DE REGRESO A INICIO (al final del Stack para recibir toques)
                   Positioned(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 
@@ -104,6 +105,22 @@ class SignImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Renderizado prioritario de Señas Vectoriales SVG (Alta fidelidad, centrado perfecto y transparencia)
+    if (sign.isSvg) {
+      return SizedBox(
+        width: width,
+        height: height,
+        child: SvgPicture.asset(
+          sign.svgAsset!,
+          fit: fit,
+          width: width,
+          height: height,
+          placeholderBuilder: (context) => _buildPlaceholder(),
+        ),
+      );
+    }
+
+    // 2. Renderizado por Sprite Sheet WebP recortada (legacy fallback)
     if (sign.isMatrixSign) {
       final assetPath = sign.archivoMatriz!.startsWith('assets/')
           ? sign.archivoMatriz!
@@ -118,6 +135,7 @@ class SignImage extends StatelessWidget {
       );
     }
 
+    // 3. Renderizado de imagen individual raster (legacy fallback)
     if (sign.imagenAsset.isNotEmpty) {
       return SizedBox(
         width: width,
@@ -131,6 +149,23 @@ class SignImage extends StatelessWidget {
     }
 
     return _buildFallback();
+  }
+
+  Widget _buildPlaceholder() {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primaryNavy,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildFallback() {

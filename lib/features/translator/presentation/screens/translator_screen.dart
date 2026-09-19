@@ -15,6 +15,7 @@ class TranslatorScreen extends ConsumerStatefulWidget {
 
 class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   String _selectedSpeed = 'Normal (2s)';
   bool _isListening = false;
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -46,6 +47,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    _focusNode.addListener(() {
+      if (mounted) setState(() {});
+    });
     _initSpeech();
   }
 
@@ -78,6 +82,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _textController.dispose();
     _playTimer?.cancel();
     if (_isListening) {
@@ -88,6 +93,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   }
 
   Future<void> _translateText([String? predefinedText]) async {
+    _focusNode.unfocus();
     if (_isListening) {
       await _speechToText.stop();
       setState(() {
@@ -128,6 +134,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   }
 
   void _toggleMicrophone() async {
+    _focusNode.unfocus();
     if (!_speechEnabled) {
       bool init = await _speechToText.initialize();
       setState(() => _speechEnabled = init);
@@ -154,7 +161,10 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
             _textController.text = result.recognizedWords;
           });
         },
-        localeId: 'es_ES',
+        listenOptions: stt.SpeechListenOptions(
+          cancelOnError: true,
+          partialResults: true,
+        ),
       );
     }
   }
@@ -221,38 +231,82 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   @override
   Widget build(BuildContext context) {
     final currentSign = _matchedSigns.isNotEmpty ? _matchedSigns[_currentSignIndex] : null;
-    final isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
+    final isKeyboardOpen = keyboardBottom > 0 || _focusNode.hasFocus;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          const Positioned(top: 0, left: 0, right: 0, child: AdminHeaderBackground(title: 'Traductor')),
-          SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 60),
-                
-                // REPRODUCTOR MULTIMEDIA
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppColors.cardFillColor,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))
-                        ]
-                      ),
-                      child: currentSign != null
-                          ? Column(
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          children: [
+            const Positioned(top: 0, left: 0, right: 0, child: AdminHeaderBackground(title: 'Traductor')),
+            SafeArea(
+              child: Column(
+                children: [
+                  const SizedBox(height: 60),
+                  
+                  // REPRODUCTOR MULTIMEDIA RESPONSIVO
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.cardFillColor,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))
+                          ]
+                        ),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            if (currentSign == null) {
+                              final isVeryCompact = constraints.maxHeight < 160;
+                              return Center(
+                                child: SingleChildScrollView(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.g_translate,
+                                          size: isVeryCompact ? 36 : 64,
+                                          color: AppColors.primaryNavy,
+                                        ),
+                                        SizedBox(height: isVeryCompact ? 4 : 8),
+                                        Text(
+                                          isVeryCompact
+                                              ? 'Escribe para traducir'
+                                              : 'Escribe o usa una sugerencia\npara traducir',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: isVeryCompact ? 12 : 14,
+                                            color: AppColors.textGray,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final bool isCompact = constraints.maxHeight < 280;
+                            final bool isUltraCompact = constraints.maxHeight < 180;
+
+                            return Column(
                               children: [
                                 // Imagen de la Seña
                                 Expanded(
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
+                                    padding: EdgeInsets.all(isUltraCompact ? 4.0 : (isCompact ? 8.0 : 16.0)),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(16),
                                       child: SignImage(
@@ -266,9 +320,14 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                 Text(
                                   currentSign.palabra,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primaryNavy),
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: isUltraCompact ? 16 : (isCompact ? 18 : 22),
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primaryNavy,
+                                  ),
                                 ),
-                                if (currentSign.categoria == 'Deletreo' || currentSign.infoAdicional == 'Deletreo')
+                                if (!isUltraCompact && (currentSign.categoria == 'Deletreo' || currentSign.infoAdicional == 'Deletreo'))
                                   Padding(
                                     padding: const EdgeInsets.only(top: 2.0),
                                     child: Container(
@@ -283,7 +342,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                       ),
                                     ),
                                   )
-                                else if (currentSign.gestoFacial != null && currentSign.gestoFacial!.isNotEmpty && currentSign.gestoFacial != 'Neutral')
+                                else if (!isUltraCompact && currentSign.gestoFacial != null && currentSign.gestoFacial!.isNotEmpty && currentSign.gestoFacial != 'Neutral')
                                   Padding(
                                     padding: const EdgeInsets.only(top: 2.0),
                                     child: Container(
@@ -298,7 +357,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                       ),
                                     ),
                                   ),
-                                if (currentSign.gesto.isNotEmpty)
+                                if (!isCompact && currentSign.gesto.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                                     child: Text(
@@ -312,63 +371,73 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                   
                                 // CONTROLES DEL REPRODUCTOR
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: isUltraCompact ? 2.0 : (isCompact ? 4.0 : 8.0),
+                                  ),
                                   child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       // Slider Linea de tiempo
-                                      Row(
-                                        children: [
-                                          Text('${_currentSignIndex + 1}', style: const TextStyle(fontSize: 12, color: AppColors.textGray)),
-                                          Expanded(
-                                            child: SliderTheme(
-                                              data: SliderTheme.of(context).copyWith(
-                                                trackHeight: 4,
-                                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                                              ),
-                                              child: Slider(
-                                                value: _currentSignIndex.toDouble(),
-                                                min: 0,
-                                                max: (_matchedSigns.length > 1 ? (_matchedSigns.length - 1).toDouble() : 1.0),
-                                                activeColor: AppColors.primaryNavy,
-                                                inactiveColor: Colors.grey.shade300,
-                                                onChanged: (value) {
-                                                  if (_matchedSigns.length <= 1) return;
-                                                  _pausePlayback();
-                                                  setState(() {
-                                                    _currentSignIndex = value.toInt();
-                                                  });
-                                                },
+                                      if (!isUltraCompact)
+                                        Row(
+                                          children: [
+                                            Text('${_currentSignIndex + 1}', style: const TextStyle(fontSize: 12, color: AppColors.textGray)),
+                                            Expanded(
+                                              child: SliderTheme(
+                                                data: SliderTheme.of(context).copyWith(
+                                                  trackHeight: 4,
+                                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                                                ),
+                                                child: Slider(
+                                                  value: _currentSignIndex.toDouble(),
+                                                  min: 0,
+                                                  max: (_matchedSigns.length > 1 ? (_matchedSigns.length - 1).toDouble() : 1.0),
+                                                  activeColor: AppColors.primaryNavy,
+                                                  inactiveColor: Colors.grey.shade300,
+                                                  onChanged: (value) {
+                                                    if (_matchedSigns.length <= 1) return;
+                                                    _pausePlayback();
+                                                    setState(() {
+                                                      _currentSignIndex = value.toInt();
+                                                    });
+                                                  },
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          Text('${_matchedSigns.length}', style: const TextStyle(fontSize: 12, color: AppColors.textGray)),
-                                        ],
-                                      ),
+                                            Text('${_matchedSigns.length}', style: const TextStyle(fontSize: 12, color: AppColors.textGray)),
+                                          ],
+                                        ),
                                       // Botones de reproducción y velocidad
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          DropdownButton<String>(
-                                            value: _selectedSpeed,
-                                            underline: const SizedBox(),
-                                            icon: const Icon(Icons.speed, size: 18, color: AppColors.textGray),
-                                            style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textGray),
-                                            items: <String>['Lento (3s)', 'Normal (2s)', 'Rápido (1s)'].map((String value) {
-                                              return DropdownMenuItem<String>(value: value, child: Text(value));
-                                            }).toList(),
-                                            onChanged: (newValue) {
-                                              if (newValue != null) {
-                                                setState(() => _selectedSpeed = newValue);
-                                                if (_isPlaying) _startPlayback(); // restart timer with new speed
-                                              }
-                                            },
-                                          ),
+                                          if (!isUltraCompact)
+                                            DropdownButton<String>(
+                                              value: _selectedSpeed,
+                                              underline: const SizedBox(),
+                                              icon: const Icon(Icons.speed, size: 18, color: AppColors.textGray),
+                                              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textGray),
+                                              items: <String>['Lento (3s)', 'Normal (2s)', 'Rápido (1s)'].map((String value) {
+                                                return DropdownMenuItem<String>(value: value, child: Text(value));
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                if (newValue != null) {
+                                                  setState(() => _selectedSpeed = newValue);
+                                                  if (_isPlaying) _startPlayback(); // restart timer with new speed
+                                                }
+                                              },
+                                            )
+                                          else
+                                            const SizedBox(width: 36),
                                           Row(
                                             children: [
                                               IconButton(
                                                 icon: const Icon(Icons.skip_previous_rounded, color: AppColors.primaryNavy),
                                                 onPressed: _currentSignIndex > 0 ? _skipPrevious : null,
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                                               ),
                                               Container(
                                                 decoration: BoxDecoration(
@@ -376,172 +445,167 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: IconButton(
-                                                  icon: Icon(_isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, color: AppColors.primaryNavy, size: 28),
+                                                  icon: Icon(_isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, color: AppColors.primaryNavy, size: isUltraCompact ? 22 : 28),
                                                   onPressed: _isPlaying ? _pausePlayback : _startPlayback,
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: BoxConstraints(minWidth: isUltraCompact ? 36 : 44, minHeight: isUltraCompact ? 36 : 44),
                                                 ),
                                               ),
                                               IconButton(
                                                 icon: const Icon(Icons.skip_next_rounded, color: AppColors.primaryNavy),
                                                 onPressed: _currentSignIndex < _matchedSigns.length - 1 ? _skipNext : null,
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(width: 60), // Balance to keep play buttons centered
+                                          const SizedBox(width: 36), // Balance to keep play buttons centered
                                         ],
                                       )
                                     ],
                                   ),
                                 ),
                               ],
-                            )
-                          : const Center(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.g_translate, size: 64, color: AppColors.primaryNavy),
-                                    SizedBox(height: 8),
-                                    Text('Escribe o usa una sugerencia\npara traducir', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.textGray)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // INPUT TEXT & MIC & CHIPS
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    children: [
-                      // TEXT INPUT
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardFillColor,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
-                          ]
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _textController,
-                                maxLines: 2,
-                                minLines: 1,
-                                style: const TextStyle(fontFamily: 'Inter', fontSize: 16, color: Colors.black),
-                                decoration: const InputDecoration(
-                                  hintText: 'Escribe aquí para traducir...',
-                                  hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 16, color: AppColors.textGray),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                ),
-                                onSubmitted: (_) => _translateText(),
-                              ),
-                            ),
-                            Container(
-                              decoration: const BoxDecoration(
-                                color: AppColors.primaryNavy,
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.send_rounded, color: Colors.white),
-                                onPressed: () => _translateText(),
-                                iconSize: 20,
-                              ),
-                            )
-                          ],
+                            );
+                          },
                         ),
                       ),
-                      
-                      if (_statusText.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            _statusText,
-                            style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.primaryNavy),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // INPUT TEXT & MIC & CHIPS
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      children: [
+                        // TEXT INPUT
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardFillColor,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
+                            ]
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _textController,
+                                  focusNode: _focusNode,
+                                  maxLines: 2,
+                                  minLines: 1,
+                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 16, color: Colors.black),
+                                  decoration: const InputDecoration(
+                                    hintText: 'Escribe aquí para traducir...',
+                                    hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 16, color: AppColors.textGray),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                  ),
+                                  onSubmitted: (_) => _translateText(),
+                                ),
+                              ),
+                              Container(
+                                decoration: const BoxDecoration(
+                                  color: AppColors.primaryNavy,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.send_rounded, color: Colors.white),
+                                  onPressed: () => _translateText(),
+                                  iconSize: 20,
+                                ),
+                              )
+                            ],
                           ),
                         ),
-                      
-                      if (!isKeyboardOpen) ...[
-                        const SizedBox(height: 16),
                         
-                        // BIG MIC BUTTON
-                        GestureDetector(
-                          onTap: _toggleMicrophone,
-                          child: ScaleTransition(
-                            scale: _isListening ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              width: 76,
-                              height: 76,
-                              decoration: BoxDecoration(
-                                color: _isListening ? Colors.red : AppColors.primaryNavy,
-                                shape: BoxShape.circle,
-                                boxShadow: _isListening ? [
-                                  BoxShadow(
-                                    color: Colors.red.withValues(alpha: 0.5),
-                                    blurRadius: 20,
-                                    spreadRadius: 8,
-                                  )
-                                ] : [
-                                  BoxShadow(
-                                    color: AppColors.primaryNavy.withValues(alpha: 0.3),
-                                    blurRadius: 10,
-                                    spreadRadius: 2,
-                                  )
-                                ],
-                              ),
-                              child: Icon(_isListening ? Icons.mic_off : Icons.mic, color: Colors.white, size: 36),
+                        if (_statusText.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _statusText,
+                              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.primaryNavy),
                             ),
                           ),
-                        ),
                         
-                        const SizedBox(height: 16),
-                        
-                        // ORACIONES SUGERIDAS (CHIPS)
-                        SizedBox(
-                          height: 38,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _suggestedSentences.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ActionChip(
-                                  backgroundColor: Colors.white,
-                                  elevation: 1,
-                                  shadowColor: Colors.black12,
-                                  label: Text(
-                                    _suggestedSentences[index],
-                                    style: const TextStyle(
-                                      fontFamily: 'Inter',
-                                      color: AppColors.primaryNavy,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  onPressed: () => _translateText(_suggestedSentences[index]),
+                        if (!isKeyboardOpen) ...[
+                          const SizedBox(height: 16),
+                          
+                          // BIG MIC BUTTON
+                          GestureDetector(
+                            onTap: _toggleMicrophone,
+                            child: ScaleTransition(
+                              scale: _isListening ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(
+                                  color: _isListening ? Colors.red : AppColors.primaryNavy,
+                                  shape: BoxShape.circle,
+                                  boxShadow: _isListening ? [
+                                    BoxShadow(
+                                      color: Colors.red.withValues(alpha: 0.5),
+                                      blurRadius: 20,
+                                      spreadRadius: 8,
+                                    )
+                                  ] : [
+                                    BoxShadow(
+                                      color: AppColors.primaryNavy.withValues(alpha: 0.3),
+                                      blurRadius: 10,
+                                      spreadRadius: 2,
+                                    )
+                                  ],
                                 ),
-                              );
-                            },
+                                child: Icon(_isListening ? Icons.mic_off : Icons.mic, color: Colors.white, size: 36),
+                              ),
+                            ),
                           ),
-                        ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // ORACIONES SUGERIDAS (CHIPS)
+                          SizedBox(
+                            height: 38,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _suggestedSentences.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: ActionChip(
+                                    backgroundColor: Colors.white,
+                                    elevation: 1,
+                                    shadowColor: Colors.black12,
+                                    label: Text(
+                                      _suggestedSentences[index],
+                                      style: const TextStyle(
+                                        fontFamily: 'Inter',
+                                        color: AppColors.primaryNavy,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    onPressed: () => _translateText(_suggestedSentences[index]),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                        SizedBox(height: isKeyboardOpen ? 8 : 16),
                       ],
-                      const SizedBox(height: 16),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

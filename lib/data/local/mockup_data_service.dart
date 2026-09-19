@@ -27,7 +27,13 @@ class MockSignEntry {
   final String? gestoFacial;
   final String? categoria;
 
-  /// Indica si la seña utiliza renderizado recortado de matriz WebP.
+  // Campo Vectorial Nativo SVG
+  final String? svgAsset;
+
+  /// Indica si la seña cuenta con archivo vectorial SVG nativo.
+  bool get isSvg => svgAsset != null && svgAsset!.isNotEmpty;
+
+  /// Indica si la seña cuenta con coordenadas de matriz.
   bool get isMatrixSign => archivoMatriz != null && coordenadas != null;
 
   const MockSignEntry({
@@ -42,6 +48,7 @@ class MockSignEntry {
     this.coordenadas,
     this.gestoFacial,
     this.categoria,
+    this.svgAsset,
   });
 
   factory MockSignEntry.fromJson(Map<String, dynamic> json, [int defaultId = 0]) {
@@ -53,17 +60,27 @@ class MockSignEntry {
     final definicion = (json['definicion'] ?? json['descripcion'] ?? '').toString().trim();
     final descripcionMov = (json['descripcion_movimiento'] ?? json['gesto'] ?? json['descripcion'] ?? '').toString().trim();
 
-    // 3. Extraer imagen individual (legacy)
+    // 3. Extraer imagen individual (legacy o fallback)
     String imgAsset = json['imagen_asset'] as String? ?? '';
     if (imgAsset.isEmpty && json['imagePaths'] != null && (json['imagePaths'] as List).isNotEmpty) {
       imgAsset = (json['imagePaths'] as List).first.toString();
     }
 
-    // 4. Extraer datos de la matriz WebP
+    // 4. Extraer vector SVG de alta calidad
+    String? svgAsset = json['svg_asset'] as String?;
+    if (svgAsset == null || svgAsset.isEmpty) {
+      final svgIndividual = json['svg_individual'] as String?;
+      if (svgIndividual != null && svgIndividual.isNotEmpty) {
+        final fname = svgIndividual.split('/').last;
+        svgAsset = 'assets/senias_svg/$fname';
+      }
+    }
+
+    // 5. Extraer datos de la matriz WebP
     final archivoMatriz = json['archivo_matriz'] as String?;
     Rect? coordenadas;
     final coordsJson = json['coordenadas'] as Map<String, dynamic>?;
-    if (coordsJson != null) {
+    if (coordsJson != null && coordsJson.isNotEmpty && coordsJson['width'] != null) {
       coordenadas = Rect.fromLTWH(
         (coordsJson['x'] as num).toDouble(),
         (coordsJson['y'] as num).toDouble(),
@@ -72,11 +89,11 @@ class MockSignEntry {
       );
     }
 
-    // 5. Metadatos adicionales
+    // 6. Metadatos adicionales
     final gestoFacial = json['gesto_facial'] as String?;
     final categoria = json['categoria'] as String?;
     String seccion = json['seccion'] as String? ?? '';
-    if (seccion.isEmpty && archivoMatriz != null) {
+    if (seccion.isEmpty && archivoMatriz != null && archivoMatriz.isNotEmpty) {
       seccion = _deducirSeccionDesdeMatriz(archivoMatriz);
     } else if (seccion.isEmpty && palabra.isNotEmpty) {
       seccion = palabra[0].toUpperCase();
@@ -99,12 +116,13 @@ class MockSignEntry {
       coordenadas: coordenadas,
       gestoFacial: gestoFacial,
       categoria: categoria,
+      svgAsset: svgAsset,
     );
   }
 
   static String _deducirSeccionDesdeMatriz(String filename) {
     // Ejemplos: matriz_a_01.webp -> A, matriz_locuciones_01.webp -> LOCUCIONES
-    final clean = filename.replaceAll('matriz_', '').replaceAll('.webp', '');
+    final clean = filename.replaceAll('matriz_', '').replaceAll('.webp', '').replaceAll('.svg', '');
     final parts = clean.split('_');
     if (parts.isNotEmpty) {
       return parts.first.toUpperCase();
@@ -148,11 +166,16 @@ class MockupDataService {
 
     String jsonStr;
     try {
-      // Intentar cargar el diccionario maestro completo de matrices (2,427 señas)
-      jsonStr = await rootBundle.loadString('assets/matrices/diccionario_matrices.json');
+      // Prioridad 1: Diccionario Vectorial SVG Nativo (2,427 señas de alta fidelidad)
+      jsonStr = await rootBundle.loadString('assets/matrices/diccionario_matrices_svg.json');
     } catch (_) {
-      // Fallback al mockup básico si las matrices no estuvieran presentes
-      jsonStr = await rootBundle.loadString('assets/mockup/mock_dictionary.json');
+      try {
+        // Fallback 1: Diccionario de matrices WebP
+        jsonStr = await rootBundle.loadString('assets/matrices/diccionario_matrices.json');
+      } catch (_) {
+        // Fallback 2: Mockup básico
+        jsonStr = await rootBundle.loadString('assets/mockup/mock_dictionary.json');
+      }
     }
 
     final List<dynamic> jsonList = json.decode(jsonStr) as List<dynamic>;
@@ -379,6 +402,7 @@ class MockupDataService {
                 coordenadas: letterSign.coordenadas,
                 gestoFacial: letterSign.gestoFacial,
                 categoria: 'Deletreo',
+                svgAsset: letterSign.svgAsset,
               ),
             );
           } else {
