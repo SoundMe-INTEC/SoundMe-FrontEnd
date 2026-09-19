@@ -57,9 +57,22 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   }
 
   void _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize(
-      onStatus: (status) {
-        if (status == 'done' || status == 'notListening') {
+    try {
+      _speechEnabled = await _speechToText.initialize(
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            _silenceTimer?.cancel();
+            if (mounted && _isListening) {
+              setState(() {
+                _isListening = false;
+                _pulseController.stop();
+                _pulseController.value = 0.0;
+              });
+              _translateText();
+            }
+          }
+        },
+        onError: (error) {
           _silenceTimer?.cancel();
           if (mounted && _isListening) {
             setState(() {
@@ -67,21 +80,12 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
               _pulseController.stop();
               _pulseController.value = 0.0;
             });
-            _translateText();
           }
-        }
-      },
-      onError: (error) {
-        _silenceTimer?.cancel();
-        if (mounted && _isListening) {
-          setState(() {
-            _isListening = false;
-            _pulseController.stop();
-            _pulseController.value = 0.0;
-          });
-        }
-      },
-    );
+        },
+      );
+    } catch (_) {
+      _speechEnabled = false;
+    }
     if (mounted) setState(() {});
   }
 
