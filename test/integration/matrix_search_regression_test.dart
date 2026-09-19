@@ -9,7 +9,9 @@ void main() {
   late MockupDataService service;
 
   setUp(() {
-    service = MockupDataService();
+    service = MockupDataService(
+      defaultDictionaryPath: 'assets/matrices/diccionario_matrices.json',
+    );
   });
 
   group('SoundMe - Suite de Regresión de Matrices de Imágenes y Búsqueda Semántica', () {
