@@ -36,20 +36,18 @@ void main() {
     // Initial render check
     expect(find.byType(TranslatorScreen), findsOneWidget);
     
-    // Find the mic button
-    final micIcon = find.byIcon(Icons.mic);
+    // Find the mic button (initially mic_none when idle)
+    final micIcon = find.byIcon(Icons.mic_none);
     expect(micIcon, findsOneWidget);
 
     // Tap the mic button
     await tester.tap(micIcon);
     await tester.pump();
 
-    // After tapping, it should initialize and turn red / show mic_off
-    // Use pump with duration rather than pumpAndSettle because _pulseController.repeat() animates indefinitely
+    // After tapping, it starts listening and shows Icons.mic
     await tester.pump(const Duration(milliseconds: 300));
 
-    // The icon should change to mic_off.
-    expect(find.byIcon(Icons.mic_off), findsOneWidget);
+    expect(find.byIcon(Icons.mic), findsOneWidget);
 
     // Verify text field exists
     expect(find.byType(TextField), findsOneWidget);
@@ -58,5 +56,38 @@ void main() {
     // We unmount the widget first to trigger dispose(), then pump time forward.
     await tester.pumpWidget(Container());
     await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets('QA Validation: TranslatorScreen help button opens quick guide sheet', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          home: TranslatorScreen(),
+        ),
+      ),
+    );
+
+    // Find the help button in the header
+    final helpButton = find.byIcon(Icons.help_outline_rounded);
+    expect(helpButton, findsWidgets);
+
+    // Tap the header help button
+    await tester.tap(helpButton.first);
+    await tester.pumpAndSettle();
+
+    // Verify bottom sheet title and content appeared
+    expect(find.text('Guía Rápida del Traductor'), findsOneWidget);
+    expect(find.text('Traducción por Voz'), findsOneWidget);
+    expect(find.text('Traducción por Texto'), findsOneWidget);
+    expect(find.text('Velocidad y Controles'), findsOneWidget);
+    expect(find.text('Deletreo Dactilológico'), findsOneWidget);
+    expect(find.text('Ver Guía Completa y FAQ'), findsOneWidget);
+
+    // Close the sheet
+    await tester.tap(find.text('Ver Guía Completa y FAQ'));
+    await tester.pumpAndSettle();
+
+    // Verifies navigation to full HelpFaqScreen
+    expect(find.text('Centro de Ayuda & FAQ'), findsOneWidget);
   });
 }

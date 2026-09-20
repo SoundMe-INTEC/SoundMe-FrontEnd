@@ -9,6 +9,7 @@ import 'package:soundme_frontend/features/options/presentation/screens/permissio
 import 'package:soundme_frontend/features/options/presentation/screens/translation_list_screen.dart';
 import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/features/dictionary/presentation/dictionary_screen.dart';
+import 'package:soundme_frontend/features/help/presentation/screens/help_faq_screen.dart';
 
 class OptionsScreen extends ConsumerWidget {
   const OptionsScreen({super.key});
@@ -105,6 +106,23 @@ class OptionsScreen extends ConsumerWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const PermissionsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Tarjeta: Ayuda y Preguntas Frecuentes
+                  _buildOptionCard(
+                    icon: Icons.help_outline_rounded,
+                    title: 'Ayuda y Preguntas Frecuentes',
+                    subtitle: 'Guía de uso, controles y dudas comunes',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpFaqScreen(),
                         ),
                       );
                     },

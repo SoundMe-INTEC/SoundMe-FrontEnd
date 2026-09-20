@@ -6,6 +6,7 @@ import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
+import 'package:soundme_frontend/features/help/presentation/screens/help_faq_screen.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class TranslatorScreen extends ConsumerStatefulWidget {
@@ -294,6 +295,172 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     });
   }
 
+  void _showHelpSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryNavy.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.help_outline_rounded, color: AppColors.primaryNavy, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Guía Rápida del Traductor',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryNavy,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  _buildHelpQuickItem(
+                    icon: Icons.mic_rounded,
+                    title: 'Traducción por Voz',
+                    description: 'Toca el micrófono central y habla con claridad. Tras 3 segundos de pausa, se traducirá automáticamente.',
+                  ),
+                  _buildHelpQuickItem(
+                    icon: Icons.keyboard_alt_outlined,
+                    title: 'Traducción por Texto',
+                    description: 'Escribe tu mensaje en la caja inferior o pulsa una sugerencia rápida para ver la secuencia de señas.',
+                  ),
+                  _buildHelpQuickItem(
+                    icon: Icons.speed_rounded,
+                    title: 'Velocidad y Controles',
+                    description: 'Usa play/pausa y flechas para analizar cada seña. Regula el ritmo en Lento (3s), Normal (2s) o Rápido (1s).',
+                  ),
+                  _buildHelpQuickItem(
+                    icon: Icons.spellcheck_rounded,
+                    title: 'Deletreo Dactilológico',
+                    description: 'Las palabras sin seña oficial directa en LSRD se mostrarán deletreadas letra a letra con el abecedario en señas.',
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HelpFaqScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryNavy,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                      icon: const Icon(Icons.menu_book_rounded, size: 20),
+                      label: const Text(
+                        'Ver Guía Completa y FAQ',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHelpQuickItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.cardFillColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: AppColors.primaryNavy, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryNavy,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    color: AppColors.textGray,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentSign = _matchedSigns.isNotEmpty ? _matchedSigns[_currentSignIndex] : null;
@@ -308,7 +475,19 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
         behavior: HitTestBehavior.opaque,
         child: Stack(
           children: [
-            const Positioned(top: 0, left: 0, right: 0, child: AdminHeaderBackground(title: 'Traductor')),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: AdminHeaderBackground(
+                title: 'Traductor',
+                trailing: IconButton(
+                  icon: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 24),
+                  tooltip: 'Ayuda del Traductor',
+                  onPressed: _showHelpSheet,
+                ),
+              ),
+            ),
             SafeArea(
               child: Column(
                 children: [
