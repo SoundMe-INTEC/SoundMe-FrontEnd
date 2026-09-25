@@ -25,7 +25,9 @@ class AdminHomeScreen extends ConsumerWidget {
         children: [
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.only(top: headerTopOffset - MediaQuery.paddingOf(context).top),
+              padding: EdgeInsets.only(
+                top: headerTopOffset - MediaQuery.paddingOf(context).top,
+              ),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -301,4 +303,3 @@ class AdminHomeScreen extends ConsumerWidget {
     );
   }
 }
-
