@@ -4,8 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/features/translator/presentation/screens/translator_screen.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+
 void main() {
   setUp(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
     const MethodChannel channel = MethodChannel('plugin.csdcorp.com/speech_to_text');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
@@ -25,6 +28,11 @@ void main() {
   });
 
   testWidgets('QA Validation: TranslatorScreen renders and mic button is clickable', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.5;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
@@ -33,23 +41,16 @@ void main() {
       ),
     );
 
-    // Initial render check
-    expect(find.byType(TranslatorScreen), findsOneWidget);
-    
-    // Find the mic button (initially mic_none when idle)
-    final micIcon = find.byIcon(Icons.mic_none);
-    expect(micIcon, findsOneWidget);
+    final micButton = find.byKey(const Key('translator_mic_button'));
+    expect(micButton, findsOneWidget);
 
-    // Tap the mic button
-    await tester.tap(micIcon);
+    await tester.tap(micButton);
     await tester.pump();
 
-    // After tapping, it starts listening and shows Icons.mic
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byIcon(Icons.mic), findsOneWidget);
 
-    // Verify text field exists
     expect(find.byType(TextField), findsOneWidget);
 
     // Wait for the stop timer to clear out (since speech_to_text creates a timer on stop)

@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:soundme_frontend/core/providers/settings_provider.dart';
+import 'package:soundme_frontend/core/services/translation_history_storage.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
+import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
 import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
-import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/help/presentation/screens/help_faq_screen.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -15,13 +18,15 @@ class TranslatorScreen extends ConsumerStatefulWidget {
   ConsumerState<TranslatorScreen> createState() => _TranslatorScreenState();
 }
 
-class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with SingleTickerProviderStateMixin {
+class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   String _selectedSpeed = 'Normal (2s)';
   bool _isListening = false;
   final stt.SpeechToText _speechToText = stt.SpeechToText();
   bool _speechEnabled = false;
+  final TranslationHistoryStorage _historyStorage = TranslationHistoryStorage();
 
   // Translation state
   List<MockSignEntry> _matchedSigns = [];
@@ -38,7 +43,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
   final List<String> _suggestedSentences = [
     'HOLA CÓMO ESTÁS',
     'YO ESTOY MUY FELIZ',
-    'GRACIAS POR TU AYUDA'
+    'GRACIAS POR TU AYUDA',
   ];
 
   @override
@@ -46,13 +51,15 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 900),
     );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.25).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     _focusNode.addListener(() {
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
     _initSpeech();
   }
@@ -64,12 +71,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
           if (status == 'done' || status == 'notListening') {
             _silenceTimer?.cancel();
             if (mounted && _isListening) {
-              setState(() {
-                _isListening = false;
-                _pulseController.stop();
-                _pulseController.value = 0.0;
-              });
-              _translateText();
+              _stopListeningAndTranslate();
             }
           }
         },
@@ -87,7 +89,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     } catch (_) {
       _speechEnabled = false;
     }
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -97,7 +101,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     _focusNode.dispose();
     _textController.dispose();
     _playTimer?.cancel();
-    if (_isListening) {
+    if (_isListening || _speechToText.isListening) {
       _speechToText.stop();
     }
     _pulseController.dispose();
@@ -117,20 +121,22 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
       return;
     }
 
-    _debounceTimer = Timer(const Duration(milliseconds: 380), () {
-      if (mounted && _textController.text.trim().isNotEmpty) {
-        _translateText(null, false);
-      }
+    setState(() {
+      _statusText = '';
     });
   }
 
-  Future<void> _translateText([String? predefinedText, bool unfocus = true]) async {
+  Future<void> _translateText([
+    String? predefinedText,
+    bool unfocus = true,
+  ]) async {
     _debounceTimer?.cancel();
     _silenceTimer?.cancel();
     if (unfocus) {
       _focusNode.unfocus();
     }
-    if (_isListening) {
+
+    if (_isListening || _speechToText.isListening) {
       await _speechToText.stop();
       setState(() {
         _isListening = false;
@@ -159,7 +165,16 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     final isExplicit = ref.read(explicitTranslationProvider);
     final result = await service.translatePhrase(text, explicit: isExplicit);
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
+
+    if (result.matchedSigns.isNotEmpty) {
+      await _historyStorage.saveTranslation(
+        text,
+        signsInOrder: result.matchedSigns.map((sign) => sign.palabra).toList(),
+      );
+    }
 
     setState(() {
       _matchedSigns = result.matchedSigns;
@@ -167,91 +182,135 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
       if (result.matchedSigns.isEmpty) {
         _statusText = 'No se encontró coincidencia para: "$text"';
       } else {
-        _statusText = 'Traducción: ${result.matchedSigns.length} ${result.matchedSigns.length == 1 ? "seña" : "señas"}';
+        _statusText =
+            'Traducción: ${result.matchedSigns.length} ${result.matchedSigns.length == 1 ? "seña" : "señas"}';
         if (result.spelledWords.isNotEmpty) {
           _statusText += ' (deletreo: ${result.spelledWords.join(", ")})';
         }
         if (result.notFoundWords.isNotEmpty) {
-          _statusText += ' - No encontradas: ${result.notFoundWords.join(", ")}';
+          _statusText +=
+              ' - No encontradas: ${result.notFoundWords.join(", ")}';
         }
       }
     });
 
-    if (result.matchedSigns.isNotEmpty) _startPlayback();
+    if (result.matchedSigns.isNotEmpty) {
+      _startPlayback();
+    }
   }
 
   void _resetSilenceTimer() {
     _silenceTimer?.cancel();
     _silenceTimer = Timer(const Duration(seconds: 3), () {
-      if (_isListening && mounted) {
-        _speechToText.stop();
-        setState(() {
-          _isListening = false;
-          _pulseController.stop();
-          _pulseController.value = 0.0;
-        });
-        _translateText();
+      if ((_isListening || _speechToText.isListening) && mounted) {
+        _stopListeningAndTranslate();
       }
     });
   }
 
-  void _toggleMicrophone() async {
-    _focusNode.unfocus();
-    if (!_speechEnabled) {
-      bool init = await _speechToText.initialize();
-      setState(() => _speechEnabled = init);
-      if (!init) return;
-    }
-
-    if (_speechToText.isListening) {
-      _silenceTimer?.cancel();
-      await _speechToText.stop();
+  Future<void> _stopListeningAndTranslate() async {
+    _silenceTimer?.cancel();
+    await _speechToText.stop();
+    if (mounted) {
       setState(() {
         _isListening = false;
         _pulseController.stop();
         _pulseController.value = 0.0;
       });
-      _translateText();
-    } else {
-      setState(() {
-        _isListening = true;
-        _textController.clear();
-        _pulseController.repeat(reverse: true);
-      });
-      _resetSilenceTimer();
-      await _speechToText.listen(
-        onResult: (result) {
-          if (mounted) {
-            setState(() {
-              _textController.text = result.recognizedWords;
-            });
-            _resetSilenceTimer();
+      await _translateText(null, true);
+    }
+  }
+
+  void _toggleMicrophone() async {
+    _focusNode.unfocus();
+
+    // Si ya se está escuchando o el motor reporta listening, DETENER y ENVIAR AUTOMÁTICAMENTE
+    if (_isListening || _speechToText.isListening) {
+      await _stopListeningAndTranslate();
+      return;
+    }
+
+    // Inicializar si no estaba listo
+    if (!_speechEnabled) {
+      bool init = await _speechToText.initialize(
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            _silenceTimer?.cancel();
+            if (mounted && _isListening) {
+              _stopListeningAndTranslate();
+            }
           }
         },
-        listenOptions: stt.SpeechListenOptions(
-          cancelOnError: true,
-          partialResults: true,
-        ),
+        onError: (error) {
+          _silenceTimer?.cancel();
+          if (mounted && _isListening) {
+            setState(() {
+              _isListening = false;
+              _pulseController.stop();
+              _pulseController.value = 0.0;
+            });
+          }
+        },
       );
+      if (mounted) {
+        setState(() => _speechEnabled = init);
+      }
+      if (!init) {
+        return;
+      }
     }
+
+    // Iniciar escucha
+    setState(() {
+      _isListening = true;
+      _textController.clear();
+      _pulseController.repeat(reverse: true);
+    });
+    _resetSilenceTimer();
+
+    await _speechToText.listen(
+      onResult: (result) {
+        if (mounted) {
+          setState(() {
+            _textController.text = result.recognizedWords;
+          });
+          _resetSilenceTimer();
+
+          // Si el resultado es final, auto-enviar inmediatamente
+          if (result.finalResult) {
+            _stopListeningAndTranslate();
+          }
+        }
+      },
+      listenOptions: stt.SpeechListenOptions(
+        cancelOnError: true,
+        partialResults: true,
+      ),
+    );
   }
 
   Duration get _playbackInterval {
     switch (_selectedSpeed) {
-      case 'Rápido (1s)': return const Duration(seconds: 1);
-      case 'Normal (2s)': return const Duration(seconds: 2);
-      case 'Lento (3s)': default: return const Duration(seconds: 3);
+      case 'Rápido (1s)':
+        return const Duration(seconds: 1);
+      case 'Normal (2s)':
+        return const Duration(seconds: 2);
+      case 'Lento (3s)':
+      default:
+        return const Duration(seconds: 3);
     }
   }
 
   void _startPlayback() {
     _playTimer?.cancel();
-    if (_matchedSigns.isEmpty) return;
+    if (_matchedSigns.isEmpty) {
+      return;
+    }
 
     setState(() {
       _isPlaying = true;
       if (_currentSignIndex >= _matchedSigns.length - 1) {
-        _currentSignIndex = 0; // restart if at the end
+        _currentSignIndex = 0;
       }
     });
 
@@ -274,9 +333,11 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
     _playTimer?.cancel();
     setState(() => _isPlaying = false);
   }
-  
+
   void _skipNext() {
-    if (_matchedSigns.isEmpty) return;
+    if (_matchedSigns.isEmpty) {
+      return;
+    }
     _pausePlayback();
     setState(() {
       if (_currentSignIndex < _matchedSigns.length - 1) {
@@ -284,9 +345,11 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
       }
     });
   }
-  
+
   void _skipPrevious() {
-    if (_matchedSigns.isEmpty) return;
+    if (_matchedSigns.isEmpty) {
+      return;
+    }
     _pausePlayback();
     setState(() {
       if (_currentSignIndex > 0) {
@@ -463,9 +526,12 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
 
   @override
   Widget build(BuildContext context) {
-    final currentSign = _matchedSigns.isNotEmpty ? _matchedSigns[_currentSignIndex] : null;
+    final currentSign = _matchedSigns.isNotEmpty
+        ? _matchedSigns[_currentSignIndex]
+        : null;
     final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
     final isKeyboardOpen = keyboardBottom > 0 || _focusNode.hasFocus;
+    final headerTopOffset = AdminHeaderBackground.headerHeight(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -482,407 +548,620 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> with Single
               child: AdminHeaderBackground(
                 title: 'Traductor',
                 trailing: IconButton(
-                  icon: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 24),
+                  icon: const Icon(
+                    Icons.help_outline_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                   tooltip: 'Ayuda del Traductor',
                   onPressed: _showHelpSheet,
                 ),
               ),
             ),
             SafeArea(
-              child: Column(
-                children: [
-                  const SizedBox(height: 60),
-                  
-                  // REPRODUCTOR MULTIMEDIA RESPONSIVO
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppColors.cardFillColor,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))
-                          ]
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            if (currentSign == null) {
-                              final isVeryCompact = constraints.maxHeight < 160;
-                              return Center(
-                                child: SingleChildScrollView(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.g_translate,
-                                          size: isVeryCompact ? 36 : 64,
-                                          color: AppColors.primaryNavy,
-                                        ),
-                                        SizedBox(height: isVeryCompact ? 4 : 8),
-                                        Text(
-                                          isVeryCompact
-                                              ? 'Escribe para traducir'
-                                              : 'Escribe o usa una sugerencia\npara traducir',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: 'Inter',
-                                            fontSize: isVeryCompact ? 12 : 14,
-                                            color: AppColors.textGray,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: headerTopOffset - MediaQuery.paddingOf(context).top,
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isSmallScreen = constraints.maxHeight < 650;
+                    return SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(height: 12),
 
-                            final bool isCompact = constraints.maxHeight < 280;
-                            final bool isUltraCompact = constraints.maxHeight < 180;
-
-                            return Column(
-                              children: [
-                                // Imagen de la Seña
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(isUltraCompact ? 4.0 : (isCompact ? 8.0 : 14.0)),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.04),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: SignImage(
-                                          sign: currentSign,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                            // REPRODUCTOR MULTIMEDIA RESPONSIVO
+                            Container(
+                              constraints: BoxConstraints(
+                                minHeight: isSmallScreen ? 200 : 250,
+                                maxHeight: isSmallScreen ? 280 : 340,
+                              ),
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: AppColors.cardFillColor,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: AppColors.cardBorderColor,
                                 ),
-                                // Textos descriptivos
-                                Text(
-                                  currentSign.palabra,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: isUltraCompact ? 16 : (isCompact ? 18 : 22),
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primaryNavy,
-                                  ),
-                                ),
-                                if (!isUltraCompact && (currentSign.categoria == 'Deletreo' || currentSign.infoAdicional == 'Deletreo'))
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.accentRed.withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Text(
-                                        'Deletreo Dactilológico',
-                                        style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accentRed),
-                                      ),
-                                    ),
-                                  )
-                                else if (!isUltraCompact && currentSign.gestoFacial != null && currentSign.gestoFacial!.isNotEmpty && currentSign.gestoFacial != 'Neutral')
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.cardBlue.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        'Gesto facial: ${currentSign.gestoFacial}',
-                                        style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primaryNavy),
-                                      ),
-                                    ),
-                                  ),
-                                if (!isCompact && currentSign.gesto.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                                    child: Text(
-                                      currentSign.gesto,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textGray),
-                                    ),
-                                  ),
-                                  
-                                // CONTROLES DEL REPRODUCTOR
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 16.0,
-                                    vertical: isUltraCompact ? 2.0 : (isCompact ? 4.0 : 8.0),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Slider Linea de tiempo
-                                      if (!isUltraCompact)
-                                        Row(
+                                boxShadow: AppColors.cardShadow,
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, playerConstraints) {
+                                  if (currentSign == null) {
+                                    return Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text('${_currentSignIndex + 1}', style: const TextStyle(fontSize: 12, color: AppColors.textGray)),
-                                            Expanded(
-                                              child: SliderTheme(
-                                                data: SliderTheme.of(context).copyWith(
-                                                  trackHeight: 4,
-                                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                                                ),
-                                                child: Slider(
-                                                  value: _currentSignIndex.toDouble(),
-                                                  min: 0,
-                                                  max: (_matchedSigns.length > 1 ? (_matchedSigns.length - 1).toDouble() : 1.0),
-                                                  activeColor: AppColors.primaryNavy,
-                                                  inactiveColor: Colors.grey.shade300,
-                                                  onChanged: (value) {
-                                                    if (_matchedSigns.length <= 1) return;
-                                                    _pausePlayback();
-                                                    setState(() {
-                                                      _currentSignIndex = value.toInt();
-                                                    });
-                                                  },
-                                                ),
+                                            Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primaryNavy
+                                                    .withValues(alpha: 0.08),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.g_translate_rounded,
+                                                size: 48,
+                                                color: AppColors.primaryNavy,
                                               ),
                                             ),
-                                            Text('${_matchedSigns.length}', style: const TextStyle(fontSize: 12, color: AppColors.textGray)),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              'Escribe o usa el micrófono\npara comenzar la traducción',
+                                              textAlign: TextAlign.center,
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textDark,
+                                                    height: 1.3,
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              'Traducción a Lengua de Señas Dominicana',
+                                              textAlign: TextAlign.center,
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    fontSize: 12,
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
+                                            ),
                                           ],
                                         ),
-                                      // Botones de reproducción y velocidad
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          if (!isUltraCompact)
-                                            DropdownButton<String>(
-                                              value: _selectedSpeed,
-                                              underline: const SizedBox(),
-                                              icon: const Icon(Icons.speed, size: 18, color: AppColors.textGray),
-                                              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textGray),
-                                              items: <String>['Lento (3s)', 'Normal (2s)', 'Rápido (1s)'].map((String value) {
-                                                return DropdownMenuItem<String>(value: value, child: Text(value));
-                                              }).toList(),
-                                              onChanged: (newValue) {
-                                                if (newValue != null) {
-                                                  setState(() => _selectedSpeed = newValue);
-                                                  if (_isPlaying) _startPlayback(); // restart timer with new speed
-                                                }
-                                              },
-                                            )
-                                          else
-                                            const SizedBox(width: 36),
-                                          Row(
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(Icons.skip_previous_rounded, color: AppColors.primaryNavy),
-                                                onPressed: _currentSignIndex > 0 ? _skipPrevious : null,
-                                                padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                                              ),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.primaryNavy.withValues(alpha: 0.1),
-                                                  shape: BoxShape.circle,
+                                      ),
+                                    );
+                                  }
+
+                                  final bool isCompact =
+                                      playerConstraints.maxHeight < 280;
+
+                                  return Column(
+                                    children: [
+                                      // Imagen de la Seña
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(12.0),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.04),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 2),
                                                 ),
-                                                child: IconButton(
-                                                  icon: Icon(_isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, color: AppColors.primaryNavy, size: isUltraCompact ? 22 : 28),
-                                                  onPressed: _isPlaying ? _pausePlayback : _startPlayback,
-                                                  padding: EdgeInsets.zero,
-                                                  constraints: BoxConstraints(minWidth: isUltraCompact ? 36 : 44, minHeight: isUltraCompact ? 36 : 44),
-                                                ),
+                                              ],
+                                            ),
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: SignImage(
+                                                sign: currentSign,
+                                                fit: BoxFit.contain,
                                               ),
-                                              IconButton(
-                                                icon: const Icon(Icons.skip_next_rounded, color: AppColors.primaryNavy),
-                                                onPressed: _currentSignIndex < _matchedSigns.length - 1 ? _skipNext : null,
-                                                padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                                              ),
-                                            ],
+                                            ),
                                           ),
-                                          const SizedBox(width: 36), // Balance to keep play buttons centered
-                                        ],
-                                      )
+                                        ),
+                                      ),
+                                      // Textos descriptivos
+                                      Text(
+                                        currentSign.palabra,
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: isCompact ? 18 : 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primaryNavy,
+                                        ),
+                                      ),
+                                      if (currentSign.categoria == 'Deletreo' ||
+                                          currentSign.infoAdicional ==
+                                              'Deletreo')
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 4.0,
+                                          ),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.accentRed
+                                                  .withValues(alpha: 0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              'Deletreo Dactilológico',
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: AppColors.accentRed,
+                                                  ),
+                                            ),
+                                          ),
+                                        )
+                                      else if (currentSign.gestoFacial !=
+                                              null &&
+                                          currentSign.gestoFacial!.isNotEmpty &&
+                                          currentSign.gestoFacial != 'Neutral')
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 4.0,
+                                          ),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primaryNavy
+                                                  .withValues(alpha: 0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              'Gesto facial: ${currentSign.gestoFacial}',
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color:
+                                                        AppColors.primaryNavy,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+
+                                      // CONTROLES DEL REPRODUCTOR
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0,
+                                          vertical: 8.0,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Slider Linea de tiempo
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  '${_currentSignIndex + 1}',
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
+                                                ),
+                                                Expanded(
+                                                  child: SliderTheme(
+                                                    data: SliderTheme.of(context).copyWith(
+                                                      trackHeight: 4,
+                                                      thumbShape:
+                                                          const RoundSliderThumbShape(
+                                                            enabledThumbRadius:
+                                                                6,
+                                                          ),
+                                                      overlayShape:
+                                                          const RoundSliderOverlayShape(
+                                                            overlayRadius: 14,
+                                                          ),
+                                                    ),
+                                                    child: Slider(
+                                                      value: _currentSignIndex
+                                                          .toDouble(),
+                                                      min: 0,
+                                                      max:
+                                                          (_matchedSigns
+                                                                  .length >
+                                                              1
+                                                          ? (_matchedSigns
+                                                                        .length -
+                                                                    1)
+                                                                .toDouble()
+                                                          : 1.0),
+                                                      activeColor:
+                                                          AppColors.primaryNavy,
+                                                      inactiveColor:
+                                                          Colors.grey.shade300,
+                                                      onChanged: (value) {
+                                                        if (_matchedSigns
+                                                                .length <=
+                                                            1) {
+                                                          return;
+                                                        }
+                                                        _pausePlayback();
+                                                        setState(() {
+                                                          _currentSignIndex =
+                                                              value.toInt();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '${_matchedSigns.length}',
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                            // Botones de reproducción y velocidad
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                DropdownButton<String>(
+                                                  value: _selectedSpeed,
+                                                  underline: const SizedBox(),
+                                                  icon: const Icon(
+                                                    Icons.speed_rounded,
+                                                    size: 18,
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
+                                                  items:
+                                                      <String>[
+                                                        'Lento (3s)',
+                                                        'Normal (2s)',
+                                                        'Rápido (1s)',
+                                                      ].map((String value) {
+                                                        return DropdownMenuItem<
+                                                          String
+                                                        >(
+                                                          value: value,
+                                                          child: Text(value),
+                                                        );
+                                                      }).toList(),
+                                                  onChanged: (newValue) {
+                                                    if (newValue != null) {
+                                                      setState(
+                                                        () => _selectedSpeed =
+                                                            newValue,
+                                                      );
+                                                      if (_isPlaying) {
+                                                        _startPlayback();
+                                                      }
+                                                    }
+                                                  },
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons
+                                                            .skip_previous_rounded,
+                                                        color: AppColors
+                                                            .primaryNavy,
+                                                      ),
+                                                      onPressed:
+                                                          _currentSignIndex > 0
+                                                          ? _skipPrevious
+                                                          : null,
+                                                    ),
+                                                    Container(
+                                                      decoration:
+                                                          const BoxDecoration(
+                                                            color: AppColors
+                                                                .primaryNavy,
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                      child: IconButton(
+                                                        icon: Icon(
+                                                          _isPlaying
+                                                              ? Icons
+                                                                    .pause_rounded
+                                                              : Icons
+                                                                    .play_arrow_rounded,
+                                                          color: Colors.white,
+                                                          size: 26,
+                                                        ),
+                                                        onPressed: _isPlaying
+                                                            ? _pausePlayback
+                                                            : _startPlayback,
+                                                      ),
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.skip_next_rounded,
+                                                        color: AppColors
+                                                            .primaryNavy,
+                                                      ),
+                                                      onPressed:
+                                                          _currentSignIndex <
+                                                              _matchedSigns
+                                                                      .length -
+                                                                  1
+                                                          ? _skipNext
+                                                          : null,
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(width: 48),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // INPUT TEXT & MIC & CHIPS
+                            Column(
+                              children: [
+                                // TEXT INPUT
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.cardFillColor,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: AppColors.cardBorderColor,
+                                    ),
+                                    boxShadow: AppColors.softShadow,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _textController,
+                                          focusNode: _focusNode,
+                                          maxLines: 2,
+                                          minLines: 1,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColors.textDark,
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: _isListening
+                                                ? 'Escuchando tu voz...'
+                                                : 'Escribe aquí para traducir...',
+                                            hintStyle:
+                                                GoogleFonts.plusJakartaSans(
+                                                  fontSize: 15,
+                                                  color: _isListening
+                                                      ? AppColors.accentRed
+                                                      : AppColors.textSecondary,
+                                                  fontWeight: _isListening
+                                                      ? FontWeight.bold
+                                                      : FontWeight.w400,
+                                                ),
+                                            border: InputBorder.none,
+                                            isDense: true,
+                                          ),
+                                          onChanged: _onTextChanged,
+                                          onSubmitted: (_) =>
+                                              _translateText(null, true),
+                                        ),
+                                      ),
+                                      Container(
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.primaryNavy,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: IconButton(
+                                          icon: const Icon(
+                                            Icons.send_rounded,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: () =>
+                                              _translateText(null, true),
+                                          iconSize: 20,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // INPUT TEXT & MIC & CHIPS
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Column(
-                      children: [
-                        // TEXT INPUT
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.cardFillColor,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
-                            ]
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _textController,
-                                  focusNode: _focusNode,
-                                  maxLines: 2,
-                                  minLines: 1,
-                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 16, color: Colors.black),
-                                  decoration: InputDecoration(
-                                    hintText: _isListening ? 'Escuchando (habla ahora)...' : 'Escribe aquí para traducir...',
-                                    hintStyle: TextStyle(
-                                      fontFamily: 'Inter', 
-                                      fontSize: 16, 
-                                      color: _isListening ? AppColors.accentRed : AppColors.textGray,
-                                      fontWeight: _isListening ? FontWeight.bold : FontWeight.normal,
-                                    ),
-                                    border: InputBorder.none,
-                                    isDense: true,
-                                  ),
-                                  onChanged: _onTextChanged,
-                                  onSubmitted: (_) => _translateText(null, true),
-                                ),
-                              ),
-                              Container(
-                                decoration: const BoxDecoration(
-                                  color: AppColors.primaryNavy,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.send_rounded, color: Colors.white),
-                                  onPressed: () => _translateText(null, true),
-                                  iconSize: 20,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        
-                        if (_statusText.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              _statusText,
-                              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.primaryNavy),
-                            ),
-                          ),
-                        
-                        if (!isKeyboardOpen) ...[
-                          const SizedBox(height: 16),
-                          
-                          // BIG MIC BUTTON
-                          Column(
-                            children: [
-                              GestureDetector(
-                                onTap: _toggleMicrophone,
-                                child: ScaleTransition(
-                                  scale: _isListening ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 300),
-                                    width: _isListening ? 86 : 76,
-                                    height: _isListening ? 86 : 76,
-                                    decoration: BoxDecoration(
-                                      color: _isListening ? AppColors.accentRed : AppColors.primaryNavy,
-                                      shape: BoxShape.circle,
-                                      boxShadow: _isListening ? [
-                                        BoxShadow(
-                                          color: AppColors.accentRed.withValues(alpha: 0.5),
-                                          blurRadius: 24,
-                                          spreadRadius: 10,
-                                        ),
-                                        BoxShadow(
-                                          color: AppColors.accentRed.withValues(alpha: 0.3),
-                                          blurRadius: 40,
-                                          spreadRadius: 20,
-                                        )
-                                      ] : [
-                                        BoxShadow(
-                                          color: AppColors.primaryNavy.withValues(alpha: 0.3),
-                                          blurRadius: 10,
-                                          spreadRadius: 2,
-                                        )
-                                      ],
-                                    ),
-                                    child: Icon(_isListening ? Icons.mic : Icons.mic_none, color: Colors.white, size: _isListening ? 42 : 36),
-                                  ),
-                                ),
-                              ),
-                              if (_isListening) ...[
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'Escuchando...',
-                                  style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.accentRed, fontWeight: FontWeight.bold),
-                                )
-                              ]
-                            ],
-                          ),
-                          
-                          const SizedBox(height: 16),
-                          
-                          // ORACIONES SUGERIDAS (CHIPS)
-                          SizedBox(
-                            height: 38,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _suggestedSentences.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: ActionChip(
-                                    backgroundColor: Colors.white,
-                                    elevation: 1,
-                                    shadowColor: Colors.black12,
-                                    label: Text(
-                                      _suggestedSentences[index],
-                                      style: const TextStyle(
-                                        fontFamily: 'Inter',
-                                        color: AppColors.primaryNavy,
-                                        fontWeight: FontWeight.w600,
+
+                                if (_statusText.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Text(
+                                      _statusText,
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.primaryNavy,
                                       ),
                                     ),
-                                    onPressed: () => _translateText(_suggestedSentences[index]),
                                   ),
-                                );
-                              },
+
+                                const SizedBox(height: 16),
+
+                                // BIG MIC BUTTON (CON ANIMACIÓN DE PULSO Y AUTO-ENVÍO)
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      key: const Key('translator_mic_button'),
+                                      onTap: _toggleMicrophone,
+                                      child: ScaleTransition(
+                                        scale: _isListening
+                                            ? _pulseAnimation
+                                            : const AlwaysStoppedAnimation(1.0),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          width: _isListening ? 82 : 72,
+                                          height: _isListening ? 82 : 72,
+                                          decoration: BoxDecoration(
+                                            color: _isListening
+                                                ? AppColors.accentRed
+                                                : AppColors.primaryNavy,
+                                            shape: BoxShape.circle,
+                                            boxShadow: _isListening
+                                                ? [
+                                                    BoxShadow(
+                                                      color: AppColors.accentRed
+                                                          .withValues(
+                                                            alpha: 0.5,
+                                                          ),
+                                                      blurRadius: 24,
+                                                      spreadRadius: 8,
+                                                    ),
+                                                    BoxShadow(
+                                                      color: AppColors.accentRed
+                                                          .withValues(
+                                                            alpha: 0.25,
+                                                          ),
+                                                      blurRadius: 36,
+                                                      spreadRadius: 16,
+                                                    ),
+                                                  ]
+                                                : [
+                                                    BoxShadow(
+                                                      color: AppColors
+                                                          .primaryNavy
+                                                          .withValues(
+                                                            alpha: 0.25,
+                                                          ),
+                                                      blurRadius: 12,
+                                                      offset: const Offset(
+                                                        0,
+                                                        4,
+                                                      ),
+                                                    ),
+                                                  ],
+                                          ),
+                                          child: Icon(
+                                            _isListening
+                                                ? Icons.mic
+                                                : Icons.mic_none_rounded,
+                                            color: Colors.white,
+                                            size: _isListening ? 40 : 34,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      _isListening
+                                          ? 'Escuchando... Toca para detener y enviar'
+                                          : 'Toca el micrófono para dictar',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12,
+                                        color: _isListening
+                                            ? AppColors.accentRed
+                                            : AppColors.textSecondary,
+                                        fontWeight: _isListening
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 14),
+
+                                // ORACIONES SUGERIDAS (CHIPS)
+                                SizedBox(
+                                  height: 38,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: _suggestedSentences.length,
+                                    itemBuilder: (context, index) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 8.0,
+                                        ),
+                                        child: ActionChip(
+                                          backgroundColor: Colors.white,
+                                          side: const BorderSide(
+                                            color: AppColors.cardBorderColor,
+                                          ),
+                                          elevation: 1,
+                                          shadowColor: Colors.black.withValues(
+                                            alpha: 0.05,
+                                          ),
+                                          label: Text(
+                                            _suggestedSentences[index],
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: AppColors.primaryNavy,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          onPressed: () => _translateText(
+                                            _suggestedSentences[index],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                SizedBox(height: isKeyboardOpen ? 8 : 16),
+                              ],
                             ),
-                          ),
-                        ],
-                        SizedBox(height: isKeyboardOpen ? 8 : 16),
-                      ],
-                    ),
-                  ),
-                ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:soundme_frontend/core/services/translation_history_storage.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
@@ -11,18 +13,21 @@ import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/features/dictionary/presentation/dictionary_screen.dart';
 import 'package:soundme_frontend/features/help/presentation/screens/help_faq_screen.dart';
 
+import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
+
 class OptionsScreen extends ConsumerWidget {
   const OptionsScreen({super.key});
 
-  /// Converts [MockSignEntry] list to [TranslationItem] list for the UI.
   List<TranslationItem> _toTranslationItems(List<MockSignEntry> entries) {
     return entries
-        .map((e) => TranslationItem(
-              id: e.id.toString(),
-              text: e.palabra,
-              imageUrl: e.imagenAsset,
-              sign: e,
-            ))
+        .map(
+          (e) => TranslationItem(
+            id: e.id.toString(),
+            text: e.palabra,
+            imageUrl: e.imagenAsset,
+            sign: e,
+          ),
+        )
         .toList();
   }
 
@@ -31,110 +36,121 @@ class OptionsScreen extends ConsumerWidget {
     final greetings = ref.watch(mockGreetingsProvider);
     final commonPhrases = ref.watch(mockCommonPhrasesProvider);
     final emergencies = ref.watch(mockEmergenciesProvider);
-    final allSigns = ref.watch(allMockSignsProvider);
     final isExplicit = ref.watch(explicitTranslationProvider);
+    final headerTopOffset = AdminHeaderBackground.headerHeight(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Banner decorativo superior
           const Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: AdminHeaderBackground(title: 'Opciones'),
+            child: HeaderWithBackButton(title: 'Opciones'),
           ),
 
           SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 65),
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: headerTopOffset - MediaQuery.paddingOf(context).top,
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
 
-                  // Tarjeta: Historial (now with real mockup data)
-                  _buildOptionCard(
-                    icon: Icons.history,
-                    title: 'Historial',
-                    subtitle: 'Revisa tus traducciones pasadas',
-                    onTap: () {
-                      // Use the first 10 mockup entries as "history"
-                      final historyItems = allSigns.whenOrNull(
-                        data: (signs) => _toTranslationItems(
-                          signs.take(10).toList(),
-                        ),
-                      );
+                    // Tarjeta: Historial
+                    _buildOptionCard(
+                      icon: Icons.history_rounded,
+                      title: 'Historial',
+                      subtitle: 'Revisa tus traducciones pasadas',
+                      onTap: () async {
+                        final historyEntries = await TranslationHistoryStorage()
+                            .getRecentTranslations(limit: 20);
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TranslationListScreen(
-                            title: 'Historial',
-                            items: historyItems ?? const [],
+                        if (!context.mounted) return;
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TranslationListScreen(
+                              title: 'Historial',
+                              items: historyEntries
+                                  .map(
+                                    (entry) => TranslationItem(
+                                      id: entry.id,
+                                      text: entry.text,
+                                      imageUrl: '',
+                                      signsInOrder: entry.signsInOrder,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
-                  // Bloque: Diccionario y Categorías
-                  _buildDictionaryGroup(
-                    context,
-                    greetings: greetings,
-                    commonPhrases: commonPhrases,
-                    emergencies: emergencies,
-                  ),
+                    // Bloque: Diccionario y Categorías
+                    _buildDictionaryGroup(
+                      context,
+                      greetings: greetings,
+                      commonPhrases: commonPhrases,
+                      emergencies: emergencies,
+                    ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
-                  // Tarjeta: Configuración de Modo de Traducción
-                  _buildExplicitTranslationCard(context, ref, isExplicit),
+                    // Tarjeta: Configuración de Modo de Traducción
+                    _buildExplicitTranslationCard(context, ref, isExplicit),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
-                  // Tarjeta: Notificaciones y Permisos
-                  _buildOptionCard(
-                    icon: Icons.notifications_none,
-                    title: 'Notificaciones y Permisos',
-                    subtitle: '',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PermissionsScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                    // Tarjeta: Notificaciones y Permisos
+                    _buildOptionCard(
+                      icon: Icons.notifications_none_rounded,
+                      title: 'Notificaciones y Permisos',
+                      subtitle: 'Configura permisos de micrófono y avisos',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PermissionsScreen(),
+                          ),
+                        );
+                      },
+                    ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 28),
 
-                  // Tarjeta: Ayuda y Preguntas Frecuentes
-                  _buildOptionCard(
-                    icon: Icons.help_outline_rounded,
-                    title: 'Ayuda y Preguntas Frecuentes',
-                    subtitle: 'Guía de uso, controles y dudas comunes',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HelpFaqScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                    // Tarjeta: Ayuda y Preguntas Frecuentes
+                    _buildOptionCard(
+                      icon: Icons.help_outline_rounded,
+                      title: 'Ayuda y Preguntas Frecuentes',
+                      subtitle: 'Guía de uso, controles y dudas comunes',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HelpFaqScreen(),
+                          ),
+                        );
+                      },
+                    ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // Widget del Logo oficial de SoundMe
-                  const Center(child: SoundMeLogo()),
+                    const Center(child: SoundMeLogo()),
 
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),
@@ -143,7 +159,6 @@ class OptionsScreen extends ConsumerWidget {
     );
   }
 
-  // Widget reutilizable para tarjetas principales
   Widget _buildOptionCard({
     required IconData icon,
     required String title,
@@ -152,51 +167,63 @@ class OptionsScreen extends ConsumerWidget {
     Color? iconColor,
     Color? titleColor,
   }) {
-    return Material(
-      color: AppColors.cardFillColor,
-      borderRadius: BorderRadius.circular(15),
-      clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 12,
-        ),
-        leading: Icon(
-          icon,
-          color: iconColor ?? AppColors.primaryNavy,
-          size: 36,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: titleColor ?? AppColors.primaryNavy,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardFillColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorderColor),
+        boxShadow: AppColors.softShadow,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 8,
           ),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor ?? AppColors.primaryNavy,
+              size: 26,
+            ),
+          ),
+          title: Text(
+            title,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: titleColor ?? AppColors.primaryNavy,
+            ),
+          ),
+          subtitle: subtitle.isNotEmpty
+              ? Text(
+                  subtitle,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                )
+              : null,
+          trailing: Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: iconColor ?? AppColors.primaryNavy,
+            size: 16,
+          ),
+          onTap: onTap,
         ),
-        subtitle: subtitle.isNotEmpty
-            ? Text(
-                subtitle,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textGray,
-                ),
-              )
-            : null,
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          color: iconColor ?? AppColors.primaryNavy,
-          size: 18,
-        ),
-        onTap: onTap,
       ),
     );
   }
 
-  // Grupo colapsable / desplegado del Diccionario — now with real data
   Widget _buildDictionaryGroup(
     BuildContext context, {
     required AsyncValue<List<MockSignEntry>> greetings,
@@ -206,12 +233,12 @@ class OptionsScreen extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.cardFillColor,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.shade400, width: 0.8),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorderColor),
+        boxShadow: AppColors.softShadow,
       ),
       child: Column(
         children: [
-          // Cabecera del Diccionario
           InkWell(
             onTap: () {
               Navigator.push(
@@ -222,47 +249,51 @@ class OptionsScreen extends ConsumerWidget {
               );
             },
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(15),
-              topRight: Radius.circular(15),
+              topLeft: Radius.circular(18),
+              topRight: Radius.circular(18),
             ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.menu_book,
-                    color: AppColors.primaryNavy,
-                    size: 32,
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.menu_book_rounded,
+                      color: AppColors.primaryNavy,
+                      size: 26,
+                    ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Diccionario',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
                             color: AppColors.primaryNavy,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Busca las palabras/frases que gustes y su interpretación en señas (completo)',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
+                          'Términos dominicanos organizados por categorías',
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
-                            fontWeight: FontWeight.w300,
-                            color: AppColors.primaryNavy.withAlpha(204),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
                   const Icon(
-                    Icons.keyboard_arrow_down,
+                    Icons.keyboard_arrow_down_rounded,
                     color: AppColors.primaryNavy,
                   ),
                 ],
@@ -270,7 +301,6 @@ class OptionsScreen extends ConsumerWidget {
             ),
           ),
 
-          // Sub-elementos integrados — now loading real mockup data
           _buildSubCategoryItem(
             title: 'Saludos básicos',
             onTap: () {
@@ -328,7 +358,6 @@ class OptionsScreen extends ConsumerWidget {
     );
   }
 
-  // Ítem de subcategoría
   Widget _buildSubCategoryItem({
     required String title,
     required VoidCallback onTap,
@@ -336,15 +365,15 @@ class OptionsScreen extends ConsumerWidget {
   }) {
     final borderRadius = isLast
         ? const BorderRadius.only(
-            bottomLeft: Radius.circular(15),
-            bottomRight: Radius.circular(15),
+            bottomLeft: Radius.circular(18),
+            bottomRight: Radius.circular(18),
           )
         : BorderRadius.zero;
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         border: Border(
-          top: BorderSide(color: Colors.grey.shade300, width: 0.8),
+          top: BorderSide(color: AppColors.cardBorderColor, width: 0.8),
         ),
       ),
       child: Material(
@@ -353,18 +382,20 @@ class OptionsScreen extends ConsumerWidget {
         clipBehavior: Clip.antiAlias,
         child: ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 2,
+          ),
           title: Text(
             title,
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
               color: AppColors.primaryNavy,
             ),
           ),
           trailing: const Icon(
-            Icons.arrow_forward_ios,
+            Icons.arrow_forward_ios_rounded,
             color: AppColors.primaryNavy,
             size: 14,
           ),
@@ -374,64 +405,69 @@ class OptionsScreen extends ConsumerWidget {
     );
   }
 
-  // Tarjeta interactiva con interruptor (Switch) para activar/desactivar traducción explícita
   Widget _buildExplicitTranslationCard(
     BuildContext context,
     WidgetRef ref,
     bool isExplicit,
   ) {
-    return Material(
-      color: AppColors.cardFillColor,
-      borderRadius: BorderRadius.circular(15),
-      clipBehavior: Clip.antiAlias,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardFillColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorderColor),
+        boxShadow: AppColors.softShadow,
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.spellcheck,
-              color: AppColors.primaryNavy,
-              size: 34,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.spellcheck_rounded,
+                color: AppColors.primaryNavy,
+                size: 26,
+              ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Traducción Explícita',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.primaryNavy,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     isExplicit
-                        ? 'Modo estricto activo: Solo traduce coincidencias exactas sin sinónimos ni autocorrección.'
-                        : 'Modo flexible activo: Autocorrige erratas (ej. avogado -> abogado) y busca sinónimos si la palabra no existe.',
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
+                        ? 'Modo estricto: Solo coincidencias exactas.'
+                        : 'Modo flexible: Corrige erratas y busca sinónimos.',
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textGray,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            Switch(
+            Switch.adaptive(
               value: isExplicit,
-              activeThumbColor: AppColors.primaryNavy,
-              activeTrackColor: AppColors.primaryNavy.withAlpha(100),
-              inactiveThumbColor: Colors.grey.shade400,
-              inactiveTrackColor: Colors.grey.shade200,
+              activeTrackColor: AppColors.primaryNavy,
               onChanged: (val) {
-                ref.read(translationSettingsProvider.notifier).setExplicitTranslation(val);
+                ref
+                    .read(translationSettingsProvider.notifier)
+                    .setExplicitTranslation(val);
               },
             ),
           ],

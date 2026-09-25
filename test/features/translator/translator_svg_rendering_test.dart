@@ -75,7 +75,7 @@ void main() {
       });
 
       // Estado inicial: icono y mensaje de invitación a traducir
-      expect(find.byIcon(Icons.g_translate), findsOneWidget);
+      expect(find.byIcon(Icons.g_translate_rounded), findsOneWidget);
 
       // Simular escritura de 'HOLA' en el TextField
       final textField = find.byType(TextField);
@@ -96,7 +96,7 @@ void main() {
       await tester.pump();
 
       // Vuelve al estado inicial limpio sin errores
-      expect(find.byIcon(Icons.g_translate), findsOneWidget);
+      expect(find.byIcon(Icons.g_translate_rounded), findsOneWidget);
     });
 
     testWidgets('4. TranslatorScreen realiza deletreo dactilológico en SVG para nombres no indexados', (tester) async {

@@ -5,11 +5,13 @@ class TranslationItem {
   final String text;
   final String imageUrl;
   final MockSignEntry? sign;
+  final List<String> signsInOrder;
 
   const TranslationItem({
     required this.id,
     required this.text,
     required this.imageUrl,
     this.sign,
+    this.signsInOrder = const [],
   });
 }

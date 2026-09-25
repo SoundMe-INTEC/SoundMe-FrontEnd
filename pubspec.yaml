@@ -39,6 +39,7 @@ dependencies:
   shared_preferences: ^2.5.5
 
   # === Phase 2A: Integration Dependencies ===
+  google_fonts: ^6.2.1
   dio: ^5.8.0
   flutter_dotenv: ^5.2.1
   flutter_riverpod: ^2.6.1

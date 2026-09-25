@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundme_frontend/core/network/api_endpoints.dart';
 import 'package:soundme_frontend/core/providers/app_providers.dart';
+import 'package:soundme_frontend/core/services/translation_history_storage.dart';
 import 'package:soundme_frontend/integration/network/api_client.dart';
 import 'package:soundme_frontend/integration/network/token_storage.dart';
 
@@ -19,6 +20,7 @@ class AccountNotVerifiedException implements Exception {
 class AuthService {
   final DioApiClient _apiClient;
   final TokenStorage _tokenStorage;
+  final TranslationHistoryStorage _historyStorage = TranslationHistoryStorage();
 
   AuthService({
     required DioApiClient apiClient,
@@ -104,6 +106,7 @@ class AuthService {
           accessToken: data['access'],
           refreshToken: data['refresh'],
         );
+        await _historyStorage.setCurrentUserId(identification.trim());
         return true;
       }
       return false;

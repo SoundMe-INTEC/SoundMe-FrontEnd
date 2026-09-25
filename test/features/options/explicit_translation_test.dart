@@ -109,7 +109,7 @@ void main() {
       // Inicialmente en modo flexible (false)
       final initialSwitch = tester.widget<Switch>(find.byType(Switch));
       expect(initialSwitch.value, isFalse);
-      expect(find.textContaining('Modo flexible activo'), findsOneWidget);
+      expect(find.textContaining('Modo flexible'), findsOneWidget);
 
       // Tocar el switch para activar modo explícito
       await tester.tap(find.byType(Switch));
@@ -118,7 +118,7 @@ void main() {
       // Ahora el switch debe estar en true y reflejar modo estricto
       final activeSwitch = tester.widget<Switch>(find.byType(Switch));
       expect(activeSwitch.value, isTrue);
-      expect(find.textContaining('Modo estricto activo'), findsOneWidget);
+      expect(find.textContaining('Modo estricto'), findsOneWidget);
     });
   });
 }

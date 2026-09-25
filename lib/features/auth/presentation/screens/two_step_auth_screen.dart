@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
-import 'package:soundme_frontend/core/widgets/header_background.dart';
+import 'package:soundme_frontend/core/widgets/header_background_2.dart';
+import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
 import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/admin/presentation/screens/admin_home_screen.dart';
 import 'package:soundme_frontend/features/auth/data/auth_service.dart';
@@ -99,79 +101,77 @@ class _TwoStepAuthScreenState extends ConsumerState<TwoStepAuthScreen> {
           _verifyOtp();
         }
         return;
-      } else if (digits.isNotEmpty) {
-        _controllers[index].text = digits[digits.length - 1];
       }
     }
 
     if (value.isNotEmpty) {
+      _controllers[index].text = value.substring(value.length - 1);
       if (index < 5) {
         _focusNodes[index + 1].requestFocus();
       } else {
         _focusNodes[index].unfocus();
-        _verifyOtp();
       }
-    } else if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
+    }
+
+    if (_getVerificationCode().length == 6) {
+      _verifyOtp();
     }
   }
 
   Future<void> _resendOtp() async {
-    if (_resendCooldown > 0 || _isResending) return;
     setState(() => _isResending = true);
-
     try {
       final authService = ref.read(authServiceProvider);
-      await authService.checkCredentials(
-        widget.identification,
-        widget.password,
+      await authService.checkCredentials(widget.identification, widget.password);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Nuevo código enviado con éxito',
+            style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: AppColors.primaryNavy,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
 
-      if (mounted) {
-        UIHelpers.showSuccess(context, 'Nuevo código OTP enviado a tu correo.');
-        setState(() {
-          _resendCooldown = 60;
-          for (var c in _controllers) {
-            c.clear();
-          }
-        });
-        _startTimer();
-        _focusNodes[0].requestFocus();
-      }
+      setState(() => _resendCooldown = 60);
+      _startTimer();
     } catch (e) {
       if (mounted) {
         UIHelpers.showError(
           context,
           message: e.toString().replaceAll('Exception: ', ''),
           onRetry: _resendOtp,
+          onCancel: () {},
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isResending = false);
-      }
+      if (mounted) setState(() => _isResending = false);
     }
   }
 
   Future<void> _verifyOtp() async {
     final code = _getVerificationCode();
-    if (code.length < 6) return;
-
-    // Ocultar teclado
-    FocusScope.of(context).unfocus();
+    if (code.length < 6) {
+      UIHelpers.showError(
+        context,
+        message: 'Por favor ingresa los 6 dígitos del código.',
+        onRetry: () => _focusNodes[0].requestFocus(),
+        onCancel: () {},
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
       final authService = ref.read(authServiceProvider);
-      final success = await authService.login(
-        widget.identification,
-        widget.password,
-        otp: code,
-      );
+      final isValid = await authService.login(widget.identification, widget.password, otp: code);
 
-      if (success && mounted) {
-        UIHelpers.showSuccess(context, '¡Sesión iniciada correctamente!');
+      if (isValid && mounted) {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
@@ -187,7 +187,6 @@ class _TwoStepAuthScreenState extends ConsumerState<TwoStepAuthScreen> {
           message: e.toString().replaceAll('Exception: ', ''),
           onRetry: _verifyOtp,
           onCancel: () {
-            // Limpiar inputs si cancela
             for (var c in _controllers) {
               c.clear();
             }
@@ -204,204 +203,243 @@ class _TwoStepAuthScreenState extends ConsumerState<TwoStepAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final headerTopOffset = AdminHeaderBackground.headerHeight(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          const HeaderBackground(),
-          SafeArea(
-            child: Stack(
-              children: [
-                // CONTENIDO SCROLLABLE SEGURO ANTE TECLADO
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                        child: IntrinsicHeight(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                            child: Column(
-                              children: [
-                                const Spacer(flex: 2),
-                                const SizedBox(height: 50),
-                                const SoundMeLogo(),
-                                const Spacer(flex: 1),
-                                const Text(
-                                  'Ingresa el código que hemos enviado a tu correo electrónico.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppColors.textGray,
-                                    height: 1.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: List.generate(6, (index) {
-                                    return Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                                        child: SizedBox(
-                                          height: 70,
-                                          child: TextField(
-                                            controller: _controllers[index],
-                                            focusNode: _focusNodes[index],
-                                            keyboardType: TextInputType.number,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              fontFamily: 'Inter',
-                                              fontSize: 26,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.primaryNavy,
-                                            ),
-                                            inputFormatters: [
-                                              FilteringTextInputFormatter.digitsOnly,
-                                              LengthLimitingTextInputFormatter(6),
-                                            ],
-                                            decoration: InputDecoration(
-                                              counterText: '',
-                                              filled: true,
-                                              fillColor: AppColors.inputFillColor,
-                                              contentPadding: const EdgeInsets.symmetric(
-                                                vertical: 18,
-                                              ),
-                                              border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                                borderSide: BorderSide.none,
-                                              ),
-                                            ),
-                                            onChanged: (value) => _onDigitChanged(index, value),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          children: [
+            // 1. CABECERA FIJA CON BOTÓN DE REGRESAR
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: HeaderWithBackButton(title: 'Verificación 2FA'),
+            ),
+
+            // 2. CONTENIDO PRINCIPAL SCROLLABLE (SIN COLISIÓN CON LOGO)
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(top: headerTopOffset - MediaQuery.paddingOf(context).top),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  child: Column(
+                    children: [
+                      const SoundMeLogo(),
+                      const SizedBox(height: 24),
+
+                      // TARJETA DE VERIFICACIÓN 2FA
+                      Container(
+                        padding: const EdgeInsets.all(22.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardFillColor,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: AppColors.cardBorderColor),
+                          boxShadow: AppColors.cardShadow,
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryNavy.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.mark_email_read_rounded,
+                                color: AppColors.primaryNavy,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Código de Seguridad',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryNavy,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Ingresa el código de 6 dígitos enviado a tu correo electrónico registrado.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textDark,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // CASILLAS DE CÓDIGO OTP (6 DÍGITOS)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: List.generate(6, (index) {
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                                    child: SizedBox(
+                                      height: 60,
+                                      child: TextField(
+                                        controller: _controllers[index],
+                                        focusNode: _focusNodes[index],
+                                        keyboardType: TextInputType.number,
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primaryNavy,
+                                        ),
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(6),
+                                        ],
+                                        decoration: InputDecoration(
+                                          counterText: '',
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(14),
+                                            borderSide: const BorderSide(color: AppColors.cardBorderColor),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(14),
+                                            borderSide: const BorderSide(color: AppColors.cardBorderColor),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(14),
+                                            borderSide: const BorderSide(color: AppColors.primaryNavy, width: 2),
                                           ),
                                         ),
+                                        onChanged: (value) => _onDigitChanged(index, value),
                                       ),
-                                    );
-                                  }),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            // REENVIAR CÓDIGO
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text(
+                                  '¿No recibiste el código? ',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
-                                const SizedBox(height: 16),
-                                Wrap(
-                                  alignment: WrapAlignment.center,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    const Text(
-                                      '¿No recibiste el código? ',
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 14,
-                                        color: AppColors.textGray,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: (_resendCooldown > 0 || _isResending)
-                                          ? null
-                                          : _resendOtp,
-                                      style: TextButton.styleFrom(
-                                        padding: EdgeInsets.zero,
-                                        minimumSize: Size.zero,
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      child: _isResending
-                                          ? const SizedBox(
-                                              width: 14,
-                                              height: 14,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: AppColors.primaryNavy,
-                                              ),
-                                            )
-                                          : Text(
-                                              _resendCooldown > 0
-                                                  ? 'Reenviar en ${_resendCooldown}s'
-                                                  : 'Reenviar código',
-                                              style: TextStyle(
-                                                fontFamily: 'Inter',
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: _resendCooldown > 0
-                                                    ? AppColors.textGray
-                                                    : AppColors.primaryNavy,
-                                                decoration: _resendCooldown > 0
-                                                    ? TextDecoration.none
-                                                    : TextDecoration.underline,
-                                              ),
-                                            ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 60,
-                                  child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _verifyOtp,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primaryNavy,
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(40),
-                                      ),
-                                    ),
-                                    child: _isLoading
-                                        ? const CircularProgressIndicator(color: Colors.white)
-                                        : const Text(
-                                            'Verificar',
-                                            style: TextStyle(
-                                              fontFamily: 'Inter',
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                TextButton(
+                                  onPressed: (_resendCooldown > 0 || _isResending) ? null : _resendOtp,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: _isResending
+                                      ? const SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: AppColors.primaryNavy,
                                           ),
-                                  ),
+                                        )
+                                      : Text(
+                                          _resendCooldown > 0
+                                              ? 'Reenviar en ${_resendCooldown}s'
+                                              : 'Reenviar código',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: _resendCooldown > 0
+                                                ? AppColors.textSecondary
+                                                : AppColors.primaryNavy,
+                                            decoration: _resendCooldown > 0
+                                                ? TextDecoration.none
+                                                : TextDecoration.underline,
+                                          ),
+                                        ),
                                 ),
-                                const Spacer(flex: 3),
-                                const Text(
-                                  '© 2026 SoundMe. Todos los derechos reservados.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 14,
-                                    color: AppColors.textGray,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
                               ],
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
 
-                // BOTÓN DE REGRESO (al final del Stack para recibir toques)
-                Positioned(
-                  top: 8,
-                  left: 16,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryNavy.withAlpha(200),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-                      tooltip: 'Regresar',
-                      onPressed: () {
-                        if (Navigator.canPop(context)) {
-                          Navigator.pop(context);
-                        }
-                      },
-                    ),
+                      const SizedBox(height: 24),
+
+                      // BOTÓN VERIFICAR
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryNavy.withValues(alpha: 0.25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _verifyOtp,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryNavy,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                )
+                              : Text(
+                                  'Verificar',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Text(
+                        '© 2026 SoundMe. Todos los derechos reservados.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

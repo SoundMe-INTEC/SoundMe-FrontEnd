@@ -1,21 +1,45 @@
 import 'package:flutter/material.dart';
 
 abstract class AppColors {
+  // Brand Primary & Accent
   static const Color primaryNavy = Color(0xFF002D62);
+  static const Color primaryNavyDark = Color(0xFF001F45);
+  static const Color primaryNavyLight = Color(0xFF0A448C);
+  
   static const Color accentRed = Color(0xFFCE1126);
-  // WCAG AA compliant text colors (>4.5:1 on white and on inputFillColor #E7EAEE)
-  static const Color textGray = Color(0xFF595959); // 5.9:1 on E7EAEE, 7.0:1 on White
-  static const Color textSecondary = Color(0xFF555555);
+  static const Color accentRedLight = Color(0xFFFF4D63);
+  
+  // Neutral Text Colors (WCAG AA Compliant)
+  static const Color textDark = Color(0xFF1E293B);
+  static const Color textGray = Color(0xFF595959);
+  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textLight = Color(0xFF94A3B8);
 
-  // Colores globales
+  // Background & Surfaces
   static const Color backgroundWhite = Colors.white;
-  static const Color textBlack = Colors.black;
-  static const Color inputFillColor = Color(0xFFE7EAEE);
+  static const Color backgroundOffWhite = Color(0xFFF8FAFC);
+  static const Color inputFillColor = Color(0xFFF1F5F9);
+  static const Color cardFillColor = Color(0xFFF1F5F9);
+  static const Color cardBorderColor = Color(0xFFE2E8F0);
+  
   static const Color cardBlue = Color(0xFF4FA3D1);
-  // Color de texto con ratio 4.89:1 sobre cardBlue (frente a 2.80:1 de blanco)
   static const Color cardBlueText = Color(0xFF002D62);
+  static const Color accentLightBlue = Color(0x1F4FA3D1);
 
-  // Colores para el Taskbar
-  static const Color cardFillColor = Color(0xFFE7EAEE);
-  static const Color accentLightBlue = Color(0x264FA3D1); // 15% opacidad
+  // Soft shadows
+  static List<BoxShadow> get softShadow => [
+        BoxShadow(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+          blurRadius: 16,
+          offset: const Offset(0, 4),
+        ),
+      ];
+
+  static List<BoxShadow> get cardShadow => [
+        BoxShadow(
+          color: const Color(0xFF002D62).withValues(alpha: 0.07),
+          blurRadius: 20,
+          offset: const Offset(0, 6),
+        ),
+      ];
 }

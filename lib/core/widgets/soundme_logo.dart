@@ -9,24 +9,27 @@ class SoundMeLogo extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 315, maxHeight: 180),
-          child: AspectRatio(
-            aspectRatio: 315 / 180,
-            child: Image.asset(
-              'assets/images/soundme_logo.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.hearing,
-                size: 60,
-                color: AppColors.primaryNavy,
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 315, maxHeight: 180),
+            child: AspectRatio(
+              aspectRatio: 315 / 180,
+              child: Image.asset(
+                'assets/images/soundme_logo.png',
+                fit: BoxFit.contain,
+                alignment: Alignment.center,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.hearing,
+                  size: 60,
+                  color: AppColors.primaryNavy,
+                ),
               ),
             ),
           ),
         ),
         const SizedBox(height: 8),
         const Text(
-          'Traductor de Voz a Lengua de\nSeñas Dominicana',
+          'Traductor de Voz a la\nLengua de Señas Dominicana',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: 'Inter',
