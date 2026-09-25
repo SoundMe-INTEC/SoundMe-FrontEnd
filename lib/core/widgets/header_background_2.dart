@@ -6,7 +6,7 @@ class AdminHeaderBackground extends StatelessWidget {
   final String? title;
   final Widget? trailing;
   final List<Widget>? actions;
-  
+
   const AdminHeaderBackground({
     super.key,
     this.title,
@@ -28,9 +28,7 @@ class AdminHeaderBackground extends StatelessWidget {
         Container(
           width: double.infinity,
           padding: EdgeInsets.only(top: topPadding),
-          decoration: const BoxDecoration(
-            color: AppColors.primaryNavy,
-          ),
+          decoration: const BoxDecoration(color: AppColors.primaryNavy),
           child: SizedBox(
             height: 52,
             child: Stack(

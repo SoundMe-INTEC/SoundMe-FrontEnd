@@ -396,7 +396,11 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
                           color: AppColors.primaryNavy.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.help_outline_rounded, color: AppColors.primaryNavy, size: 24),
+                        child: const Icon(
+                          Icons.help_outline_rounded,
+                          color: AppColors.primaryNavy,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       const Expanded(
@@ -416,22 +420,26 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
                   _buildHelpQuickItem(
                     icon: Icons.mic_rounded,
                     title: 'Traducción por Voz',
-                    description: 'Toca el micrófono central y habla con claridad. Tras 3 segundos de pausa, se traducirá automáticamente.',
+                    description:
+                        'Toca el micrófono central y habla con claridad. Tras 3 segundos de pausa, se traducirá automáticamente.',
                   ),
                   _buildHelpQuickItem(
                     icon: Icons.keyboard_alt_outlined,
                     title: 'Traducción por Texto',
-                    description: 'Escribe tu mensaje en la caja inferior o pulsa una sugerencia rápida para ver la secuencia de señas.',
+                    description:
+                        'Escribe tu mensaje en la caja inferior o pulsa una sugerencia rápida para ver la secuencia de señas.',
                   ),
                   _buildHelpQuickItem(
                     icon: Icons.speed_rounded,
                     title: 'Velocidad y Controles',
-                    description: 'Usa play/pausa y flechas para analizar cada seña. Regula el ritmo en Lento (3s), Normal (2s) o Rápido (1s).',
+                    description:
+                        'Usa play/pausa y flechas para analizar cada seña. Regula el ritmo en Lento (3s), Normal (2s) o Rápido (1s).',
                   ),
                   _buildHelpQuickItem(
                     icon: Icons.spellcheck_rounded,
                     title: 'Deletreo Dactilológico',
-                    description: 'Las palabras sin seña oficial directa en LSRD se mostrarán deletreadas letra a letra con el abecedario en señas.',
+                    description:
+                        'Las palabras sin seña oficial directa en LSRD se mostrarán deletreadas letra a letra con el abecedario en señas.',
                   ),
                   const SizedBox(height: 16),
                   SizedBox(

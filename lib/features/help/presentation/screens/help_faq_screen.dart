@@ -8,16 +8,14 @@ import 'package:soundme_frontend/features/options/presentation/screens/permissio
 class HelpFaqScreen extends StatefulWidget {
   final int initialTabIndex;
 
-  const HelpFaqScreen({
-    super.key,
-    this.initialTabIndex = 0,
-  });
+  const HelpFaqScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<HelpFaqScreen> createState() => _HelpFaqScreenState();
 }
 
-class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProviderStateMixin {
+class _HelpFaqScreenState extends State<HelpFaqScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -57,11 +55,15 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
           SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 65), // Espacio para el header con back button
-
+                const SizedBox(
+                  height: 65,
+                ), // Espacio para el header con back button
                 // BARRA DE BÚSQUEDA
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 8.0,
+                  ),
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.cardFillColor,
@@ -78,16 +80,24 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                       controller: _searchController,
                       style: const TextStyle(fontFamily: 'Inter', fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: 'Buscar en la ayuda o preguntas frecuentes...',
+                        hintText:
+                            'Buscar en la ayuda o preguntas frecuentes...',
                         hintStyle: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 14,
                           color: AppColors.textGray,
                         ),
-                        prefixIcon: const Icon(Icons.search, color: AppColors.primaryNavy),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.primaryNavy,
+                        ),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(Icons.clear, color: AppColors.textGray, size: 20),
+                                icon: const Icon(
+                                  Icons.clear,
+                                  color: AppColors.textGray,
+                                  size: 20,
+                                ),
                                 onPressed: () {
                                   setState(() {
                                     _searchController.clear();
@@ -97,7 +107,10 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                               )
                             : null,
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -126,8 +139,12 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                              color: isSelected ? Colors.white : AppColors.primaryNavy,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppColors.primaryNavy,
                             ),
                           ),
                           selected: isSelected,
@@ -137,7 +154,9 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                             side: BorderSide(
-                              color: isSelected ? AppColors.primaryNavy : Colors.transparent,
+                              color: isSelected
+                                  ? AppColors.primaryNavy
+                                  : Colors.transparent,
                             ),
                           ),
                           onSelected: (selected) {
@@ -188,10 +207,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
-                    children: [
-                      _buildGuideTab(),
-                      _buildFaqTab(),
-                    ],
+                    children: [_buildGuideTab(), _buildFaqTab()],
                   ),
                 ),
               ],
@@ -217,7 +233,9 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
     final guideItems = _getFilteredGuideItems();
 
     if (guideItems.isEmpty) {
-      return _buildEmptyResults('No se encontraron temas en la guía con el filtro seleccionado.');
+      return _buildEmptyResults(
+        'No se encontraron temas en la guía con el filtro seleccionado.',
+      );
     }
 
     return ListView(
@@ -255,7 +273,11 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                     color: AppColors.primaryNavy.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(item.icon, color: AppColors.primaryNavy, size: 24),
+                  child: Icon(
+                    item.icon,
+                    color: AppColors.primaryNavy,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -273,7 +295,10 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                       ),
                       const SizedBox(height: 2),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryNavy.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(6),
@@ -300,7 +325,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                 fontFamily: 'Inter',
                 fontSize: 13,
                 height: 1.4,
-                color: AppColors.textBlack,
+                color: AppColors.textDark,
               ),
             ),
             if (item.steps.isNotEmpty) ...[
@@ -354,7 +379,11 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   onPressed: item.onAction,
-                  icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.primaryNavy),
+                  icon: const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: AppColors.primaryNavy,
+                  ),
                   label: Text(
                     item.actionLabel!,
                     style: const TextStyle(
@@ -380,7 +409,9 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
     final faqItems = _getFilteredFaqItems();
 
     if (faqItems.isEmpty) {
-      return _buildEmptyResults('No se encontraron preguntas frecuentes con el criterio buscado.');
+      return _buildEmptyResults(
+        'No se encontraron preguntas frecuentes con el criterio buscado.',
+      );
     }
 
     return ListView(
@@ -408,9 +439,16 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 4.0,
+          ),
           childrenPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
           leading: Container(
             padding: const EdgeInsets.all(8),
@@ -418,7 +456,11 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
               color: AppColors.primaryNavy.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.help_outline_rounded, color: AppColors.primaryNavy, size: 20),
+            child: const Icon(
+              Icons.help_outline_rounded,
+              color: AppColors.primaryNavy,
+              size: 20,
+            ),
           ),
           title: Text(
             item.question,
@@ -448,7 +490,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                 fontFamily: 'Inter',
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textBlack,
+                color: AppColors.textDark,
               ),
             ),
             if (item.actionLabel != null && item.onAction != null) ...[
@@ -460,13 +502,22 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryNavy,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                   ),
                   icon: const Icon(Icons.open_in_new, size: 14),
                   label: Text(
                     item.actionLabel!,
-                    style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -567,7 +618,11 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_off_rounded, size: 54, color: AppColors.textGray),
+            const Icon(
+              Icons.search_off_rounded,
+              size: 54,
+              color: AppColors.textGray,
+            ),
             const SizedBox(height: 12),
             Text(
               message,
@@ -590,7 +645,8 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
   List<_GuideItem> _getFilteredGuideItems() {
     final items = _getAllGuideItems();
     return items.where((item) {
-      final matchesCategory = _selectedCategory == 'Todas' || item.category == _selectedCategory;
+      final matchesCategory =
+          _selectedCategory == 'Todas' || item.category == _selectedCategory;
       if (!matchesCategory) return false;
 
       if (_searchQuery.isEmpty) return true;
@@ -709,7 +765,8 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
   List<_FaqItem> _getFilteredFaqItems() {
     final items = _getAllFaqItems();
     return items.where((item) {
-      final matchesCategory = _selectedCategory == 'Todas' || item.category == _selectedCategory;
+      final matchesCategory =
+          _selectedCategory == 'Todas' || item.category == _selectedCategory;
       if (!matchesCategory) return false;
 
       if (_searchQuery.isEmpty) return true;
@@ -733,7 +790,8 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
         ),
       ),
       _FaqItem(
-        question: '¿Qué significa cuando una seña dice "Deletreo Dactilológico"?',
+        question:
+            '¿Qué significa cuando una seña dice "Deletreo Dactilológico"?',
         category: 'LSRD y Señas',
         answer:
             'En la Lengua de Señas Dominicana (LSRD), muchos nombres propios, términos extranjeros o palabras poco frecuentes no tienen una seña única. En esos casos, la comunidad sorda recurre al alfabeto dactilológico (deletreo manual). SoundMe identifica estas palabras y muestra la seña oficial de cada letra de manera secuencial.',
@@ -751,19 +809,22 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
             '¡Sí! Todo el catálogo de señas, imágenes y el diccionario están almacenados localmente en tu dispositivo. La traducción por texto y la consulta del diccionario funcionan perfectamente en modo avión o sin cobertura móvil.',
       ),
       _FaqItem(
-        question: '¿Cuál es la diferencia entre Traducción Flexible y Traducción Explícita?',
+        question:
+            '¿Cuál es la diferencia entre Traducción Flexible y Traducción Explícita?',
         category: 'Diccionario y Ajustes',
         answer:
             '• Traducción Flexible (Modo por defecto): Si escribes una palabra con faltas leves de ortografía o un sinónimo, el sistema lo corrige para ofrecerte la mejor seña disponible.\n• Traducción Explícita (Estricto): No aplica correcciones ni sustitución de sinónimos. Si la palabra exacta no existe en el diccionario oficial, pasará directamente al deletreo letra por letra. Puedes cambiar este ajuste en la pantalla de Opciones.',
       ),
       _FaqItem(
-        question: '¿Las señas mostradas corresponden a la Lengua de Señas Dominicana oficial?',
+        question:
+            '¿Las señas mostradas corresponden a la Lengua de Señas Dominicana oficial?',
         category: 'LSRD y Señas',
         answer:
             'Sí. SoundMe ha sido estructurado respetando la normativa y glosario de la Lengua de Señas Dominicana (LSRD), avalado bajo los lineamientos y documentación del Consejo Nacional de Discapacidad (CONADIS).',
       ),
       _FaqItem(
-        question: '¿Cómo puedo aprender señas por temas o categorías específicas?',
+        question:
+            '¿Cómo puedo aprender señas por temas o categorías específicas?',
         category: 'Diccionario y Ajustes',
         answer:
             'Puedes entrar a la sección de Diccionario (desde el menú de Inicio o desde la barra inferior) y navegar por los grupos temáticos: "Saludos Básicos", "Frases Comunes" y "Emergencias", o escribir cualquier palabra en el buscador para ver su postura y descripción gestual.',
@@ -774,13 +835,15 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> with SingleTickerProvider
         ),
       ),
       _FaqItem(
-        question: '¿Qué hago si una palabra no produce ninguna seña ni deletreo?',
+        question:
+            '¿Qué hago si una palabra no produce ninguna seña ni deletreo?',
         category: 'Traductor y Voz',
         answer:
             'Si envías una cadena con caracteres especiales no reconocidos o símbolos aislados, el sistema indicará "No se encontró coincidencia". Te sugerimos escribir la palabra con caracteres en español estándar (incluyendo ñ y tildes habituales) o usar una frase más concisa.',
       ),
       _FaqItem(
-        question: '¿Cómo puedo reportar una seña incorrecta o solicitar una nueva?',
+        question:
+            '¿Cómo puedo reportar una seña incorrecta o solicitar una nueva?',
         category: 'Traductor y Voz',
         answer:
             'Agradecemos profundamente el aporte de la comunidad. Puedes escribirnos a soporte@soundme.org indicando la palabra, la descripción del gesto y, si es posible, una referencia visual. Nuestro equipo lingüístico revisará la solicitud para la próxima actualización del catálogo.',
