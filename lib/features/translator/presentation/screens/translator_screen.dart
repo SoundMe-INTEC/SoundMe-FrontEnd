@@ -581,7 +581,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 25),
 
                             // REPRODUCTOR MULTIMEDIA RESPONSIVO
                             Container(
@@ -1038,7 +1038,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
                                     ),
                                   ),
 
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 80),
 
                                 // BIG MIC BUTTON (CON ANIMACIÓN DE PULSO Y AUTO-ENVÍO)
                                 Column(
@@ -1123,7 +1123,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
                                   ],
                                 ),
 
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 70),
 
                                 // ORACIONES SUGERIDAS (CHIPS)
                                 SizedBox(
