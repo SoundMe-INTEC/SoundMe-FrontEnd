@@ -120,12 +120,8 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
       });
       return;
     }
-
-    _debounceTimer = Timer(const Duration(milliseconds: 380), () {
-      if (mounted) {
-        _translateText(null, false);
-      }
-    });
+    // Para escritura manual, no se traduce automáticamente mientras el usuario escribe;
+    // la traducción se activa únicamente al presionar el botón Enviar o Submit del teclado.
   }
 
   Future<void> _translateText([

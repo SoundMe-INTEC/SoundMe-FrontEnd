@@ -61,7 +61,7 @@ void main() {
       expect(find.byType(MatrixSignImage), findsNothing);
     });
 
-    testWidgets('3. TranslatorScreen renderiza buscador y traduce reactivamente al escribir', (tester) async {
+    testWidgets('3. TranslatorScreen no traduce al escribir sino únicamente al presionar enviar', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -82,17 +82,26 @@ void main() {
       expect(textField, findsOneWidget);
 
       await tester.enterText(textField, 'HOLA');
+      // Esperar tiempo (antiguo debounce): no debe traducirse
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      // NO debe traducir mientras solo está escribiendo: permanece en invitación
+      expect(find.byType(SignImage), findsNothing);
+      expect(find.byIcon(Icons.g_translate_rounded), findsOneWidget);
+
+      // Al presionar el botón de Enviar: se ejecuta la traducción
       await tester.tap(find.byIcon(Icons.send_rounded));
       await tester.pumpAndSettle();
 
-      // Debe haber renderizado la seña 'HOLA' y su SvgPicture
+      // Ahora sí debe haber renderizado la seña 'HOLA' y su SvgPicture
       expect(find.byType(SignImage), findsOneWidget);
       expect(find.byType(SvgPicture), findsOneWidget);
       expect(find.text('HOLA'), findsWidgets);
 
       // Limpiar texto
       await tester.enterText(textField, '');
-      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 100));
       await tester.pump();
 
       // Vuelve al estado inicial limpio sin errores
