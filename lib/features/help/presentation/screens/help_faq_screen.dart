@@ -76,47 +76,77 @@ class _HelpFaqScreenState extends State<HelpFaqScreen>
                         ),
                       ],
                     ),
-                    child: TextField(
-                      controller: _searchController,
-                      style: const TextStyle(fontFamily: 'Inter', fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText:
-                            'Buscar en la ayuda o preguntas frecuentes...',
-                        hintStyle: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          color: AppColors.textGray,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: AppColors.primaryNavy,
-                        ),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(
-                                  Icons.clear,
-                                  color: AppColors.textGray,
-                                  size: 20,
+                    child: SizedBox(
+                      height: 52,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                              width: 36,
+                              child: Center(
+                                child: Icon(
+                                  Icons.search,
+                                  color: AppColors.primaryNavy,
                                 ),
-                                onPressed: () {
+                              ),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                textAlign: TextAlign.center,
+                                textAlignVertical: TextAlignVertical.center,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                ),
+                                decoration: const InputDecoration(
+                                  hintText:
+                                      'Buscar en la ayuda o preguntas frecuentes...',
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    color: AppColors.textGray,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                onChanged: (value) {
                                   setState(() {
-                                    _searchController.clear();
-                                    _searchQuery = '';
+                                    _searchQuery = value.trim().toLowerCase();
                                   });
                                 },
-                              )
-                            : null,
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+                              ),
+                            ),
+                            SizedBox(
+                              width: 36,
+                              child: _searchQuery.isEmpty
+                                  ? const SizedBox.shrink()
+                                  : IconButton(
+                                      tooltip: 'Borrar búsqueda',
+                                      constraints:
+                                          const BoxConstraints.tightFor(
+                                            width: 32,
+                                            height: 32,
+                                          ),
+                                      padding: EdgeInsets.zero,
+                                      icon: const Icon(
+                                        Icons.clear,
+                                        color: AppColors.textGray,
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _searchController.clear();
+                                          _searchQuery = '';
+                                        });
+                                      },
+                                    ),
+                            ),
+                          ],
                         ),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value.trim().toLowerCase();
-                        });
-                      },
                     ),
                   ),
                 ),

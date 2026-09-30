@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
+import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import '../data/mock_dictionary_repository.dart';
 import 'word_detail_screen.dart';
 
@@ -117,37 +118,60 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                             ),
                             boxShadow: AppColors.softShadow,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Center(
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: (value) {
-                                setState(() {
-                                  _searchQuery = value;
-                                });
-                              },
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textDark,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            children: [
+                              const SizedBox(
+                                width: 36,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.search_rounded,
+                                    color: AppColors.primaryNavy,
+                                    size: 22,
+                                  ),
+                                ),
                               ),
-                              decoration: InputDecoration(
-                                hintText: 'Buscar palabra o seña...',
-                                hintStyle: GoogleFonts.plusJakartaSans(
-                                  fontSize: 14,
-                                  color: AppColors.textSecondary,
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _searchQuery = value;
+                                    });
+                                  },
+                                  textAlign: TextAlign.center,
+                                  textAlignVertical: TextAlignVertical.center,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textDark,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'Buscar palabra o seña...',
+                                    hintStyle: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 0,
+                                    ),
+                                  ),
                                 ),
-                                prefixIcon: const Icon(
-                                  Icons.search_rounded,
-                                  color: AppColors.primaryNavy,
-                                  size: 22,
-                                ),
-                                prefixIconConstraints: const BoxConstraints(
-                                  minWidth: 26,
-                                  minHeight: 26,
-                                ),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
+                              ),
+                              SizedBox(
+                                width: 36,
+                                child: _searchQuery.isEmpty
+                                    ? const SizedBox.shrink()
+                                    : IconButton(
+                                        tooltip: 'Borrar búsqueda',
+                                        constraints:
+                                            const BoxConstraints.tightFor(
+                                              width: 32,
+                                              height: 32,
+                                            ),
+                                        padding: EdgeInsets.zero,
                                         icon: const Icon(
                                           Icons.clear_rounded,
                                           color: AppColors.textSecondary,
@@ -157,19 +181,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                                           _searchController.clear();
                                           setState(() => _searchQuery = '');
                                         },
-                                      )
-                                    : null,
-                                suffixIconConstraints: const BoxConstraints(
-                                  minWidth: 26,
-                                  minHeight: 26,
-                                ),
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 0,
-                                ),
+                                      ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
@@ -351,7 +365,14 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                       border: Border.all(color: AppColors.cardBorderColor),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: word.imagePaths.isNotEmpty
+                    child: word.signEntry != null
+                        ? SignImage(
+                            sign: word.signEntry!,
+                            fit: BoxFit.contain,
+                            width: 76,
+                            height: 76,
+                          )
+                        : word.imagePaths.isNotEmpty
                         ? Image.asset(word.imagePaths.first, fit: BoxFit.cover)
                         : const Center(
                             child: Icon(

@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:soundme_frontend/core/providers/settings_provider.dart';
+
 import 'package:soundme_frontend/core/services/translation_history_storage.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
-import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
+
 import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/help/presentation/screens/help_faq_screen.dart';
@@ -121,8 +121,10 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
       return;
     }
 
-    setState(() {
-      _statusText = '';
+    _debounceTimer = Timer(const Duration(milliseconds: 380), () {
+      if (mounted) {
+        _translateText(null, false);
+      }
     });
   }
 
@@ -162,8 +164,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
     _pausePlayback();
 
     final service = ref.read(mockupDataServiceProvider);
-    final isExplicit = ref.read(explicitTranslationProvider);
-    final result = await service.translatePhrase(text, explicit: isExplicit);
+    final result = await service.translatePhrase(text);
 
     if (!mounted) {
       return;
@@ -1030,6 +1031,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
                                     padding: const EdgeInsets.only(top: 8.0),
                                     child: Text(
                                       _statusText,
+                                      textAlign: TextAlign.center,
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,

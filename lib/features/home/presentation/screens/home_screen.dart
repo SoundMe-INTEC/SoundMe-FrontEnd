@@ -7,8 +7,44 @@ import 'package:soundme_frontend/features/auth/presentation/screens/login_screen
 import 'package:soundme_frontend/features/home/presentation/screens/about_screen.dart';
 import 'package:soundme_frontend/features/main_layout/presentation/screens/main_layout_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +52,7 @@ class HomeScreen extends StatelessWidget {
     final topPadding = MediaQuery.paddingOf(context).top;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
         children: [
           // 1. CABECERA PRINCIPAL UNIFICADA DE LA APLICACIÓN
@@ -27,7 +63,7 @@ class HomeScreen extends StatelessWidget {
             child: AdminHeaderBackground(title: 'SoundMe'),
           ),
 
-          // 2. CONTENIDO PRINCIPAL SCROLLABLE (SIN COLISIÓN CON LOGO)
+          // 2. CONTENIDO PRINCIPAL SCROLLABLE CON TRANSICIÓN ANIMADA
           SafeArea(
             child: Padding(
               padding: EdgeInsets.only(
@@ -35,140 +71,162 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0,
-                      vertical: 16.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // LOGO OFICIAL EN ÁREA BLANCA LIMPIA
-                        const SoundMeLogo(),
-                        const SizedBox(height: 18),
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 16.0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // LOGO OFICIAL CON ELEVACIÓN SUAVE
+                            Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: const SoundMeLogo(),
+                            ),
+                            const SizedBox(height: 14),
 
-                        // HERO BADGE INFORMATIVO
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryNavy.withValues(
-                              alpha: 0.08,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: AppColors.primaryNavy.withValues(
-                                alpha: 0.15,
+                            // HERO BADGE INFORMATIVO CON GRADIENTE MODERNO
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 9,
                               ),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.auto_awesome_rounded,
-                                size: 16,
-                                color: AppColors.primaryNavy,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Voz a Lengua de Señas Dominicana',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primaryNavy,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.primaryNavy.withValues(alpha: 0.08),
+                                    const Color(0xFF0284C7).withValues(alpha: 0.12),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: AppColors.primaryNavy.withValues(alpha: 0.18),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // BOTONES DE ACCIÓN PRINCIPALES
-                        _buildPrimaryButton(
-                          text: 'Traductor Dominicano',
-                          subtitle: 'Dictado por voz y texto a señas',
-                          icon: Icons.g_translate_rounded,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const MainLayoutScreen(initialIndex: 1),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryNavy.withValues(alpha: 0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.auto_awesome_rounded,
+                                      size: 14,
+                                      color: AppColors.primaryNavy,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      'Voz a Lengua de Señas Dominicana · LSRD',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primaryNavy,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 14),
+                            ),
 
-                        _buildSecondaryCardButton(
-                          text: 'Diccionario Dominicano',
-                          subtitle: 'Catálogo interactivo de palabras',
-                          icon: Icons.menu_book_rounded,
-                          accentColor: AppColors.primaryNavy,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const MainLayoutScreen(initialIndex: 2),
+                            const SizedBox(height: 28),
+
+                            // BOTONES DE ACCIÓN PRINCIPALES
+                            _buildPrimaryButton(
+                              text: 'Traductor Dominicano',
+                              subtitle: 'Dictado por voz y texto a señas en tiempo real',
+                              icon: Icons.g_translate_rounded,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MainLayoutScreen(initialIndex: 1),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildSecondaryCardButton(
+                              text: 'Diccionario Dominicano',
+                              subtitle: '2,427 términos y señas vectoriales',
+                              icon: Icons.menu_book_rounded,
+                              accentColor: AppColors.primaryNavy,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MainLayoutScreen(initialIndex: 2),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildSecondaryCardButton(
+                              text: 'Opciones del Sistema',
+                              subtitle: 'Traducción explícita, historial y permisos',
+                              icon: Icons.settings_rounded,
+                              accentColor: const Color(0xFF0369A1),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MainLayoutScreen(initialIndex: 3),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildSecondaryCardButton(
+                              text: 'Sobre Nosotros',
+                              subtitle: 'Conoce nuestra misión, visión e inclusión',
+                              icon: Icons.info_outline_rounded,
+                              accentColor: AppColors.accentRed,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AboutScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            const SizedBox(height: 36),
+
+                            // COPYRIGHT FOOTER
+                            Text(
+                              '© 2026 SoundMe · Inclusión y Tecnología Dominicana',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
                               ),
-                            );
-                          },
+                            ),
+                            const SizedBox(height: 20),
+                          ],
                         ),
-                        const SizedBox(height: 14),
-
-                        _buildSecondaryCardButton(
-                          text: 'Opciones del Sistema',
-                          subtitle: 'Ajustes, permisos y preferencias',
-                          icon: Icons.settings_rounded,
-                          accentColor: AppColors.primaryNavy,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const MainLayoutScreen(initialIndex: 3),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 14),
-
-                        _buildSecondaryCardButton(
-                          text: 'Sobre Nosotros',
-                          subtitle: 'Conoce nuestra misión e historia',
-                          icon: Icons.info_outline_rounded,
-                          accentColor: AppColors.accentRed,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AboutScreen(),
-                              ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 36),
-
-                        // COPYRIGHT FOOTER
-                        Text(
-                          '© 2026 SoundMe. Todos los derechos reservados.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -218,13 +276,17 @@ class HomeScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.primaryNavy,
+        gradient: const LinearGradient(
+          colors: [AppColors.primaryNavy, Color(0xFF0F3B7A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryNavy.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: AppColors.primaryNavy.withValues(alpha: 0.28),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -243,6 +305,7 @@ class HomeScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
                   child: Icon(icon, size: 28, color: Colors.white),
                 ),
@@ -257,6 +320,7 @@ class HomeScreen extends StatelessWidget {
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
+                          letterSpacing: 0.2,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -271,10 +335,17 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 18,
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  ),
                 ),
               ],
             ),
@@ -294,10 +365,10 @@ class HomeScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.cardFillColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.cardBorderColor),
-        boxShadow: AppColors.cardShadow,
+        boxShadow: AppColors.softShadow,
       ),
       child: Material(
         color: Colors.transparent,

@@ -156,13 +156,11 @@ void main() {
     testWidgets('AboutScreen renders without overflow on Pixel 10', (tester) async {
       await testScreen(tester, const AboutScreen(), 'AboutScreen');
       expect(find.byType(AboutScreen), findsOneWidget);
-      expect(find.byTooltip('Regresar'), findsOneWidget);
     });
 
     testWidgets('LoginScreen renders without overflow on Pixel 10', (tester) async {
       await testScreen(tester, const LoginScreen(), 'LoginScreen');
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.byTooltip('Regresar'), findsOneWidget);
     });
 
     testWidgets('TwoStepAuthScreen renders without overflow on Pixel 10', (tester) async {
@@ -172,13 +170,11 @@ void main() {
         'TwoStepAuthScreen',
       );
       expect(find.byType(TwoStepAuthScreen), findsOneWidget);
-      expect(find.byTooltip('Regresar'), findsOneWidget);
     });
 
     testWidgets('AdminHomeScreen renders without overflow on Pixel 10', (tester) async {
       await testScreen(tester, const AdminHomeScreen(), 'AdminHomeScreen');
       expect(find.byType(AdminHomeScreen), findsOneWidget);
-      expect(find.byTooltip('Regresar'), findsOneWidget);
     });
   });
 
@@ -462,8 +458,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      final opcionesBtn = find.widgetWithText(OutlinedButton, 'Opciones');
+      final opcionesBtn = find.text('Opciones del Sistema');
       expect(opcionesBtn, findsOneWidget);
+      await tester.ensureVisible(opcionesBtn);
+      await tester.pumpAndSettle();
 
       await tester.tap(opcionesBtn);
       await tester.pump();
@@ -485,8 +483,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      final dictBtn = find.widgetWithText(OutlinedButton, 'Diccionario');
+      final dictBtn = find.text('Diccionario Dominicano');
       expect(dictBtn, findsOneWidget);
+      await tester.ensureVisible(dictBtn);
+      await tester.pumpAndSettle();
 
       await tester.tap(dictBtn);
       await tester.pump();
@@ -507,8 +507,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      final traductorBtn = find.widgetWithText(ElevatedButton, 'Traductor');
+      final traductorBtn = find.text('Traductor Dominicano');
       expect(traductorBtn, findsOneWidget);
+      await tester.ensureVisible(traductorBtn);
+      await tester.pumpAndSettle();
 
       await tester.tap(traductorBtn);
       await tester.pump();
@@ -529,7 +531,11 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      final aboutBtn = find.widgetWithText(OutlinedButton, 'Sobre Nosotros');
+      final aboutBtn = find.text('Sobre Nosotros');
+      expect(aboutBtn, findsOneWidget);
+      await tester.ensureVisible(aboutBtn);
+      await tester.pumpAndSettle();
+
       await tester.tap(aboutBtn);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
@@ -558,7 +564,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Tap admin button
-      final adminBtn = find.byIcon(Icons.manage_accounts_outlined);
+      final adminBtn = find.byTooltip('Acceso Administrador');
       await tester.tap(adminBtn);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));

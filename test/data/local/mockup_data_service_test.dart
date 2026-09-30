@@ -145,5 +145,58 @@ void main() {
       final emergencies = await service.getEmergencies();
       expect(emergencies, isNotEmpty);
     });
+
+    test('conjugation lemmatization: "yo quería" translates directly to [YO, QUERER] without spelling', () async {
+      // Caso directo pedido por el usuario
+      final res = await service.translatePhrase('yo quería');
+      expect(res.spelledWords, isEmpty, reason: '"yo quería" no debe deletrearse');
+      expect(res.matchedSigns.length, 2);
+      expect(res.matchedSigns[0].palabra, 'YO');
+      expect(res.matchedSigns[1].palabra, 'QUERER');
+
+      // Variante sin tilde
+      final resSinTilde = await service.translatePhrase('yo queria');
+      expect(resSinTilde.spelledWords, isEmpty);
+      expect(resSinTilde.matchedSigns.length, 2);
+      expect(resSinTilde.matchedSigns[0].palabra, 'YO');
+      expect(resSinTilde.matchedSigns[1].palabra, 'QUERER');
+    });
+
+    test('multi-word translation with inflected verbs and pronouns', () async {
+      // "él quería comer" / "el queria comer"
+      final resEl = await service.translatePhrase('el queria comer');
+      expect(resEl.spelledWords, isEmpty);
+      expect(resEl.matchedSigns.length, 3);
+      expect(resEl.matchedSigns[0].palabra, contains('ÉL'));
+      expect(resEl.matchedSigns[1].palabra, 'QUERER');
+      expect(resEl.matchedSigns[2].palabra, 'COMIDA');
+
+      // "yo estaba trabajando" -> copula omitida, verbo regular lematizado
+      final resTrab = await service.translatePhrase('yo estaba trabajando');
+      expect(resTrab.spelledWords, isEmpty);
+      expect(resTrab.matchedSigns.length, 2);
+      expect(resTrab.matchedSigns[0].palabra, 'YO');
+      expect(resTrab.matchedSigns[1].palabra, contains('TRABAJA'));
+
+      // Locución con stop words del diccionario preservada
+      final resLengua = await service.translatePhrase('lengua de señas');
+      expect(resLengua.spelledWords, isEmpty);
+      expect(resLengua.matchedSigns.length, 1);
+      expect(resLengua.matchedSigns[0].palabra, contains('LENGUA DE SEÑAS'));
+    });
+
+    test('enclitic clitic pronouns and regular endings lemmatize accurately', () async {
+      final signAyuda = await service.findFlexible('ayúdame');
+      expect(signAyuda, isNotNull);
+      expect(signAyuda!.palabra, anyOf(contains('AYUDA'), contains('AYUDAR')));
+
+      final signEscucha = await service.findFlexible('escúchame');
+      expect(signEscucha, isNotNull);
+      expect(signEscucha!.palabra, contains('ESCUCHAR'));
+
+      final signCorrieron = await service.findFlexible('corrieron');
+      expect(signCorrieron, isNotNull);
+      expect(signCorrieron!.palabra, contains('CORRER'));
+    });
   });
 }

@@ -53,10 +53,11 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
 
   void _filterItems(String query) {
     setState(() {
-      if (query.isEmpty) {
+      final trimmedQuery = query.trim();
+      if (trimmedQuery.isEmpty) {
         _filteredItems = List.from(widget.items);
       } else {
-        final normalizedQuery = _normalize(query);
+        final normalizedQuery = _normalize(trimmedQuery);
         _filteredItems = widget.items
             .where((item) => _normalize(item.text).contains(normalizedQuery))
             .toList();
@@ -135,36 +136,53 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
         border: Border.all(color: AppColors.cardBorderColor),
         boxShadow: AppColors.softShadow,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Center(
-        child: TextField(
-          controller: _searchController,
-          onChanged: _filterItems,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textDark,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 36,
+            child: Center(
+              child: Icon(
+                Icons.search_rounded,
+                color: AppColors.primaryNavy,
+                size: 22,
+              ),
+            ),
           ),
-          decoration: InputDecoration(
-            hintText: 'Buscar en la lista...',
-            hintStyle: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              color: AppColors.textSecondary,
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: _filterItems,
+              textAlign: TextAlign.center,
+              textAlignVertical: TextAlignVertical.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Buscar en la lista...',
+                hintStyle: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
             ),
-            border: InputBorder.none,
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: 0),
-            prefixIcon: const Icon(
-              Icons.search_rounded,
-              color: AppColors.primaryNavy,
-              size: 22,
-            ),
-            prefixIconConstraints: const BoxConstraints(
-              minWidth: 26,
-              minHeight: 26,
-            ),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
+          ),
+          SizedBox(
+            width: 36,
+            child: _searchController.text.isEmpty
+                ? const SizedBox.shrink()
+                : IconButton(
+                    tooltip: 'Borrar búsqueda',
+                    constraints: const BoxConstraints.tightFor(
+                      width: 32,
+                      height: 32,
+                    ),
+                    padding: EdgeInsets.zero,
                     icon: const Icon(
                       Icons.clear_rounded,
                       color: AppColors.textSecondary,
@@ -174,14 +192,9 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
                       _searchController.clear();
                       _filterItems('');
                     },
-                  )
-                : null,
-            suffixIconConstraints: const BoxConstraints(
-              minWidth: 26,
-              minHeight: 26,
-            ),
+                  ),
           ),
-        ),
+        ],
       ),
     );
   }

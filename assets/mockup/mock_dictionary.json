@@ -25,7 +25,11 @@
     "imagePaths": [
       "assets/images/mockup/senia_0003.png"
     ],
-    "sinonimos": ["cruzando", "carretera", "via"]
+    "sinonimos": [
+      "cruzando",
+      "carretera",
+      "via"
+    ]
   },
   {
     "id": 5,
@@ -53,7 +57,10 @@
     "imagePaths": [
       "assets/images/mockup/senia_0006.png"
     ],
-    "sinonimos": ["ventilador", "aire"]
+    "sinonimos": [
+      "ventilador",
+      "aire"
+    ]
   },
   {
     "id": 8,
@@ -747,7 +754,11 @@
     "imagePaths": [
       "assets/images/mockup/senia_0083.png"
     ],
-    "sinonimos": ["liquido", "hidratarse", "sed"]
+    "sinonimos": [
+      "liquido",
+      "hidratarse",
+      "sed"
+    ]
   },
   {
     "id": 85,
@@ -1357,76 +1368,150 @@
     "palabra": "HOLA",
     "descripcion": "Saludo",
     "gesto": "Mano extendida",
-    "imagePaths": ["assets/images/mockup/senia_0001.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0001.png"
+    ]
   },
   {
     "id": 9002,
     "palabra": "CÓMO",
     "descripcion": "Pregunta",
     "gesto": "Manos juntas",
-    "imagePaths": ["assets/images/mockup/senia_0002.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0002.png"
+    ]
   },
   {
     "id": 9003,
     "palabra": "ESTÁS",
     "descripcion": "Estado",
     "gesto": "Señalar",
-    "imagePaths": ["assets/images/mockup/senia_0003.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0003.png"
+    ]
   },
   {
     "id": 9004,
     "palabra": "YO",
     "descripcion": "Pronombre",
     "gesto": "Señalarse",
-    "imagePaths": ["assets/images/mockup/senia_0004.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0004.png"
+    ]
   },
   {
     "id": 9005,
     "palabra": "ESTOY",
     "descripcion": "Verbo",
     "gesto": "Mano en pecho",
-    "imagePaths": ["assets/images/mockup/senia_0005.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0005.png"
+    ]
   },
   {
     "id": 9006,
     "palabra": "MUY",
     "descripcion": "Adverbio",
     "gesto": "Mano extendida",
-    "imagePaths": ["assets/images/mockup/senia_0006.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0006.png"
+    ]
   },
   {
     "id": 9007,
     "palabra": "FELIZ",
     "descripcion": "Adjetivo",
     "gesto": "Sonrisa y manos arriba",
-    "imagePaths": ["assets/images/mockup/senia_0007.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0007.png"
+    ]
   },
   {
     "id": 9008,
     "palabra": "GRACIAS",
     "descripcion": "Agradecimiento",
     "gesto": "Mano a la barbilla",
-    "imagePaths": ["assets/images/mockup/senia_0008.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0008.png"
+    ]
   },
   {
     "id": 9009,
     "palabra": "POR",
     "descripcion": "Preposición",
     "gesto": "Seña de por",
-    "imagePaths": ["assets/images/mockup/senia_0009.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0009.png"
+    ]
   },
   {
     "id": 9010,
     "palabra": "TU",
     "descripcion": "Pronombre",
     "gesto": "Señalar al frente",
-    "imagePaths": ["assets/images/mockup/senia_0010.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0010.png"
+    ]
   },
   {
     "id": 9011,
     "palabra": "AYUDA",
     "descripcion": "Sustantivo",
     "gesto": "Mano sobre mano",
-    "imagePaths": ["assets/images/mockup/senia_0001.png"]
+    "imagePaths": [
+      "assets/images/mockup/senia_0001.png"
+    ]
+  },
+  {
+    "id": 9012,
+    "palabra": "BANCO",
+    "descripcion": "Entidad financiera que recibe depósitos y presta dinero",
+    "gesto": "Las manos en forma de B se desplazan hacia adelante y luego se abren como dos columnas",
+    "imagePaths": [
+      "assets/images/mockup/senia_0011.png"
+    ],
+    "sinonimos": [
+      "banca",
+      "financiero"
+    ]
+  },
+  {
+    "id": 9013,
+    "palabra": "BANCO (FINANCIERO)",
+    "descripcion": "Institución financiera dedicada a recibir depósitos y conceder préstamos",
+    "gesto": "Las manos en forma de B se desplazan hacia adelante y luego se abren como dos columnas",
+    "imagePaths": [
+      "assets/images/mockup/senia_0012.png"
+    ],
+    "sinonimos": [
+      "banco",
+      "financiero"
+    ]
+  },
+  {
+    "id": 9014,
+    "palabra": "ACCIÓN",
+    "descripcion": "Participación o intervención en una actividad o decisión",
+    "gesto": "La mano dominante en forma de A realiza un gesto breve hacia adelante con la otra mano cerrada",
+    "imagePaths": [
+      "assets/images/mockup/senia_0013.png"
+    ],
+    "sinonimos": [
+      "acto",
+      "movimiento"
+    ]
+  },
+  {
+    "id": 9015,
+    "palabra": "SILLA",
+    "descripcion": "Mueble para sentarse con respaldo",
+    "gesto": "La mano dominante se desliza abajo y luego se apoya sobre la otra mano en forma de asiento",
+    "imagePaths": [
+      "assets/images/mockup/senia_0014.png"
+    ],
+    "sinonimos": [
+      "asiento",
+      "butaca"
+    ]
   }
 ]

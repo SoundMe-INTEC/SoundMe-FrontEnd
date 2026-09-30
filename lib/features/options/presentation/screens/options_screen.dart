@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/core/services/translation_history_storage.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
@@ -9,7 +10,7 @@ import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/permissions_screen.dart';
 import 'package:soundme_frontend/features/options/presentation/screens/translation_list_screen.dart';
-import 'package:soundme_frontend/core/providers/settings_provider.dart';
+
 import 'package:soundme_frontend/features/dictionary/presentation/dictionary_screen.dart';
 import 'package:soundme_frontend/features/help/presentation/screens/help_faq_screen.dart';
 
@@ -36,7 +37,7 @@ class OptionsScreen extends ConsumerWidget {
     final greetings = ref.watch(mockGreetingsProvider);
     final commonPhrases = ref.watch(mockCommonPhrasesProvider);
     final emergencies = ref.watch(mockEmergenciesProvider);
-    final isExplicit = ref.watch(explicitTranslationProvider);
+
     final headerTopOffset = AdminHeaderBackground.headerHeight(context);
 
     return Scaffold(
@@ -107,8 +108,8 @@ class OptionsScreen extends ConsumerWidget {
 
                     const SizedBox(height: 14),
 
-                    // Tarjeta: Configuración de Modo de Traducción
-                    _buildExplicitTranslationCard(context, ref, isExplicit),
+                    // Tarjeta: Traducción Explícita (Modo Estricto vs Flexible)
+                    _buildExplicitTranslationCard(context, ref),
 
                     const SizedBox(height: 14),
 
@@ -405,11 +406,10 @@ class OptionsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildExplicitTranslationCard(
-    BuildContext context,
-    WidgetRef ref,
-    bool isExplicit,
-  ) {
+  // Tarjeta interactiva con interruptor (Switch) para alternar Traducción Explícita
+  Widget _buildExplicitTranslationCard(BuildContext context, WidgetRef ref) {
+    final isExplicit = ref.watch(explicitTranslationProvider);
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.cardFillColor,
@@ -417,60 +417,67 @@ class OptionsScreen extends ConsumerWidget {
         border: Border.all(color: AppColors.cardBorderColor),
         boxShadow: AppColors.softShadow,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.spellcheck_rounded,
+                  color: AppColors.primaryNavy,
+                  size: 26,
+                ),
               ),
-              child: const Icon(
-                Icons.spellcheck_rounded,
-                color: AppColors.primaryNavy,
-                size: 26,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Traducción Explícita',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryNavy,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Traducción Explícita',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryNavy,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    isExplicit
-                        ? 'Modo estricto: Solo coincidencias exactas.'
-                        : 'Modo flexible: Corrige erratas y busca sinónimos.',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                    const SizedBox(height: 4),
+                    Text(
+                      isExplicit
+                          ? 'Modo estricto activo: Solo traduce coincidencias exactas sin sinónimos ni autocorrección.'
+                          : 'Modo flexible activo: Autocorrige erratas (ej. avogado -> abogado) y busca sinónimos si la palabra no existe.',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Switch.adaptive(
-              value: isExplicit,
-              activeTrackColor: AppColors.primaryNavy,
-              onChanged: (val) {
-                ref
-                    .read(translationSettingsProvider.notifier)
-                    .setExplicitTranslation(val);
-              },
-            ),
-          ],
+              const SizedBox(width: 8),
+              Switch(
+                value: isExplicit,
+                activeColor: AppColors.primaryNavy,
+                activeTrackColor: AppColors.primaryNavy.withAlpha(100),
+                inactiveThumbColor: Colors.grey.shade400,
+                inactiveTrackColor: Colors.grey.shade200,
+                onChanged: (val) {
+                  ref.read(translationSettingsProvider.notifier).setExplicitTranslation(val);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

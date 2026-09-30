@@ -14,8 +14,8 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 
-    // Verify that 'Traductor' and 'Opciones' buttons exist.
-    expect(find.text('Traductor'), findsOneWidget);
-    expect(find.text('Opciones'), findsOneWidget);
+    // Verify that 'Traductor Dominicano' and 'Opciones del Sistema' buttons exist.
+    expect(find.text('Traductor Dominicano'), findsOneWidget);
+    expect(find.text('Opciones del Sistema'), findsOneWidget);
   });
 }

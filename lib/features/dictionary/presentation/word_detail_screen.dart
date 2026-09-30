@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
+import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import '../data/mock_dictionary_repository.dart';
 
 class WordDetailScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
   void initState() {
     super.initState();
     // Auto-play if there are multiple images
-    if (widget.word.imagePaths.length > 1) {
+    if (widget.word.signEntry == null && widget.word.imagePaths.length > 1) {
       _togglePlayPause();
     }
   }
@@ -36,6 +37,7 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
   }
 
   void _togglePlayPause() {
+    if (widget.word.signEntry != null) return;
     if (widget.word.imagePaths.length <= 1) return; // No animation needed
 
     setState(() {
@@ -57,7 +59,8 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasMultipleFrames = widget.word.imagePaths.length > 1;
+    final bool hasMultipleFrames =
+        widget.word.signEntry == null && widget.word.imagePaths.length > 1;
     final headerTopOffset = AdminHeaderBackground.headerHeight(context);
 
     return Scaffold(
@@ -72,7 +75,9 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
           ),
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.only(top: headerTopOffset - MediaQuery.paddingOf(context).top),
+              padding: EdgeInsets.only(
+                top: headerTopOffset - MediaQuery.paddingOf(context).top,
+              ),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
@@ -85,26 +90,43 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                         child: Container(
                           width: double.infinity,
                           height: 280,
-                          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.cardFillColor,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: AppColors.cardBorderColor),
+                            border: Border.all(
+                              color: AppColors.cardBorderColor,
+                            ),
                             boxShadow: AppColors.cardShadow,
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(24),
-                            child: widget.word.imagePaths.isNotEmpty
+                            child: widget.word.signEntry != null
+                                ? SignImage(
+                                    sign: widget.word.signEntry!,
+                                    fit: BoxFit.contain,
+                                    width: double.infinity,
+                                    height: 280,
+                                  )
+                                : widget.word.imagePaths.isNotEmpty
                                 ? Image.asset(
                                     widget.word.imagePaths[_currentFrame],
                                     fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) => const Center(
-                                      child: Icon(
-                                        Icons.image_not_supported_outlined,
-                                        size: 70,
-                                        color: AppColors.primaryNavy,
-                                      ),
-                                    ),
+                                    errorBuilder:
+                                        (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) => const Center(
+                                          child: Icon(
+                                            Icons.image_not_supported_outlined,
+                                            size: 70,
+                                            color: AppColors.primaryNavy,
+                                          ),
+                                        ),
                                   )
                                 : const Center(
                                     child: Icon(
@@ -127,7 +149,9 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                           ),
                           child: IconButton(
                             icon: Icon(
-                              _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                              _isPlaying
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
                               size: 30,
                               color: Colors.white,
                             ),
@@ -136,7 +160,10 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                         ),
                       ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 8.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -150,7 +177,9 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            widget.word.descripcion,
+                            widget.word.descripcion.isNotEmpty
+                                ? widget.word.descripcion
+                                : 'Sin descripción disponible.',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 15,
                               color: AppColors.textDark,
@@ -172,16 +201,24 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.cardFillColor,
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: AppColors.cardBorderColor),
+                              border: Border.all(
+                                color: AppColors.cardBorderColor,
+                              ),
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.info_outline_rounded, color: AppColors.primaryNavy, size: 22),
+                                const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: AppColors.primaryNavy,
+                                  size: 22,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    widget.word.gesto,
+                                    widget.word.gesto.isNotEmpty
+                                        ? widget.word.gesto
+                                        : 'No hay instrucciones del gesto disponibles.',
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 14,
                                       color: AppColors.primaryNavy,
@@ -207,4 +244,3 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
     );
   }
 }
-

@@ -122,12 +122,15 @@ class AboutScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              Text(
-                                'Nuestro Objetivo',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryNavy,
+                              Expanded(
+                                child: Text(
+                                  'Nuestro Objetivo',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primaryNavy,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],

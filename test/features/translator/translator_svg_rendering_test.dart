@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/translator/presentation/screens/translator_screen.dart';
@@ -13,6 +14,7 @@ void main() {
     late MockupDataService service;
 
     setUp(() async {
+      SharedPreferences.setMockInitialValues({});
       service = MockupDataService();
       await service.getAll(); // Precargar cache para ejecución síncrona en widget tests
     });
@@ -60,19 +62,17 @@ void main() {
     });
 
     testWidgets('3. TranslatorScreen renderiza buscador y traduce reactivamente al escribir', (tester) async {
-      await tester.runAsync(() async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              mockupDataServiceProvider.overrideWithValue(service),
-            ],
-            child: const MaterialApp(
-              home: TranslatorScreen(),
-            ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            mockupDataServiceProvider.overrideWithValue(service),
+          ],
+          child: const MaterialApp(
+            home: TranslatorScreen(),
           ),
-        );
-        await tester.pumpAndSettle();
-      });
+        ),
+      );
+      await tester.pumpAndSettle();
 
       // Estado inicial: icono y mensaje de invitación a traducir
       expect(find.byIcon(Icons.g_translate_rounded), findsOneWidget);
@@ -82,8 +82,8 @@ void main() {
       expect(textField, findsOneWidget);
 
       await tester.enterText(textField, 'HOLA');
-      await tester.pump(const Duration(milliseconds: 450)); // Esperar debounce de 380ms
-      await tester.pump();
+      await tester.tap(find.byIcon(Icons.send_rounded));
+      await tester.pumpAndSettle();
 
       // Debe haber renderizado la seña 'HOLA' y su SvgPicture
       expect(find.byType(SignImage), findsOneWidget);
@@ -92,7 +92,7 @@ void main() {
 
       // Limpiar texto
       await tester.enterText(textField, '');
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 400));
       await tester.pump();
 
       // Vuelve al estado inicial limpio sin errores
@@ -100,24 +100,22 @@ void main() {
     });
 
     testWidgets('4. TranslatorScreen realiza deletreo dactilológico en SVG para nombres no indexados', (tester) async {
-      await tester.runAsync(() async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              mockupDataServiceProvider.overrideWithValue(service),
-            ],
-            child: const MaterialApp(
-              home: TranslatorScreen(),
-            ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            mockupDataServiceProvider.overrideWithValue(service),
+          ],
+          child: const MaterialApp(
+            home: TranslatorScreen(),
           ),
-        );
-        await tester.pumpAndSettle();
-      });
+        ),
+      );
+      await tester.pumpAndSettle();
 
       final textField = find.byType(TextField);
       await tester.enterText(textField, 'CARLOS');
-      await tester.pump(const Duration(milliseconds: 450));
-      await tester.pump();
+      await tester.tap(find.byIcon(Icons.send_rounded));
+      await tester.pumpAndSettle();
 
       // CARLOS se deletrea dactilológicamente (C-A-R-L-O-S = 6 señas)
       expect(find.byType(SignImage), findsOneWidget);
