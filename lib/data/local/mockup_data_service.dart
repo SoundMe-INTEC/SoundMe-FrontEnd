@@ -1207,6 +1207,9 @@ class MockupDataService {
     'REGALAR': 'REGALO',
     'EMPLEO': 'TRABAJO',
     'LABOR': 'TRABAJO',
+    'PROFESION': 'TRABAJO',
+    'OFICIO': 'TRABAJO',
+    'OCUPACION': 'TRABAJO',
     'MEDICO': 'DOCTOR',
     'MEDICA': 'DOCTORA',
     'VELOCIDAD': 'RAPIDO',
@@ -1298,6 +1301,8 @@ class MockupDataService {
     'BUENAS TARDES': 'BUENAS TARDES',
     'BUENAS NOCHES': 'BUENAS NOCHES',
     'MUCHAS GRACIAS': 'MUCHAS GRACIAS',
+    'A QUE TE DEDICAS': 'TRABAJO',
+    'QUE TE DEDICAS': 'TRABAJO',
   };
 
   /// Diccionario de resolución contextual de homónimos.
@@ -1771,13 +1776,17 @@ class MockupDataService {
       if (synonymTarget != null) return synonymTarget;
     }
 
-    // 6. Búsqueda por distancia Levenshtein (<= 1 para palabras de longitud >= 4)
-    if (_normalizedIndex != null && w.length >= 4) {
+    // 7. Búsqueda por distancia Levenshtein (corrección ortográfica en palabras de >= 5 letras)
+    // Para evitar falsos positivos semánticos (ej: "DEDICO" -> "MEDICO", "GATO" -> "PATO"),
+    // se exige que coincida la primera letra o que sea una palabra larga (>= 8 letras).
+    if (_normalizedIndex != null && w.length >= 5) {
       for (final entry in _normalizedIndex!.entries) {
         final key = entry.key;
         if ((key.length - w.length).abs() <= 1) {
-          if (_levenshtein(w, key) == 1) {
-            return entry.value;
+          if ((w[0] == key[0] && w.length >= 5) || w.length >= 8) {
+            if (_levenshtein(w, key) == 1) {
+              return entry.value;
+            }
           }
         }
       }
@@ -1824,41 +1833,44 @@ class MockupDataService {
     final tokens = <String>[];
     int ti = 0;
     while (ti < rawTokens.length) {
-      // Probar 4-grama de frase en diccionario
+      // Probar 4-grama de frase en diccionario o locución
       if (ti + 3 < rawTokens.length) {
-        final quad = '${_normalize(rawTokens[ti])} ${_normalize(rawTokens[ti + 1])} ${_normalize(rawTokens[ti + 2])} ${_normalize(rawTokens[ti + 3])}';
-        if (_normalizedIndex != null && _normalizedIndex!.containsKey(quad)) {
-          tokens.add(quad);
+        final quadNorm = '${_normalize(rawTokens[ti])} ${_normalize(rawTokens[ti + 1])} ${_normalize(rawTokens[ti + 2])} ${_normalize(rawTokens[ti + 3])}';
+        if (_multiWordPhrases.containsKey(quadNorm)) {
+          tokens.add(_normalize(_multiWordPhrases[quadNorm]!));
+          ti += 4;
+          continue;
+        }
+        if (_normalizedIndex != null && _normalizedIndex!.containsKey(quadNorm)) {
+          tokens.add(quadNorm);
           ti += 4;
           continue;
         }
       }
       // Probar trigrama de frase en diccionario o locución
       if (ti + 2 < rawTokens.length) {
-        final triRaw = '${rawTokens[ti].toUpperCase()} ${rawTokens[ti + 1].toUpperCase()} ${rawTokens[ti + 2].toUpperCase()}';
-        if (_multiWordPhrases.containsKey(triRaw)) {
-          tokens.add(_normalize(_multiWordPhrases[triRaw]!));
+        final triNorm = '${_normalize(rawTokens[ti])} ${_normalize(rawTokens[ti + 1])} ${_normalize(rawTokens[ti + 2])}';
+        if (_multiWordPhrases.containsKey(triNorm)) {
+          tokens.add(_normalize(_multiWordPhrases[triNorm]!));
           ti += 3;
           continue;
         }
-        final tri = '${_normalize(rawTokens[ti])} ${_normalize(rawTokens[ti + 1])} ${_normalize(rawTokens[ti + 2])}';
-        if (_normalizedIndex != null && _normalizedIndex!.containsKey(tri)) {
-          tokens.add(tri);
+        if (_normalizedIndex != null && _normalizedIndex!.containsKey(triNorm)) {
+          tokens.add(triNorm);
           ti += 3;
           continue;
         }
       }
       // Probar bigrama de frase en diccionario o locución
       if (ti + 1 < rawTokens.length) {
-        final biRaw = '${rawTokens[ti].toUpperCase()} ${rawTokens[ti + 1].toUpperCase()}';
-        if (_multiWordPhrases.containsKey(biRaw)) {
-          tokens.add(_normalize(_multiWordPhrases[biRaw]!));
+        final biNorm = '${_normalize(rawTokens[ti])} ${_normalize(rawTokens[ti + 1])}';
+        if (_multiWordPhrases.containsKey(biNorm)) {
+          tokens.add(_normalize(_multiWordPhrases[biNorm]!));
           ti += 2;
           continue;
         }
-        final bi = '${_normalize(rawTokens[ti])} ${_normalize(rawTokens[ti + 1])}';
-        if (_normalizedIndex != null && _normalizedIndex!.containsKey(bi)) {
-          tokens.add(bi);
+        if (_normalizedIndex != null && _normalizedIndex!.containsKey(biNorm)) {
+          tokens.add(biNorm);
           ti += 2;
           continue;
         }
@@ -1905,6 +1917,47 @@ class MockupDataService {
       if (isMultiWord && copulas.contains(upper)) {
         ti++;
         continue;
+      }
+
+      // Perífrasis verbales de dedicación / hábito seguidas de acción (ej: "me dedico a pasear...", "se dedica a pintar...")
+      // En LSRD el conector perifrástico se omite y la seña de la acción principal toma protagonismo directo.
+      const dedicationStems = {
+        'DEDICO', 'DEDICAS', 'DEDICA', 'DEDICAMOS', 'DEDICAN', 'DEDICARME', 'DEDICARSE', 'DEDICARTE', 'DEDICARNOS'
+      };
+
+      // Si es un pronombre reflexivo que precede a "dedico/dedica" (ej: "me dedico a...")
+      if (isMultiWord &&
+          (upper == 'ME' || upper == 'TE' || upper == 'SE' || upper == 'NOS' || upper == 'OS') &&
+          ti + 1 < rawTokens.length &&
+          dedicationStems.contains(rawTokens[ti + 1].toUpperCase())) {
+        ti++;
+        continue;
+      }
+
+      // Si es la forma verbal de dedicación en frase compuesta
+      if (isMultiWord && dedicationStems.contains(upper)) {
+        // Caso A: Seguido de preposición "A" o "AL" (ej: "dedico a pasear...")
+        if (ti + 1 < rawTokens.length && (rawTokens[ti + 1].toUpperCase() == 'A' || rawTokens[ti + 1].toUpperCase() == 'AL')) {
+          ti += 2;
+          continue;
+        }
+        // Caso B: Seguido directamente de verbo/objeto (ej: "dedico pasear...")
+        if (ti + 1 < rawTokens.length) {
+          ti++;
+          continue;
+        }
+      }
+
+      // Pronombres reflexivos o átonos tras el pronombre sujeto (ej: "yo me ...", "tú te ...", "él se ...")
+      // En LSRD el sujeto ya indica la persona y el reflexivo resulta redundante
+      if (isMultiWord && (upper == 'ME' || upper == 'TE' || upper == 'SE' || upper == 'NOS' || upper == 'OS')) {
+        if (ti > 0) {
+          final prevUpper = rawTokens[ti - 1].toUpperCase();
+          if (prevUpper == 'YO' || prevUpper == 'TU' || prevUpper == 'TÚ' || prevUpper == 'EL' || prevUpper == 'ÉL' || prevUpper == 'ELLA' || prevUpper == 'NOSOTROS' || prevUpper == 'ELLOS') {
+            ti++;
+            continue;
+          }
+        }
       }
 
       // Filtrar stop words en frases (no en búsqueda de palabra sola)

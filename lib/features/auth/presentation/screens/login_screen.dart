@@ -8,6 +8,7 @@ import 'package:soundme_frontend/core/widgets/soundme_logo.dart';
 import 'package:soundme_frontend/features/admin/presentation/screens/admin_home_screen.dart';
 import 'package:soundme_frontend/features/auth/data/auth_service.dart';
 import 'package:soundme_frontend/features/auth/presentation/screens/two_step_auth_screen.dart';
+import 'package:soundme_frontend/features/home/presentation/screens/home_screen.dart';
 import 'package:soundme_frontend/core/utils/ui_helpers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -22,6 +23,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+
+  void _handleBack() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    }
+  }
 
   Future<void> _doLogin() async {
     setState(() => _isLoading = true);
@@ -99,28 +111,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final headerTopOffset = AdminHeaderBackground.headerHeight(context);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: true,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.opaque,
-        child: Stack(
-          children: [
-            // 1. CABECERA FIJA CON BOTÓN DE REGRESAR
-            const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: HeaderWithBackButton(title: 'Iniciar Sesión'),
-            ),
-
-            // 2. CONTENIDO PRINCIPAL SCROLLABLE (SIN COLISIÓN CON LOGO)
-            SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  top: headerTopOffset - MediaQuery.paddingOf(context).top,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: true,
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
+            children: [
+              // 1. CABECERA FIJA CON BOTÓN DE REGRESAR
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: HeaderWithBackButton(
+                  title: 'Iniciar Sesión',
+                  onBack: _handleBack,
                 ),
+              ),
+
+              // 2. CONTENIDO PRINCIPAL SCROLLABLE (SIN COLISIÓN CON LOGO)
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: headerTopOffset - MediaQuery.paddingOf(context).top,
+                  ),
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(
@@ -382,6 +403,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

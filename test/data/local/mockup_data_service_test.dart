@@ -198,5 +198,25 @@ void main() {
       expect(signCorrieron, isNotNull);
       expect(signCorrieron!.palabra, contains('CORRER'));
     });
+
+    test('periphrastic dedication translates directly to the action and avoids false-positive medico', () async {
+      // 1. "yo me dedico a cocinar" -> omite la perífrasis y se enfoca en [YO, COCINA]
+      final resCocinar = await service.translatePhrase('yo me dedico a cocinar');
+      expect(resCocinar.spelledWords, isEmpty);
+      expect(resCocinar.matchedSigns.length, 2);
+      expect(resCocinar.matchedSigns[0].palabra, 'YO');
+      expect(resCocinar.matchedSigns[1].palabra, contains('COCINA'));
+
+      // 2. Consulta de ocupación: "¿a qué te dedicas?" -> TRABAJO
+      final resPregunta = await service.translatePhrase('a qué te dedicas');
+      expect(resPregunta.matchedSigns.any((s) => s.palabra.contains('TRABAJO')), isTrue);
+
+      // 3. Verificar que "dedico" nunca se confunda con "MÉDICO" por Levenshtein
+      final signDedico = await service.findFlexible('dedico');
+      if (signDedico != null) {
+        expect(signDedico.palabra, isNot(contains('DOCTOR')));
+        expect(signDedico.palabra, isNot(contains('MÉDICO')));
+      }
+    });
   });
 }
