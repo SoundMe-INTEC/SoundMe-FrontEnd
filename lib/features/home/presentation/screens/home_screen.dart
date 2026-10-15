@@ -63,172 +63,190 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: AdminHeaderBackground(title: 'SoundMe'),
           ),
 
-          // 2. CONTENIDO PRINCIPAL SCROLLABLE CON TRANSICIÓN ANIMADA
+          // 2. CONTENIDO PRINCIPAL ESCALABLE CON TRANSICIÓN ANIMADA
           SafeArea(
             child: Padding(
               padding: EdgeInsets.only(
                 top: headerTopOffset - MediaQuery.paddingOf(context).top,
               ),
               child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0,
-                          vertical: 16.0,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // LOGO OFICIAL CON ELEVACIÓN SUAVE
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: const SoundMeLogo(),
-                            ),
-                            const SizedBox(height: 14),
+                // CAMBIO: LayoutBuilder para conocer el ancho disponible
+                // (FittedBox da ancho infinito a su hijo, por eso necesitamos esto)
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final availableWidth = constraints.maxWidth;
+                    final availableHeight = constraints.maxHeight;
+                    final contentWidth = availableWidth < 520 ? availableWidth : 520.0;
 
-                            // HERO BADGE INFORMATIVO CON GRADIENTE MODERNO
-                            Container(
+                    return FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        // CAMBIO: FittedBox reemplaza al SingleChildScrollView.
+                        // BoxFit.scaleDown encoge el contenido si no cabe,
+                        // pero nunca lo agranda más allá de su tamaño natural.
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          // CAMBIO: SizedBox con ancho fijo para que los botones
+                          // con width: double.infinity funcionen dentro del FittedBox.
+                          child: SizedBox(
+                            width: contentWidth,
+                            child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 9,
+                                horizontal: 24.0,
+                                vertical: 16.0,
                               ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.primaryNavy.withValues(alpha: 0.08),
-                                    const Color(0xFF0284C7).withValues(alpha: 0.12),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: AppColors.primaryNavy.withValues(alpha: 0.18),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min, // CAMBIO: importante
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
+                                  // LOGO OFICIAL CON ELEVACIÓN SUAVE
                                   Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primaryNavy.withValues(alpha: 0.12),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.auto_awesome_rounded,
-                                      size: 14,
-                                      color: AppColors.primaryNavy,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: const SoundMeLogo(),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      'Voz a Lengua de Señas Dominicana · LSRD',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.primaryNavy,
-                                        letterSpacing: 0.2,
+                                  const SizedBox(height: 14),
+
+                                  // HERO BADGE INFORMATIVO CON GRADIENTE MODERNO
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 9,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.primaryNavy.withValues(alpha: 0.08),
+                                          const Color(0xFF0284C7).withValues(alpha: 0.12),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: AppColors.primaryNavy.withValues(alpha: 0.18),
                                       ),
                                     ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryNavy.withValues(alpha: 0.12),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.auto_awesome_rounded,
+                                            size: 14,
+                                            color: AppColors.primaryNavy,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            'Voz a Lengua de Señas Dominicana · LSRD',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.primaryNavy,
+                                              letterSpacing: 0.2,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+
+                                  const SizedBox(height: 28),
+
+                                  // BOTONES DE ACCIÓN PRINCIPALES
+                                  _buildPrimaryButton(
+                                    text: 'Traductor Dominicano',
+                                    subtitle: 'Dictado por voz y texto a señas en tiempo real',
+                                    icon: Icons.g_translate_rounded,
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                          const MainLayoutScreen(initialIndex: 1),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  _buildSecondaryCardButton(
+                                    text: 'Diccionario Dominicano',
+                                    subtitle: '2,427 términos y señas',
+                                    icon: Icons.menu_book_rounded,
+                                    accentColor: AppColors.primaryNavy,
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                          const MainLayoutScreen(initialIndex: 2),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  _buildSecondaryCardButton(
+                                    text: 'Opciones del Sistema',
+                                    subtitle: 'Traducción explícita, historial y permisos',
+                                    icon: Icons.settings_rounded,
+                                    accentColor: const Color(0xFF0369A1),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                          const MainLayoutScreen(initialIndex: 3),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  _buildSecondaryCardButton(
+                                    text: 'Sobre Nosotros',
+                                    subtitle: 'Conoce nuestra misión, visión e inclusión',
+                                    icon: Icons.info_outline_rounded,
+                                    accentColor: AppColors.accentRed,
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const AboutScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+
+                                  const SizedBox(height: 36),
+
+                                  // COPYRIGHT FOOTER
+                                  Text(
+                                    '© 2026 SoundMe · Inclusión y Tecnología Dominicana',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
                                 ],
                               ),
                             ),
-
-                            const SizedBox(height: 28),
-
-                            // BOTONES DE ACCIÓN PRINCIPALES
-                            _buildPrimaryButton(
-                              text: 'Traductor Dominicano',
-                              subtitle: 'Dictado por voz y texto a señas en tiempo real',
-                              icon: Icons.g_translate_rounded,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const MainLayoutScreen(initialIndex: 1),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 14),
-
-                            _buildSecondaryCardButton(
-                              text: 'Diccionario Dominicano',
-                              subtitle: '2,427 términos y señas vectoriales',
-                              icon: Icons.menu_book_rounded,
-                              accentColor: AppColors.primaryNavy,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const MainLayoutScreen(initialIndex: 2),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 14),
-
-                            _buildSecondaryCardButton(
-                              text: 'Opciones del Sistema',
-                              subtitle: 'Traducción explícita, historial y permisos',
-                              icon: Icons.settings_rounded,
-                              accentColor: const Color(0xFF0369A1),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const MainLayoutScreen(initialIndex: 3),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 14),
-
-                            _buildSecondaryCardButton(
-                              text: 'Sobre Nosotros',
-                              subtitle: 'Conoce nuestra misión, visión e inclusión',
-                              icon: Icons.info_outline_rounded,
-                              accentColor: AppColors.accentRed,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const AboutScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-
-                            const SizedBox(height: 36),
-
-                            // COPYRIGHT FOOTER
-                            Text(
-                              '© 2026 SoundMe · Inclusión y Tecnología Dominicana',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -335,17 +353,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white,
-                    size: 14,
-                  ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 14,
                 ),
               ],
             ),

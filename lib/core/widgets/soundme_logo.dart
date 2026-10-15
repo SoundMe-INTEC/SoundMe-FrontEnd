@@ -11,9 +11,9 @@ class SoundMeLogo extends StatelessWidget {
       children: [
         Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 315, maxHeight: 180),
+            constraints: const BoxConstraints(maxWidth: 180, maxHeight: 180),
             child: AspectRatio(
-              aspectRatio: 315 / 180,
+              aspectRatio: 180 / 180,
               child: Image.asset(
                 'assets/images/soundme_logo.png',
                 fit: BoxFit.contain,
