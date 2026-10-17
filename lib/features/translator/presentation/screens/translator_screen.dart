@@ -13,7 +13,15 @@ import 'package:soundme_frontend/features/help/presentation/screens/help_faq_scr
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class TranslatorScreen extends ConsumerStatefulWidget {
-  const TranslatorScreen({super.key});
+  final String? initialPhrase;
+  final bool autoPlay;
+
+  const TranslatorScreen({
+    super.key,
+    this.initialPhrase,
+    this.autoPlay = true,
+  });
+
   @override
   ConsumerState<TranslatorScreen> createState() => _TranslatorScreenState();
 }
@@ -62,6 +70,29 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen>
       }
     });
     _initSpeech();
+    if (widget.initialPhrase != null && widget.initialPhrase!.trim().isNotEmpty) {
+      _textController.text = widget.initialPhrase!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _translateText(widget.initialPhrase, true);
+        }
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant TranslatorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialPhrase != null &&
+        widget.initialPhrase != oldWidget.initialPhrase &&
+        widget.initialPhrase!.trim().isNotEmpty) {
+      _textController.text = widget.initialPhrase!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _translateText(widget.initialPhrase, true);
+        }
+      });
+    }
   }
 
   void _initSpeech() async {

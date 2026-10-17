@@ -230,6 +230,161 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                               ],
                             ),
                           ),
+                          if (widget.word.contextualHomonym != null) ...[
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryNavy.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.psychology_alt_rounded,
+                                    color: AppColors.primaryNavy,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Significados según el contexto',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primaryNavy,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Esta palabra es homógrafa en español ("${widget.word.contextualHomonym!.palabra}"). En Lengua de Señas Dominicana (LSRD), la seña cambia según el sentido de la frase:',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                                height: 1.3,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ...widget.word.contextualHomonym!.acepciones.map((sense) {
+                              final isCurrent = sense.sign.trim().toUpperCase() == widget.word.palabra.trim().toUpperCase();
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: isCurrent
+                                      ? AppColors.primaryNavy.withValues(alpha: 0.05)
+                                      : AppColors.cardFillColor,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isCurrent ? AppColors.primaryNavy : AppColors.cardBorderColor,
+                                    width: isCurrent ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          isCurrent
+                                              ? Icons.check_circle_rounded
+                                              : Icons.radio_button_unchecked_rounded,
+                                          color: isCurrent ? AppColors.primaryNavy : AppColors.textSecondary,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            '${sense.sentido} ➡️ Seña: ${sense.sign}',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.primaryNavy,
+                                            ),
+                                          ),
+                                        ),
+                                        if (isCurrent)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primaryNavy,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              'Seña actual',
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      sense.descripcion,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 13,
+                                        color: AppColors.textDark,
+                                        height: 1.25,
+                                      ),
+                                    ),
+                                    if (sense.ejemplo.isNotEmpty) ...[
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Ejemplo: "${sense.ejemplo}"',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                    if (!isCurrent) ...[
+                                      const SizedBox(height: 8),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton.icon(
+                                          onPressed: () {
+                                            MockDictionaryWord? altWord;
+                                            for (final w in MockDictionaryRepository.mockWords) {
+                                              if (w.palabra.trim().toUpperCase() == sense.sign.trim().toUpperCase()) {
+                                                altWord = w;
+                                                break;
+                                              }
+                                            }
+                                            if (altWord != null) {
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => WordDetailScreen(word: altWord!),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                                          label: Text('Ver seña de "${sense.sign}"'),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: AppColors.primaryNavy,
+                                            textStyle: GoogleFonts.plusJakartaSans(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
                           const SizedBox(height: 32),
                         ],
                       ),

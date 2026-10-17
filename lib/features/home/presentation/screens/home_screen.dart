@@ -196,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                                   _buildSecondaryCardButton(
                                     text: 'Opciones del Sistema',
-                                    subtitle: 'Traducción explícita, historial y permisos',
+                                    subtitle: 'Historial de traducciones y permisos',
                                     icon: Icons.settings_rounded,
                                     accentColor: const Color(0xFF0369A1),
                                     onPressed: () {

@@ -4,6 +4,7 @@ import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
 import 'package:soundme_frontend/core/widgets/header_with_back_button.dart';
 import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
+import 'package:soundme_frontend/features/main_layout/presentation/screens/main_layout_screen.dart';
 import 'package:soundme_frontend/features/options/domain/models/translation_item.dart';
 
 class TranslationListScreen extends StatefulWidget {
@@ -278,14 +279,30 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
     );
   }
 
+  void _openInTranslator(String phrase) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainLayoutScreen(
+          initialIndex: 1,
+          initialPhrase: phrase,
+        ),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
   Widget _buildCard(TranslationItem item) {
+    final isHistory = widget.title.toLowerCase().contains('historial');
     final hasPreview = item.sign != null || item.imageUrl.isNotEmpty;
     final isExpanded = _expandedItemIds.contains(item.id);
 
     return GestureDetector(
-      onTap: item.signsInOrder.isNotEmpty
-          ? () => _toggleExpanded(item.id)
-          : (hasPreview ? () => _showImageModal(context, item) : null),
+      onTap: isHistory
+          ? () => _openInTranslator(item.text)
+          : (item.signsInOrder.isNotEmpty
+              ? () => _toggleExpanded(item.id)
+              : (hasPreview ? () => _showImageModal(context, item) : () => _openInTranslator(item.text))),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
@@ -296,11 +313,11 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
           boxShadow: AppColors.softShadow,
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
@@ -323,11 +340,18 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
                         );
                       },
                     )
-                  : const Center(
-                      child: Icon(
-                        Icons.history_rounded,
-                        color: AppColors.primaryNavy,
-                        size: 32,
+                  : Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryNavy.withValues(alpha: 0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.history_rounded,
+                          color: AppColors.primaryNavy,
+                          size: 28,
+                        ),
                       ),
                     ),
             ),
@@ -341,13 +365,93 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 17,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primaryNavy,
                       height: 1.2,
                     ),
                   ),
-                  if (item.signsInOrder.isNotEmpty && isExpanded) ...[
+                  const SizedBox(height: 4),
+                  if (isHistory) ...[
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.play_circle_fill_rounded,
+                          size: 14,
+                          color: AppColors.accentRed,
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            'Toca para reproducir en el traductor',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (item.signsInOrder.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: item.signsInOrder.take(4).map(
+                          (sign) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: AppColors.cardBorderColor,
+                              ),
+                            ),
+                            child: Text(
+                              sign,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primaryNavy,
+                              ),
+                            ),
+                          ),
+                        ).toList()..addAll(
+                          item.signsInOrder.length > 4
+                              ? [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: AppColors.cardBorderColor,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '+${item.signsInOrder.length - 4}',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  )
+                                ]
+                              : [],
+                        ),
+                      ),
+                    ],
+                  ] else if (item.signsInOrder.isNotEmpty && isExpanded) ...[
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -383,18 +487,32 @@ class _TranslationListScreenState extends State<TranslationListScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, top: 4.0),
-              child: Icon(
-                item.signsInOrder.isNotEmpty
-                    ? (isExpanded
-                          ? Icons.expand_less_rounded
-                          : Icons.expand_more_rounded)
-                    : (hasPreview
-                          ? Icons.zoom_in_rounded
-                          : Icons.chevron_right_rounded),
-                color: AppColors.primaryNavy,
-                size: 24,
-              ),
+              padding: const EdgeInsets.only(left: 8.0),
+              child: isHistory
+                  ? Container(
+                      width: 38,
+                      height: 38,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryNavy,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    )
+                  : Icon(
+                      item.signsInOrder.isNotEmpty
+                          ? (isExpanded
+                              ? Icons.expand_less_rounded
+                              : Icons.expand_more_rounded)
+                          : (hasPreview
+                              ? Icons.zoom_in_rounded
+                              : Icons.chevron_right_rounded),
+                      color: AppColors.primaryNavy,
+                      size: 24,
+                    ),
             ),
           ],
         ),

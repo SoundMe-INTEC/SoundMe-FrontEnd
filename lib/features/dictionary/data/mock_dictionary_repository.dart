@@ -22,6 +22,30 @@ class MockDictionaryWord {
     this.signEntry,
   });
 
+  /// Retorna el homónimo contextual asociado si esta palabra tiene múltiples acepciones.
+  ContextualHomonym? get contextualHomonym {
+    final norm = palabra.trim().toUpperCase();
+    return MockDictionaryRepository.findHomonymForWord(norm);
+  }
+
+  /// Retorna las acepciones o sentidos si esta palabra forma parte de un homónimo.
+  List<ContextualSense> get contextualSenses {
+    final h = contextualHomonym;
+    if (h == null) return const [];
+    return h.acepciones;
+  }
+
+  /// Retorna la acepción específica a la que corresponde esta seña.
+  ContextualSense? get matchedSense {
+    final norm = palabra.trim().toUpperCase();
+    final h = contextualHomonym;
+    if (h == null) return null;
+    for (final a in h.acepciones) {
+      if (a.sign.toUpperCase() == norm) return a;
+    }
+    return null;
+  }
+
   factory MockDictionaryWord.fromSignEntry(MockSignEntry entry) {
     return MockDictionaryWord(
       id: entry.id,
@@ -47,13 +71,28 @@ class MockDictionaryWord {
 
 class MockDictionaryRepository {
   static List<MockDictionaryWord> mockWords = [];
+  static List<ContextualHomonym> contextualHomonyms = [];
+
+  /// Busca si una palabra o seña pertenece a un catálogo de homónimos.
+  static ContextualHomonym? findHomonymForWord(String word) {
+    final clean = word.trim().toUpperCase();
+    for (final h in contextualHomonyms) {
+      if (h.palabra.toUpperCase() == clean) return h;
+      for (final a in h.acepciones) {
+        if (a.sign.toUpperCase() == clean) return h;
+      }
+    }
+    return null;
+  }
 
   static Future<void> loadData() async {
-    if (mockWords.isNotEmpty) return;
+    if (mockWords.isNotEmpty && contextualHomonyms.isNotEmpty) return;
 
     try {
-      final signs = await MockupDataService().getAll();
+      final service = MockupDataService();
+      final signs = await service.getAll();
       mockWords = signs.map(MockDictionaryWord.fromSignEntry).toList();
+      contextualHomonyms = await service.getHomonyms();
     } catch (e) {
       debugPrint('Error cargando el diccionario mockeado: $e');
       try {
@@ -64,9 +103,11 @@ class MockDictionaryRepository {
         mockWords = data
             .map((item) => MockDictionaryWord.fromJson(item))
             .toList();
+        contextualHomonyms = await MockupDataService().getHomonyms();
       } catch (fallbackError) {
         debugPrint('Error cargando el diccionario de respaldo: $fallbackError');
       }
     }
   }
 }
+

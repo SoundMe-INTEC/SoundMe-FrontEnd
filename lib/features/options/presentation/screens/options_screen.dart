@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:soundme_frontend/core/providers/settings_provider.dart';
 import 'package:soundme_frontend/core/services/translation_history_storage.dart';
 import 'package:soundme_frontend/core/theme/app_colors.dart';
 import 'package:soundme_frontend/core/widgets/header_background_2.dart';
@@ -106,10 +105,6 @@ class OptionsScreen extends ConsumerWidget {
                       emergencies: emergencies,
                     ),
 
-                    const SizedBox(height: 14),
-
-                    // Tarjeta: Traducción Explícita (Modo Estricto vs Flexible)
-                    _buildExplicitTranslationCard(context, ref),
 
                     const SizedBox(height: 14),
 
@@ -401,83 +396,6 @@ class OptionsScreen extends ConsumerWidget {
             size: 14,
           ),
           onTap: onTap,
-        ),
-      ),
-    );
-  }
-
-  // Tarjeta interactiva con interruptor (Switch) para alternar Traducción Explícita
-  Widget _buildExplicitTranslationCard(BuildContext context, WidgetRef ref) {
-    final isExplicit = ref.watch(explicitTranslationProvider);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardFillColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.cardBorderColor),
-        boxShadow: AppColors.softShadow,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.spellcheck_rounded,
-                  color: AppColors.primaryNavy,
-                  size: 26,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Traducción Explícita',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryNavy,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isExplicit
-                          ? 'Modo estricto activo: Solo traduce coincidencias exactas sin sinónimos ni autocorrección.'
-                          : 'Modo flexible activo: Autocorrige erratas (ej. avogado -> abogado) y busca sinónimos si la palabra no existe.',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Switch(
-                value: isExplicit,
-                activeColor: AppColors.primaryNavy,
-                activeTrackColor: AppColors.primaryNavy.withAlpha(100),
-                inactiveThumbColor: Colors.grey.shade400,
-                inactiveTrackColor: Colors.grey.shade200,
-                onChanged: (val) {
-                  ref.read(translationSettingsProvider.notifier).setExplicitTranslation(val);
-                },
-              ),
-            ],
-          ),
         ),
       ),
     );

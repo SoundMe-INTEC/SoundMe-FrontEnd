@@ -7,10 +7,12 @@ import 'package:soundme_frontend/core/theme/app_colors.dart';
 
 class MainLayoutScreen extends StatefulWidget {
   final int initialIndex;
+  final String? initialPhrase;
 
   const MainLayoutScreen({
     super.key,
     this.initialIndex = 1, // Por defecto Traductor
+    this.initialPhrase,
   });
 
   @override
@@ -19,19 +21,19 @@ class MainLayoutScreen extends StatefulWidget {
 
 class _MainLayoutScreenState extends State<MainLayoutScreen> {
   late int _currentIndex;
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _screens = [
+      const SizedBox(), // Índice 0: Inicio
+      TranslatorScreen(initialPhrase: widget.initialPhrase), // Índice 1: Traductor
+      const DictionaryScreen(), // Índice 2: Diccionario
+      const OptionsScreen(),    // Índice 3: Opciones
+    ];
   }
-
-  final List<Widget> _screens = const [
-    SizedBox(), // Índice 0: Inicio
-    TranslatorScreen(), // Índice 1: Traductor
-    DictionaryScreen(), // Índice 2: Diccionario
-    OptionsScreen(),    // Índice 3: Opciones
-  ];
 
   @override
   Widget build(BuildContext context) {
