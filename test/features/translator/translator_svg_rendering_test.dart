@@ -7,16 +7,41 @@ import 'package:soundme_frontend/core/widgets/sign_image_widget.dart';
 import 'package:soundme_frontend/data/local/mockup_data_service.dart';
 import 'package:soundme_frontend/features/translator/presentation/screens/translator_screen.dart';
 
+import 'package:flutter/services.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('TranslatorScreen & SVG High Fidelity Rendering Tests', () {
     late MockupDataService service;
 
-    setUp(() async {
+    setUpAll(() async {
       SharedPreferences.setMockInitialValues({});
+      const MethodChannel channel = MethodChannel(
+        'plugin.csdcorp.com/speech_to_text',
+      );
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+            if (methodCall.method == 'initialize') {
+              return true;
+            } else if (methodCall.method == 'listen') {
+              return true;
+            } else if (methodCall.method == 'stop') {
+              return true;
+            } else if (methodCall.method == 'cancel') {
+              return true;
+            } else if (methodCall.method == 'hasPermission') {
+              return true;
+            }
+            return null;
+          });
+
       service = MockupDataService();
-      await service.getAll(); // Precargar cache para ejecución síncrona en widget tests
+      await service.getAll(); // Precargar cache fuera de FakeAsync
+    });
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
     });
 
     test('1. translatePhrase entrega señas vectoriales SVG con rutas de assets válidas', () async {
@@ -72,7 +97,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // Estado inicial: icono y mensaje de invitación a traducir
       expect(find.byIcon(Icons.g_translate_rounded), findsOneWidget);
@@ -82,7 +107,7 @@ void main() {
       expect(textField, findsOneWidget);
 
       await tester.enterText(textField, 'HOLA');
-      // Esperar tiempo (antiguo debounce): no debe traducirse
+      // Esperar tiempo: no debe traducirse mientras escribe
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump();
 
@@ -92,7 +117,8 @@ void main() {
 
       // Al presionar el botón de Enviar: se ejecuta la traducción
       await tester.tap(find.byIcon(Icons.send_rounded));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
 
       // Ahora sí debe haber renderizado la seña 'HOLA' y su SvgPicture
       expect(find.byType(SignImage), findsOneWidget);
@@ -119,12 +145,13 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       final textField = find.byType(TextField);
       await tester.enterText(textField, 'CARLOS');
       await tester.tap(find.byIcon(Icons.send_rounded));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
 
       // CARLOS se deletrea dactilológicamente (C-A-R-L-O-S = 6 señas)
       expect(find.byType(SignImage), findsOneWidget);

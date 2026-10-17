@@ -8,6 +8,7 @@ import 'package:soundme_frontend/features/auth/data/auth_service.dart';
 import 'package:soundme_frontend/features/auth/presentation/screens/login_screen.dart';
 import 'package:soundme_frontend/features/auth/presentation/screens/two_step_auth_screen.dart';
 import 'package:soundme_frontend/integration/network/api_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundme_frontend/integration/network/token_storage.dart';
 
 class FakeTokenStorage implements TokenStorage {
@@ -57,6 +58,7 @@ class MockInterceptor extends Interceptor {
 void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
     dotenv.testLoad(fileInput: 'API_BASE_URL=http://127.0.0.1:8000/api');
   });
 

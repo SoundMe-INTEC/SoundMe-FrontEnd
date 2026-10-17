@@ -92,7 +92,7 @@ void main() {
       expect(res.spelledWords, isEmpty);
     });
 
-    testWidgets('6. OptionsScreen muestra switch de Traducción Explícita y permite alternar estado', (tester) async {
+    testWidgets('6. OptionsScreen no muestra el botón de Traducción Explícita (removido por desuso)', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -102,23 +102,12 @@ void main() {
       );
       await tester.pump();
 
-      // Verificar que el título y switch están en pantalla
-      expect(find.text('Traducción Explícita'), findsOneWidget);
-      expect(find.byType(Switch), findsOneWidget);
+      // Verificar que el switch y título de Traducción Explícita ya NO están presentes
+      expect(find.text('Traducción Explícita'), findsNothing);
+      expect(find.byType(Switch), findsNothing);
 
-      // Inicialmente en modo flexible (false)
-      final initialSwitch = tester.widget<Switch>(find.byType(Switch));
-      expect(initialSwitch.value, isFalse);
-      expect(find.textContaining('Modo flexible'), findsOneWidget);
-
-      // Tocar el switch para activar modo explícito
-      await tester.tap(find.byType(Switch));
-      await tester.pump();
-
-      // Ahora el switch debe estar en true y reflejar modo estricto
-      final activeSwitch = tester.widget<Switch>(find.byType(Switch));
-      expect(activeSwitch.value, isTrue);
-      expect(find.textContaining('Modo estricto'), findsOneWidget);
+      // Verificar que las opciones útiles (Historial, etc.) siguen visibles
+      expect(find.text('Historial'), findsOneWidget);
     });
   });
 }

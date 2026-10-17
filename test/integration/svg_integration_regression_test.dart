@@ -17,12 +17,12 @@ void main() {
       );
     });
 
-    test('1. Diccionario completo carga 2,427 señas vectoriales SVG', () async {
+    test('1. Diccionario completo carga 2,428 señas vectoriales SVG', () async {
       final entries = await service.getAll();
       expect(
         entries.length,
-        2427,
-        reason: 'El diccionario debe contener exactamente 2,427 señas',
+        2428,
+        reason: 'El diccionario debe contener exactamente 2,428 señas',
       );
 
       int svgCount = 0;
@@ -37,19 +37,19 @@ void main() {
 
       expect(
         svgCount,
-        2427,
+        2428,
         reason: 'El 100% de las señas deben tener asset vectorial SVG asociado',
       );
     });
 
     test(
-      'El repositorio de la pantalla expone las 2,427 señas con su SVG',
+      'El repositorio de la pantalla expone las 2,428 señas con su SVG',
       () async {
         MockDictionaryRepository.mockWords = [];
 
         await MockDictionaryRepository.loadData();
 
-        expect(MockDictionaryRepository.mockWords.length, 2427);
+        expect(MockDictionaryRepository.mockWords.length, 2428);
         expect(
           MockDictionaryRepository.mockWords.every(
             (word) => word.signEntry?.isSvg ?? false,

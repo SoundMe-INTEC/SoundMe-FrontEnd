@@ -200,12 +200,13 @@ void main() {
     });
 
     test('periphrastic dedication translates directly to the action and avoids false-positive medico', () async {
-      // 1. "yo me dedico a cocinar" -> omite la perífrasis y se enfoca en [YO, COCINA]
+      // 1. "yo me dedico a cocinar" -> expresa ocupación con [YO, TRABAJO, COCINA]
       final resCocinar = await service.translatePhrase('yo me dedico a cocinar');
       expect(resCocinar.spelledWords, isEmpty);
-      expect(resCocinar.matchedSigns.length, 2);
+      expect(resCocinar.matchedSigns.length, 3);
       expect(resCocinar.matchedSigns[0].palabra, 'YO');
-      expect(resCocinar.matchedSigns[1].palabra, contains('COCINA'));
+      expect(resCocinar.matchedSigns[1].palabra, 'TRABAJO');
+      expect(resCocinar.matchedSigns[2].palabra, contains('COCINA'));
 
       // 2. Consulta de ocupación: "¿a qué te dedicas?" -> TRABAJO
       final resPregunta = await service.translatePhrase('a qué te dedicas');
@@ -218,5 +219,83 @@ void main() {
         expect(signDedico.palabra, isNot(contains('MÉDICO')));
       }
     });
+
+    test('verbo sentar se resuelve a SENTARSE y nunca a SENTIR', () async {
+      // 1. findFlexible('sentar') DEBE resolver a SENTARSE
+      final signSentar = await service.findFlexible('sentar');
+      expect(signSentar, isNotNull);
+      expect(signSentar!.palabra, 'SENTARSE');
+      expect(signSentar.palabra, isNot('SENTIR'));
+
+      // 2. findFlexible('sentarse') DEBE resolver a SENTARSE
+      final signSentarse = await service.findFlexible('sentarse');
+      expect(signSentarse, isNotNull);
+      expect(signSentarse!.palabra, 'SENTARSE');
+
+      // 3. findFlexible('sentir') DEBE resolver a SENTIR
+      final signSentir = await service.findFlexible('sentir');
+      expect(signSentir, isNotNull);
+      expect(signSentir!.palabra, 'SENTIR');
+
+      // 4. Traducción de 'sentar'
+      final resSentar = await service.translatePhrase('sentar');
+      expect(resSentar.matchedSigns.isNotEmpty, isTrue);
+      expect(resSentar.matchedSigns.first.palabra, 'SENTARSE');
+      expect(resSentar.matchedSigns.first.palabra, isNot('SENTIR'));
+
+      // 5. Traducción de 'sentir'
+      final resSentir = await service.translatePhrase('sentir');
+      expect(resSentir.matchedSigns.isNotEmpty, isTrue);
+      expect(resSentir.matchedSigns.first.palabra, 'SENTIR');
+    });
+
+    test('resolución contextual de homónimos (llama, banco, siento)', () async {
+      // 1. Carga del catálogo JSON de homónimos
+      final homonimos = await service.getHomonyms();
+      expect(homonimos, isNotEmpty);
+      expect(homonimos.any((h) => h.palabra == 'LLAMA'), isTrue);
+      expect(homonimos.any((h) => h.palabra == 'BANCO'), isTrue);
+      expect(homonimos.any((h) => h.palabra == 'SIENTO'), isTrue);
+
+      // 2. LLAMA con contexto de llamada/teléfono -> LLAMAR
+      final signLlamaTel = await service.resolveContextualWord('llama', ['TELEFONO', 'ELLA']);
+      expect(signLlamaTel, 'LLAMAR');
+
+      // 3. LLAMA con contexto de fuego/vela -> FUEGO
+      final signLlamaFuego = await service.resolveContextualWord('llama', ['FUEGO', 'VELA', 'CALOR']);
+      expect(signLlamaFuego, 'FUEGO');
+
+      // 4. LLAMA con contexto de animal -> LLAMA ANIMAL
+      final signLlamaAnimal = await service.resolveContextualWord('llama', ['ANIMAL', 'MONTAÑA', 'ANDES']);
+      expect(signLlamaAnimal, 'LLAMA ANIMAL');
+      final entryLlamaAnimal = await service.findFlexible(signLlamaAnimal);
+      expect(entryLlamaAnimal, isNotNull);
+      expect(entryLlamaAnimal!.palabra, 'LLAMA (ANIMAL)');
+
+      // 5. BANCO con contexto financiero -> BANCO FINANCIERO -> busca seña BANCO (FINANCIERO)
+      final signBancoFin = await service.resolveContextualWord('banco', ['DINERO', 'PAGAR', 'CUENTA']);
+      expect(signBancoFin, 'BANCO FINANCIERO');
+      final entryBancoFin = await service.findFlexible(signBancoFin);
+      expect(entryBancoFin, isNotNull);
+      expect(entryBancoFin!.palabra, 'BANCO (FINANCIERO)');
+
+      // 6. BANCO con contexto de asiento -> BANCO
+      final signBancoAsiento = await service.resolveContextualWord('banco', ['PARQUE', 'PLAZA', 'SENTARSE']);
+      expect(signBancoAsiento, 'BANCO');
+
+      // 7. Traducción de frase completa con LLAMA en contexto de teléfono
+      final resLlamaTel = await service.translatePhrase('ella llama por telefono');
+      expect(resLlamaTel.matchedSigns.any((s) => s.palabra.contains('LLAMAR')), isTrue);
+
+      // 8. Traducción de frase completa con LLAMA en contexto de fuego
+      final resLlamaFuego = await service.translatePhrase('la llama del fuego');
+      expect(resLlamaFuego.matchedSigns.any((s) => s.palabra.contains('FUEGO')), isTrue);
+
+      // 9. Traducción de frase completa con LLAMA en contexto de animal: "hoy alimenté a una llama"
+      final resLlamaAnimal = await service.translatePhrase('hoy alimenté a una llama');
+      expect(resLlamaAnimal.matchedSigns.any((s) => s.palabra == 'LLAMA (ANIMAL)'), isTrue);
+      expect(resLlamaAnimal.matchedSigns.any((s) => s.palabra.contains('LLAMAR')), isFalse);
+    });
   });
 }
+
