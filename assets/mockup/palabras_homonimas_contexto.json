@@ -1,0 +1,454 @@
+{
+  "homonimos": [
+    {
+      "palabra": "LLAMA",
+      "descripcion": "Palabra homógrafa con distintos significados y señas en lengua de señas según el contexto de la oración.",
+      "acepciones": [
+        {
+          "sentido": "Verbo llamar / comunicación",
+          "descripcion": "Acción de llamar, telefonear, avisar o nombrar a alguien.",
+          "sign": "LLAMAR",
+          "ejemplo": "Ella me llama por teléfono todos los días",
+          "keywords": [
+            "TELEFONO", "CELULAR", "LLAMADA", "NOMBRE", "DECIR", "HABLAR",
+            "VOZ", "GRITAR", "MENSAJE", "CONTACTO", "TIMBRAR", "TIMBRE",
+            "NUMERO", "COMUNICAR", "ALGUIEN", "AVISAR"
+          ]
+        },
+        {
+          "sentido": "Fuego / flama",
+          "descripcion": "Masa gaseosa en combustión, flama, fuego o incendio.",
+          "sign": "FUEGO",
+          "ejemplo": "La llama de la vela quema con fuerza",
+          "keywords": [
+            "FUEGO", "CALOR", "QUEMAR", "INCENDIO", "FOSFORO", "VELA",
+            "ENCENDER", "CHIMENEA", "HUMO", "CANDELA", "FLAMA", "ARDER",
+            "FOGATA", "GAS", "ESTUFA"
+          ]
+        },
+        {
+          "sentido": "Animal / camélido",
+          "descripcion": "Mamífero rumiante propio de los Andes de Sudamérica.",
+          "sign": "LLAMA (ANIMAL)",
+          "ejemplo": "Hoy alimenté a una llama en el campo",
+          "keywords": [
+            "ANIMAL", "MONTAÑA", "ANDES", "PERU", "LANA", "PASTO",
+            "CAMELIDO", "ZOO", "ZOOLOGICO", "PELO", "HIERBA", "CAMPO",
+            "ALIMENTAR", "ALIMENTE", "ALIMENTO", "ALIMENTAN", "ALIMENTANDO", "ALIMENTAMOS",
+            "COMER", "COMIDA", "COME", "COMIENDO", "COMIO", "COMEN",
+            "PASTAR", "PASTANDO", "CRIAR", "CRIANZA", "CRIANDO", "CUIDAR", "CUIDADO", "CUIDANDO",
+            "MAMIFERO", "CORRAL", "GRANJA", "SALVAJE", "AUQUENIDO", "FAUNA", "HERBIVORO",
+            "MONTAR", "MONTE", "CABALGAR", "SUBIR", "JINETEAR", "PASEAR"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "BANCO",
+      "descripcion": "Palabra homógrafa: entidad financiera para guardar dinero o asiento para sentarse.",
+      "acepciones": [
+        {
+          "sentido": "Entidad financiera",
+          "descripcion": "Institución bancaria donde se realizan transacciones y ahorros de dinero.",
+          "sign": "BANCO (FINANCIERO)",
+          "ejemplo": "Voy al banco a retirar dinero y pagar la cuenta",
+          "keywords": [
+            "DINERO", "SACAR", "COBRAR", "PAGAR", "CUENTA", "CHEQUE",
+            "EFECTIVO", "AHORRAR", "CAJERO", "PRESTAMO", "TARJETA",
+            "FINANCIERO", "DEPOSITO", "SUCURSAL", "DOLAR", "PESO"
+          ]
+        },
+        {
+          "sentido": "Asiento",
+          "descripcion": "Mueble o banco para descansar o sentarse en parques o plazas.",
+          "sign": "BANCO",
+          "ejemplo": "Nos sentamos en un banco del parque a descansar",
+          "keywords": [
+            "SENTAR", "SENTARSE", "ASIENTO", "PARQUE", "PLAZA", "SILLA",
+            "CANSADO", "DESCANSAR", "MADERA", "CALLE", "JARDIN", "ESPERAR"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "SENTAR",
+      "descripcion": "Verbo sentar/sentarse: acción de tomar asiento en una silla o banco.",
+      "acepciones": [
+        {
+          "sentido": "Verbo sentar / sentarse",
+          "descripcion": "Acción de ponerse en un asiento, banco o silla.",
+          "sign": "SENTARSE",
+          "ejemplo": "Favor de sentar a los niños en la mesa",
+          "keywords": [
+            "SILLA", "BANCO", "ASIENTO", "SOFA", "MESA", "SUELO",
+            "PISO", "PARQUE", "DESCANSAR", "AQUI", "ABAJO", "SALA"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "SIENTO",
+      "descripcion": "Forma verbal homógrafa: de sentar (tomar asiento) o de sentir (experimentar emoción/dolor).",
+      "acepciones": [
+        {
+          "sentido": "Verbo sentarse",
+          "descripcion": "Acción de sentarse en una silla, sofá o banco.",
+          "sign": "SENTARSE",
+          "ejemplo": "Me siento en la silla para descansar",
+          "keywords": [
+            "SILLA", "BANCO", "ASIENTO", "SOFA", "MESA", "SUELO",
+            "PISO", "PARQUE", "DESCANSAR", "AQUI", "ABAJO", "SALA", "SIENTATE"
+          ]
+        },
+        {
+          "sentido": "Verbo sentir",
+          "descripcion": "Experimentar sensaciones corporales, emociones o dolor.",
+          "sign": "SENTIR",
+          "ejemplo": "Siento un dolor fuerte en el brazo",
+          "keywords": [
+            "DOLOR", "TRISTE", "FELIZ", "BIEN", "MAL", "AMOR",
+            "EMOCION", "CORAZON", "ENFERMO", "ALEGRE", "FRIO", "CALOR",
+            "MIEDO", "SALUD", "PENA", "CUERPO", "SORPRESA", "ASOMBRO",
+            "PAZ", "TRANQUILIDAD", "ALEGRIA", "CALMA", "CANSADO", "PREOCUPADO",
+            "ESPERANZA", "ORGULLO", "CONFUSION", "ANSIEDAD", "NERVIOSO", "SOLO",
+            "SOLA", "SOLEDAD", "SEGURO", "MUCHO", "GRATITUD", "ALIVIO"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "SIENTA",
+      "descripcion": "Forma verbal homógrafa de sentarse (acomodarse) o sentir (emociones/sensaciones).",
+      "acepciones": [
+        {
+          "sentido": "Verbo sentarse",
+          "descripcion": "Acción de acomodarse en una silla o asiento.",
+          "sign": "SENTARSE",
+          "ejemplo": "Ella se sienta en el banco a esperar",
+          "keywords": [
+            "SILLA", "BANCO", "ASIENTO", "SOFA", "MESA", "SUELO",
+            "PISO", "PARQUE", "DESCANSAR", "AQUI", "ABAJO"
+          ]
+        },
+        {
+          "sentido": "Verbo sentir",
+          "descripcion": "Sentimiento o sensación anímica o física.",
+          "sign": "SENTIR",
+          "ejemplo": "Espero que no se sienta mal por la noticia",
+          "keywords": [
+            "DOLOR", "TRISTE", "FELIZ", "BIEN", "MAL", "AMOR",
+            "EMOCION", "CORAZON", "ENFERMO", "ALEGRE", "FRIO", "CALOR", "MIEDO",
+            "SORPRESA", "ASOMBRO", "PAZ", "TRANQUILIDAD", "ALEGRIA", "CALMA",
+            "CANSADO", "PREOCUPADO", "ESPERANZA", "ORGULLO", "CONFUSION"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "VINO",
+      "descripcion": "Palabra homógrafa: bebida a base de uva o conjugación del verbo venir.",
+      "acepciones": [
+        {
+          "sentido": "Bebida alcohólica",
+          "descripcion": "Bebida fermentada elaborada a partir del jugo de uvas.",
+          "sign": "VINO",
+          "ejemplo": "Brindamos con una copa de vino tinto en la cena",
+          "keywords": [
+            "BEBIDA", "BEBER", "COPA", "BOTELLA", "UVA", "ALCOHOL",
+            "BRINDIS", "CENA", "TOMAR", "TINTO", "BLANCO", "BAR", "RESTAURANTE"
+          ]
+        },
+        {
+          "sentido": "Verbo venir",
+          "descripcion": "Trasladarse o llegar a un destino o punto de encuentro.",
+          "sign": "VENIR",
+          "ejemplo": "Mi amigo vino ayer a visitarme",
+          "keywords": [
+            "LLEGAR", "CASA", "AYER", "AQUI", "PERSONA", "TARDE",
+            "TEMPRANO", "VISITA", "HOY", "VENIR", "LLEGO", "PASADO"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "CURA",
+      "descripcion": "Palabra homógrafa: sacerdote de la iglesia o sanación/tratamiento médico.",
+      "acepciones": [
+        {
+          "sentido": "Sacerdote / religioso",
+          "descripcion": "Sacerdote católico que oficia la misa en el templo.",
+          "sign": "SACERDOTE",
+          "ejemplo": "El cura dio la misa en la iglesia los domingos",
+          "keywords": [
+            "IGLESIA", "DIOS", "MISA", "PADRE", "SACERDOTE", "RELIGION",
+            "REZAR", "PAPA", "TEMPLO", "CATOLICO", "PARROQUIA", "FE"
+          ]
+        },
+        {
+          "sentido": "Sanación / tratamiento",
+          "descripcion": "Tratamiento o recuperación de la salud frente a una enfermedad.",
+          "sign": "SALUD",
+          "ejemplo": "Los doctores buscan una cura eficaz para la enfermedad",
+          "keywords": [
+            "MEDICO", "HOSPITAL", "MEDICINA", "SALUD", "ENFERMEDAD",
+            "HERIDA", "REMEDIO", "TRATAMIENTO", "SANAR", "DOCTOR", "CLINICA"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "PLANTA",
+      "descripcion": "Palabra homógrafa: ser vivo vegetal, parte inferior del pie, o edificio industrial.",
+      "acepciones": [
+        {
+          "sentido": "Vegetal / botánica",
+          "descripcion": "Ser vivo fotosintético vegetal en jardín o maceta.",
+          "sign": "PLANTA",
+          "ejemplo": "Tengo una planta verde en el jardín con flores",
+          "keywords": [
+            "FLOR", "JARDIN", "ARBOL", "VERDE", "TIERRA", "HOJA",
+            "MACETA", "REGAR", "AGUA", "NATURALEZA", "BOSQUE", "SEMBRAR"
+          ]
+        },
+        {
+          "sentido": "Planta del pie",
+          "descripcion": "Base o parte inferior de los pies que apoya en el suelo.",
+          "sign": "PIE",
+          "ejemplo": "Me duele la planta del pie al caminar descalzo",
+          "keywords": [
+            "PIE", "ZAPATO", "CAMINAR", "DEDOS", "TALON", "SUELA",
+            "DOLOR", "PASO", "PISAR"
+          ]
+        },
+        {
+          "sentido": "Instalación industrial",
+          "descripcion": "Fábrica, planta de energía o nivel de una estructura.",
+          "sign": "EDIFICIO",
+          "ejemplo": "Trabaja en la planta eléctrica de la ciudad",
+          "keywords": [
+            "EDIFICIO", "FABRICA", "PISO", "ELECTRICA", "INDUSTRIA",
+            "ENERGIA", "TRABAJO", "EMPRESA"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "CARTA",
+      "descripcion": "Palabra homógrafa: correspondencia postal en sobre o menú en restaurante.",
+      "acepciones": [
+        {
+          "sentido": "Correspondencia escrita",
+          "descripcion": "Mensaje en papel enviado por correo postal en un sobre.",
+          "sign": "CARTA",
+          "ejemplo": "Escribí una carta y la envié por correo",
+          "keywords": [
+            "ESCRIBIR", "CORREO", "SOBRE", "BUZON", "PAPEL", "ENVIAR",
+            "MENSAJE", "LEER", "POSTAL", "FIRMAR"
+          ]
+        },
+        {
+          "sentido": "Menú gastronómico",
+          "descripcion": "Lista de platos y precios ofrecidos en un restaurante.",
+          "sign": "ALIMENTO",
+          "ejemplo": "Pedimos la carta del restaurante para elegir la cena",
+          "keywords": [
+            "RESTAURANTE", "COMIDA", "MENU", "PEDIR", "PRECIO", "MOZO",
+            "PLATO", "CENA", "ALMUERZO", "BEBIDA"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "COPA",
+      "descripcion": "Palabra homógrafa: vaso de cristal con pie o trofeo de campeonato.",
+      "acepciones": [
+        {
+          "sentido": "Recipiente para beber",
+          "descripcion": "Vaso con pie para beber vino, agua o champán.",
+          "sign": "COPA",
+          "ejemplo": "Llenó la copa de vino para hacer un brindis",
+          "keywords": [
+            "VINO", "BEBER", "BRINDIS", "CRISTAL", "BEBIDA", "BRINDAR",
+            "AGUA", "MESA", "TOMAR"
+          ]
+        },
+        {
+          "sentido": "Trofeo deportivo",
+          "descripcion": "Galardón o premio otorgado al equipo campeón.",
+          "sign": "PREMIO",
+          "ejemplo": "El equipo campeón levantó la copa de la victoria",
+          "keywords": [
+            "CAMPEON", "GANAR", "TORNEO", "PREMIO", "FUTBOL", "TROFEO",
+            "COMPETENCIA", "FINAL", "VICTORIA"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "NARANJA",
+      "descripcion": "Palabra homógrafa: fruta cítrica comestible o color anaranjado.",
+      "acepciones": [
+        {
+          "sentido": "Fruta cítrica",
+          "descripcion": "Fruta redonda y dulce o ácida de la cual se extrae jugo.",
+          "sign": "NARANJA (FRUTA)",
+          "ejemplo": "Comí una naranja dulce y tomé jugo en el desayuno",
+          "keywords": [
+            "FRUTA", "JUGO", "COMER", "DULCE", "CITRICO", "ARBOL",
+            "SABOR", "VITAMINA", "DESAYUNO", "PELAR", "ALIMENTO"
+          ]
+        },
+        {
+          "sentido": "Color anaranjado",
+          "descripcion": "Tonalidad cromática entre el rojo y el amarillo.",
+          "sign": "NARANJA (COLOR)",
+          "ejemplo": "Lleva una camiseta de color naranja brillante",
+          "keywords": [
+            "COLOR", "PINTURA", "CAMISA", "ROPA", "PINTAR",
+            "AMARILLO", "ROJO", "BRILLANTE", "TONO"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "CORREO",
+      "descripcion": "Palabra homógrafa: correo electrónico digital o servicio postal físico.",
+      "acepciones": [
+        {
+          "sentido": "Correo electrónico",
+          "descripcion": "Mensajería virtual e internet (email).",
+          "sign": "CORREO (ELECTRÓNICO)",
+          "ejemplo": "Te envié un correo electrónico con el archivo adjunto",
+          "keywords": [
+            "EMAIL", "ELECTRONICO", "INTERNET", "COMPUTADORA", "MENSAJE",
+            "DIGITAL", "ENVIAR", "BANDEJA", "WEB", "ONLINE"
+          ]
+        },
+        {
+          "sentido": "Correo físico / postal",
+          "descripcion": "Servicio de correspondencia tradicional de cartas y paquetes.",
+          "sign": "CORREO (FÍSICO)",
+          "ejemplo": "Llevé el paquete a la oficina del correo postal",
+          "keywords": [
+            "CARTA", "FISICO", "BUZON", "CARTERO", "PAQUETE", "OFICINA",
+            "ENVIAR", "ENTREGA", "SELLO"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "CAMARA",
+      "descripcion": "Palabra homógrafa: cámara fotográfica, de video o cámara de vigilancia.",
+      "acepciones": [
+        {
+          "sentido": "Cámara fotográfica",
+          "descripcion": "Aparato para capturar imágenes estáticas y retratos.",
+          "sign": "CÁMARA (FOTOGRÁFICA)",
+          "ejemplo": "Tomé una foto bonita con mi cámara réflex",
+          "keywords": [
+            "FOTO", "FOTOGRAFIA", "IMAGEN", "RETRATO", "FLASH", "DISPARAR",
+            "LENTE", "POSAR"
+          ]
+        },
+        {
+          "sentido": "Cámara de video",
+          "descripcion": "Dispositivo para filmar secuencias y películas.",
+          "sign": "CÁMARA (VIDEO)",
+          "ejemplo": "Filmamos el video con la cámara de grabación",
+          "keywords": [
+            "VIDEO", "GRABAR", "FILMAR", "PELICULA", "CINE", "ESCENA",
+            "YOUTUBE", "RODAJE"
+          ]
+        },
+        {
+          "sentido": "Cámara de vigilancia",
+          "descripcion": "Dispositivo de seguridad para monitoreo en vivo.",
+          "sign": "CÁMARA (VIGILANCIA)",
+          "ejemplo": "Instalaron una cámara de seguridad para vigilar la entrada",
+          "keywords": [
+            "SEGURIDAD", "VIGILANCIA", "CALLE", "CASA", "ROBO", "POLICIA",
+            "ALARMA", "MONITOREO", "CUIDAR"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "PADRE",
+      "descripcion": "Palabra homógrafa: sacerdote católico o progenitor en la familia.",
+      "acepciones": [
+        {
+          "sentido": "Sacerdote católico",
+          "descripcion": "Ministro religioso que preside los sacramentos y la misa.",
+          "sign": "PADRE (CATÓLICO)",
+          "ejemplo": "El padre bendijo a la comunidad en la misa",
+          "keywords": [
+            "IGLESIA", "MISA", "DIOS", "SACERDOTE", "REZAR", "RELIGION",
+            "PARROQUIA", "TEMPLO", "BENDICION"
+          ]
+        },
+        {
+          "sentido": "Papá / progenitor familiar",
+          "descripcion": "Padre de familia en el ámbito del hogar.",
+          "sign": "FAMILIA",
+          "ejemplo": "Mi padre y mi madre cuidan a la familia con amor",
+          "keywords": [
+            "FAMILIA", "HIJO", "HIJA", "MAMA", "MADRE", "CASA",
+            "PAPA", "HERMANO", "HOGAR", "CRIAR"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "NADA",
+      "descripcion": "Palabra homógrafa: conjugación del verbo nadar o pronombre de ausencia.",
+      "acepciones": [
+        {
+          "sentido": "Verbo nadar",
+          "descripcion": "Avanzar en el agua en piscina o playa.",
+          "sign": "NADAR",
+          "ejemplo": "El nadador nada muy rápido en la piscina",
+          "keywords": [
+            "AGUA", "PISCINA", "MAR", "PLAYA", "RIO", "NADAR",
+            "PECES", "BAÑO", "OLAS", "FLOTAR"
+          ]
+        },
+        {
+          "sentido": "Pronombre indefinido / nada",
+          "descripcion": "Inexistencia total o ausencia de cosas.",
+          "sign": "NADA",
+          "ejemplo": "No hay nada en la nevera, está vacía",
+          "keywords": [
+            "HAY", "TENER", "TODO", "POCO", "NINGUNO", "VACIO",
+            "QUEDA", "PASO", "SABER"
+          ]
+        }
+      ]
+    },
+    {
+      "palabra": "COMA",
+      "descripcion": "Palabra homógrafa: forma del verbo comer o estado clínico médico.",
+      "acepciones": [
+        {
+          "sentido": "Verbo comer",
+          "descripcion": "Acción de ingerir alimentos o comida.",
+          "sign": "ALIMENTO",
+          "ejemplo": "Espero que coma su almuerzo a tiempo",
+          "keywords": [
+            "COMIDA", "ALMUERZO", "CENA", "PAN", "FRUTA", "HAMBRE",
+            "PLATO", "DESAYUNO", "RESTAURANTE", "MESA"
+          ]
+        },
+        {
+          "sentido": "Estado médico clínico",
+          "descripcion": "Pérdida de consciencia y reflejos en hospital.",
+          "sign": "HOSPITAL",
+          "ejemplo": "El paciente está en estado de coma en el hospital",
+          "keywords": [
+            "HOSPITAL", "PACIENTE", "CLINICA", "GRAVE", "ACCIDENTE",
+            "INCONSCIENTE", "SALUD", "MEDICO", "CUIDADOS", "INTENSIVOS"
+          ]
+        }
+      ]
+    }
+  ]
+}

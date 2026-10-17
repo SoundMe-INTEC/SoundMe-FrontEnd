@@ -144,6 +144,60 @@ class TranslationResult {
   });
 }
 
+/// Sentido o acepción contextual de una palabra homógrafa.
+class ContextualSense {
+  final String sentido;
+  final String descripcion;
+  final String sign;
+  final String ejemplo;
+  final List<String> keywords;
+
+  const ContextualSense({
+    required this.sentido,
+    required this.descripcion,
+    required this.sign,
+    this.ejemplo = '',
+    required this.keywords,
+  });
+
+  factory ContextualSense.fromJson(Map<String, dynamic> json) {
+    return ContextualSense(
+      sentido: (json['sentido'] ?? '').toString(),
+      descripcion: (json['descripcion'] ?? '').toString(),
+      sign: (json['sign'] ?? '').toString(),
+      ejemplo: (json['ejemplo'] ?? '').toString(),
+      keywords: (json['keywords'] as List<dynamic>?)
+              ?.map((e) => e.toString().toUpperCase().trim())
+              .toList() ??
+          [],
+    );
+  }
+}
+
+/// Palabra homógrafa con múltiples acepciones según el contexto en español y LSRD.
+class ContextualHomonym {
+  final String palabra;
+  final String descripcion;
+  final List<ContextualSense> acepciones;
+
+  const ContextualHomonym({
+    required this.palabra,
+    required this.descripcion,
+    required this.acepciones,
+  });
+
+  factory ContextualHomonym.fromJson(Map<String, dynamic> json) {
+    return ContextualHomonym(
+      palabra: (json['palabra'] ?? '').toString(),
+      descripcion: (json['descripcion'] ?? '').toString(),
+      acepciones: (json['acepciones'] as List<dynamic>?)
+              ?.map((e) => ContextualSense.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -165,12 +219,15 @@ class MockupDataService {
 
   Map<String, MockSignEntry>? _phoneticIndex;
   Map<String, MockSignEntry>? _alphabetIndex;
+  List<ContextualHomonym>? _cachedHomonyms;
+  Map<String, ContextualHomonym>? _homonymsIndex;
 
   MockupDataService({this.defaultDictionaryPath});
 
   /// Normaliza variaciones ortográficas y homófonas comunes en español (B/V, LL/Y, C/S/Z, H).
   static String _spanishPhonetic(String text) {
     var s = text.toUpperCase();
+    if (s == 'HACE' || s == 'HACHE') return s;
     // Eliminar H muda
     s = s.replaceAll('H', '');
     // B y V son homófonas en español
@@ -888,6 +945,8 @@ class MockupDataService {
     'DORMIDO': 'DORMIR',
 
     // SENTAR / SENTARSE
+    'SENTAR': 'SENTARSE',
+    'SENTARSE': 'SENTARSE',
     'SIENTO': 'SENTARSE',
     'SIENTAS': 'SENTARSE',
     'SIENTA': 'SENTARSE',
@@ -1194,10 +1253,6 @@ class MockupDataService {
     'DOCENTE': 'MAESTRO',
     'PROFESOR': 'MAESTRO',
     'PROFESORA': 'MAESTRO',
-    'CHICO': 'NIÑO',
-    'CHICA': 'NIÑA',
-    'NENE': 'NIÑO',
-    'NENA': 'NIÑA',
     'PADRE': 'PAPÁ',
     'MADRE': 'MAMÁ',
     'BEBIDA': 'AGUA',
@@ -1226,12 +1281,155 @@ class MockupDataService {
     'BALONCESTO': 'BÁSQUETBOL',
     'BASQUETBOL': 'BÁSQUETBOL',
     'BASQUET': 'BÁSQUETBOL',
-    // Pronombres personales (formas átonas -> seña base)
+    // Pronombres personales y posesivos (formas átonas -> seña base)
     'ME': 'YO',
     'MI': 'YO',
     'TE': 'TU',
     'TI': 'TU',
     'LE': 'EL',
+    'LES': 'ELLOS',
+    'NOS': 'NOSOTROS, TRAS',
+    'NUESTRO': 'NOSOTROS, TRAS',
+    'NUESTRA': 'NOSOTROS, TRAS',
+    'NUESTROS': 'NOSOTROS, TRAS',
+    'NUESTRAS': 'NOSOTROS, TRAS',
+    // Familia y personas
+    'NIÑO': 'HIJO',
+    'NIÑA': 'HIJA',
+    'NIÑOS': 'HIJO',
+    'NIÑAS': 'HIJA',
+    'CHICO': 'HIJO',
+    'CHICA': 'HIJA',
+    'CHICOS': 'HIJO',
+    'CHICAS': 'HIJA',
+    'NENE': 'BEBÉ',
+    'NENA': 'BEBÉ',
+    'NENES': 'BEBÉ',
+    'BEBES': 'BEBÉ',
+    // Adjetivos calificativos y estados
+    'BONITO': 'BIEN',
+    'BONITA': 'BIEN',
+    'BONITOS': 'BIEN',
+    'BONITAS': 'BIEN',
+    'LINDO': 'BIEN',
+    'LINDA': 'BIEN',
+    'LINDOS': 'BIEN',
+    'LINDAS': 'BIEN',
+    'HERMOSO': 'BIEN',
+    'HERMOSA': 'BIEN',
+    'HERMOSOS': 'BIEN',
+    'HERMOSAS': 'BIEN',
+    'BELLO': 'BIEN',
+    'BELLA': 'BIEN',
+    'BELLOS': 'BIEN',
+    'BELLAS': 'BIEN',
+    'SABROSO': 'BUENO, NA',
+    'SABROSA': 'BUENO, NA',
+    'DELICIOSO': 'BUENO, NA',
+    'DELICIOSA': 'BUENO, NA',
+    'FRESCO': 'BUENO, NA',
+    'FRESCA': 'BUENO, NA',
+    'FRESCAS': 'BUENO, NA',
+    'FRESCOS': 'BUENO, NA',
+    'AMABLE': 'BUENO, NA',
+    'AMABLES': 'BUENO, NA',
+    'MARAVILLOSO': 'BIEN',
+    'MARAVILLOSA': 'BIEN',
+    'JUNTOS': 'ACOMPAÑAR',
+    'JUNTO': 'ACOMPAÑAR',
+    'CERCANO': 'CERCA',
+    'CERCANA': 'CERCA',
+    'PROXIMO': 'DESPUÉS',
+    'PROXIMA': 'DESPUÉS',
+    'CENTRAL': 'CENTRO',
+    // Salud, medicina y urgencias
+    'HAY': 'TENER',
+    'HUBO': 'TENER',
+    'HABRA': 'TENER',
+    'HABIA': 'TENER',
+    'URGENTE': 'EMERGENCIA',
+    'URGENCIA': 'EMERGENCIA',
+    'GRAVE': 'PELIGROSO, SA',
+    'PACIENTE': 'ENFERMO, MA',
+    'PACIENTES': 'ENFERMO, MA',
+    'SED': 'AGUA',
+    'SANAR': 'SALUD',
+    'CURAR': 'SALUD',
+    'CURARSE': 'SALUD',
+    'ALIVIO': 'ALIVIAR',
+    // Clima y estaciones
+    'LLOVER': 'LLUVIA',
+    'LLUEVE': 'LLUVIA',
+    'LLOVIO': 'LLUVIA',
+    'LLOVERA': 'LLUVIA',
+    'LLOVIENDO': 'LLUVIA',
+    'VERANO': 'CALOR',
+    'INVIERNO': 'FRÍO',
+    'PRIMAVERA': 'FLOR',
+    'OTOÑO': 'HOJA',
+    'CLIMA': 'TIEMPO',
+    // Religión y ceremonias
+    'BENDECIR': 'BENDICIÓN',
+    'BENDIGA': 'BENDICIÓN',
+    'BENDICE': 'BENDICIÓN',
+    'BENDICEN': 'BENDICIÓN',
+    'BENDIJO': 'BENDICIÓN',
+    'CASAR': 'BODA',
+    'CASARSE': 'BODA',
+    'CASARON': 'BODA',
+    'CASADOS': 'BODA',
+    'MATRIMONIO': 'BODA',
+    // Emociones y sensaciones
+    'ALEGRIA': 'ALEGRE',
+    'ALEGRIAS': 'ALEGRE',
+    'EMOCION': 'EMOCIONADO, DA',
+    'EMOCIONES': 'EMOCIONADO, DA',
+    'TRANQUILIDAD': 'TRANQUILO, LA',
+    'PAZ': 'CALMA',
+    'ASOMBRO': 'SORPRESA',
+    'ANIMO': 'ALEGRE',
+    'SONREIR': 'ALEGRE',
+    'SONRISA': 'ALEGRE',
+    'CANSANCIO': 'CANSADO, DA',
+    'ESPERANZA': 'FE',
+    'FIESTA': 'CELEBRACIÓN',
+    // Acción y fuego
+    'QUEMAR': 'FUEGO',
+    'QUEMA': 'FUEGO',
+    'QUEMAN': 'FUEGO',
+    'QUEMANDO': 'FUEGO',
+    'APAGAR': 'TERMINAR',
+    'APAGARON': 'TERMINAR',
+    'APAGO': 'TERMINAR',
+    // Comunicación, trabajo y tecnología
+    'CONVERSAR': 'HABLAR',
+    'CONVERSANDO': 'HABLAR',
+    'TRADUCE': 'LENGUA DE SEÑAS',
+    'TRADUCIR': 'LENGUA DE SEÑAS',
+    'TRADUCCION': 'LENGUA DE SEÑAS',
+    'SOFTWARE': 'COMPUTADORA',
+    'PROGRAMA': 'COMPUTADORA',
+    'APLICACION': 'COMPUTADORA',
+    'WEB': 'INTERNET',
+    'TECNOLOGIA': 'COMPUTADORA',
+    'INTELIGENCIA': 'SABER',
+    'ARTIFICIAL': 'COMPUTADORA',
+    'SALARIO': 'DINERO',
+    'SUELDO': 'DINERO',
+    'VIGILAR': 'CUIDAR',
+    'VIGILA': 'CUIDAR',
+    'VECINDARIO': 'CASA',
+    'BARRIO': 'CASA',
+    // Cultura dominicana
+    'PATRIA': 'PAÍS',
+    'BANDERA': 'PAÍS',
+    'MERENGUE': 'MÚSICA',
+    'BACHATA': 'MÚSICA',
+    'SANCOCHO': 'SANCOCHO',
+    'PLATANO': 'PLÁTANO',
+    'BEISBOL': 'BÉISBOL',
+    'PELOTA': 'PELOTA',
+    'REY': 'CORONA',
     // Intensificadores y adverbios comunes
     'MUY': 'MUCHO',
     'MUCHISIMO': 'MUCHO',
@@ -1284,6 +1482,13 @@ class MockupDataService {
     'SIGUEN': 'CONTINUAR',
     'SIGUIENDO': 'CONTINUAR',
     'TOMAR': 'BEBER',
+    'SENTAR': 'SENTARSE',
+    'SENTARSE': 'SENTARSE',
+    'DOLER': 'DOLOR',
+    'DOLIA': 'DOLOR',
+    'DOLIO': 'DOLOR',
+    'DUELE': 'DOLOR',
+    'DUELEN': 'DOLOR',
   };
 
   /// Locuciones multi-palabra que deben evaluarse como bloque antes de filtrar stop words.
@@ -1296,17 +1501,67 @@ class MockupDataService {
     'DE REPENTE': 'REPENTE',
     'DE VERDAD': 'VERDAD',
     'POR FAVOR': 'POR FAVOR',
-    'DE NADA': 'DE NADA',
+    'DE NADA': 'NADA',
     'BUENOS DIAS': 'BUENOS DÍAS',
     'BUENAS TARDES': 'BUENAS TARDES',
     'BUENAS NOCHES': 'BUENAS NOCHES',
-    'MUCHAS GRACIAS': 'MUCHAS GRACIAS',
+    'MUCHAS GRACIAS': 'GRACIAS',
     'A QUE TE DEDICAS': 'TRABAJO',
     'QUE TE DEDICAS': 'TRABAJO',
+    'HASTA LUEGO': 'ADIÓS',
+    'NOS VEMOS': 'VER',
+    'FIN DE SEMANA': 'SEMANA',
+    'REPUBLICA DOMINICANA': 'REPÚBLICA DOMINICANA',
+    'SANTO DOMINGO': 'SANTO DOMINGO',
+    'BOCA CHICA': 'BOCA CHICA',
+    'SANTIAGO DE LOS CABALLEROS': 'SANTIAGO (SANTIAGO DE LOS CABALLEROS)',
+    'LENGUA DE SEÑAS': 'LENGUA DE SEÑAS',
+    'LENGUA DE SEÑAS DOMINICANA': 'LENGUA DE SEÑAS',
+    'MORIR SOÑANDO': 'BEBIDA',
+    'HACE CALOR': 'CALOR',
+    'HACE MUCHO CALOR': 'CALOR',
+    'HACE FRIO': 'FRÍO',
+    'HACE MUCHO FRIO': 'FRÍO',
+    'HACE SOL': 'SOL',
+    'HACE VIENTO': 'VIENTO',
+    'HACER EJERCICIO': 'EJERCICIO',
+    'HACE TIEMPO': 'PASADO',
+    'A LA ORDEN': 'AYUDA',
+    'INTELIGENCIA ARTIFICIAL': 'COMPUTADORA',
   };
 
   /// Diccionario de resolución contextual de homónimos.
   static const Map<String, List<Map<String, dynamic>>> _contextualHomonyms = {
+    'LLAMA': [
+      {
+        'keywords': [
+          'TELEFONO', 'CELULAR', 'LLAMADA', 'NOMBRE', 'DECIR', 'HABLAR',
+          'VOZ', 'GRITAR', 'MENSAJE', 'CONTACTO', 'TIMBRAR', 'TIMBRE',
+          'NUMERO', 'COMUNICAR', 'ALGUIEN', 'AVISAR'
+        ],
+        'sign': 'LLAMAR'
+      },
+      {
+        'keywords': [
+          'FUEGO', 'CALOR', 'QUEMAR', 'INCENDIO', 'FOSFORO', 'VELA',
+          'ENCENDER', 'CHIMENEA', 'HUMO', 'CANDELA', 'FLAMA', 'ARDER',
+          'FOGATA', 'GAS', 'ESTUFA'
+        ],
+        'sign': 'FUEGO'
+      },
+      {
+        'keywords': [
+          'ANIMAL', 'MONTAÑA', 'ANDES', 'PERU', 'LANA', 'PASTO',
+          'CAMELIDO', 'ZOO', 'ZOOLOGICO', 'PELO', 'HIERBA', 'CAMPO',
+          'ALIMENTAR', 'ALIMENTE', 'ALIMENTO', 'ALIMENTAN', 'ALIMENTANDO', 'ALIMENTAMOS',
+          'COMER', 'COMIDA', 'COME', 'COMIENDO', 'COMIO', 'COMEN',
+          'PASTAR', 'PASTANDO', 'CRIAR', 'CRIANZA', 'CRIANDO', 'CUIDAR', 'CUIDADO', 'CUIDANDO',
+          'MAMIFERO', 'CORRAL', 'GRANJA', 'SALVAJE', 'AUQUENIDO', 'FAUNA', 'HERBIVORO',
+          'MONTAR', 'MONTE', 'CABALGAR', 'SUBIR', 'JINETEAR', 'PASEAR'
+        ],
+        'sign': 'LLAMA (ANIMAL)'
+      }
+    ],
     'BANCO': [
       {
         'keywords': ['DINERO', 'SACAR', 'COBRAR', 'PAGAR', 'CUENTA', 'CHEQUE', 'EFECTIVO', 'AHORRAR'],
@@ -1395,7 +1650,7 @@ class MockupDataService {
     _SuffixRule('ES', ['ER', 'IR']),
     _SuffixRule('IO', ['ER', 'IR']),
     _SuffixRule('O', ['AR', 'ER', 'IR']),
-    _SuffixRule('A', ['AR', 'ER', 'IR']),
+    _SuffixRule('A', ['AR']),
     _SuffixRule('E', ['AR', 'ER', 'IR']),
     _SuffixRule('I', ['ER', 'IR']),
   ];
@@ -1405,6 +1660,7 @@ class MockupDataService {
     if (_normalizedIndex == null) return null;
     final w = _normalize(word);
     if (w.length < 3) return null;
+    if (w.contains(' ')) return null;
 
     // 1. Probar quitar pronombres clíticos (ej. AYÚDAME -> AYUDA -> AYUDAR)
     for (final clitic in _cliticSuffixes) {
@@ -1420,7 +1676,15 @@ class MockupDataService {
       }
     }
 
-    // 2. Probar reglas morfológicas de conjugación regular
+    // 2. Probar si es un infinitivo que corresponde a un verbo reflexivo en el diccionario (ej. SENTAR -> SENTARSE)
+    if (w.endsWith('AR') || w.endsWith('ER') || w.endsWith('IR')) {
+      final reflexive = '${w}SE';
+      if (_normalizedIndex!.containsKey(reflexive)) {
+        return _normalizedIndex![reflexive];
+      }
+    }
+
+    // 3. Probar reglas morfológicas de conjugación regular
     for (final rule in _regularSuffixRules) {
       if (w.endsWith(rule.suffix)) {
         final stem = w.substring(0, w.length - rule.suffix.length);
@@ -1458,6 +1722,7 @@ class MockupDataService {
           entry.infoAdicional.toLowerCase().contains('verbo')) {
         return true;
       }
+      return false;
     }
     return _lemmatizeRegularVerb(w) != null;
   }
@@ -1491,6 +1756,30 @@ class MockupDataService {
         .map((e) => MockSignEntry.fromJson(e as Map<String, dynamic>, index++))
         .toList();
 
+    // Registrar entrada dedicada para el camélido andino "LLAMA (ANIMAL)"
+    final hasLlamaAnimal = _cache!.any((e) => e.palabra == 'LLAMA (ANIMAL)');
+    if (!hasLlamaAnimal && _cache!.isNotEmpty) {
+      final animalEntry = _cache!.firstWhere(
+        (e) => e.palabra.toUpperCase() == 'ANIMAL' || e.id == 150,
+        orElse: () => _cache!.first,
+      );
+      final llamaAnimalEntry = MockSignEntry(
+        id: 2501,
+        palabra: 'LLAMA (ANIMAL)',
+        descripcion: 'Mamífero rumiante propio de los Andes de Sudamérica (camélido / auquénido). Seña asociada a la categoría animal.',
+        gesto: animalEntry.gesto,
+        imagenAsset: animalEntry.imagenAsset,
+        seccion: 'L',
+        infoAdicional: 'Camélido andino / Animal',
+        archivoMatriz: animalEntry.archivoMatriz,
+        coordenadas: animalEntry.coordenadas,
+        gestoFacial: animalEntry.gestoFacial,
+        categoria: 'Naturaleza y Animales',
+        svgAsset: animalEntry.svgAsset,
+      );
+      _cache!.add(llamaAnimalEntry);
+    }
+
     _buildNormalizedIndex(_cache!);
 
     return _cache!;
@@ -1523,6 +1812,22 @@ class MockupDataService {
         alphabet.putIfAbsent(trimmed, () => entry);
       }
 
+      // Auto-indexar plurales naturales y variaciones de género para lemas de una sola palabra
+      // (ej: PERSONA -> PERSONAS; ALTO -> ALTA, ALTAS, ALTOS; ROJO -> ROJA; LIMPIO -> LIMPIA)
+      if (!norm.contains(' ') && norm.length >= 3) {
+        if (norm.endsWith('A') || norm.endsWith('E') || norm.endsWith('I') || norm.endsWith('O') || norm.endsWith('U')) {
+          addKey('${norm}S', entry);
+        } else if (!norm.endsWith('S')) {
+          addKey('${norm}ES', entry);
+        }
+        if (norm.endsWith('O') && norm.length >= 4) {
+          final stem = norm.substring(0, norm.length - 1);
+          addKey('${stem}A', entry);
+          addKey('${stem}AS', entry);
+          addKey('${stem}OS', entry);
+        }
+      }
+
       // 1. Manejar aclaraciones y sinónimos entre paréntesis: ej. "BANCO (FINANCIERO)", "ANULAR (CANCELAR)"
       if (raw.contains('(') && raw.contains(')')) {
         final openIdx = raw.indexOf('(');
@@ -1530,12 +1835,29 @@ class MockupDataService {
         if (openIdx >= 0 && closeIdx > openIdx) {
           final beforeParen = raw.substring(0, openIdx).trim();
           final insideParen = raw.substring(openIdx + 1, closeIdx).trim();
-          addKey(beforeParen, entry);
+          // Preservar LLAMA para resolución contextual (evita colisión entre verbo y sustantivo)
+          if (_normalize(beforeParen) != 'LLAMA') {
+            addKey(beforeParen, entry);
+          }
           if (insideParen.isNotEmpty &&
               !insideParen.contains(RegExp(r'\d')) &&
               insideParen.split(RegExp(r'\s+')).length <= 2) {
             addKey(insideParen, entry);
           }
+        }
+      }
+
+      // Soporte explícito para "LLAMA (ANIMAL)"
+      if (norm == 'LLAMA ANIMAL' || raw == 'LLAMA (ANIMAL)') {
+        addKey('LLAMA (ANIMAL)', entry);
+        addKey('LLAMA ANIMAL', entry);
+      }
+
+      // 1b. Indexar infinitivo base para verbos reflexivos (ej: "SENTARSE" -> "SENTAR")
+      if (norm.endsWith('SE') && norm.length > 4) {
+        final baseInf = norm.substring(0, norm.length - 2);
+        if (baseInf.endsWith('AR') || baseInf.endsWith('ER') || baseInf.endsWith('IR')) {
+          addKey(baseInf, entry);
         }
       }
 
@@ -1776,14 +2098,25 @@ class MockupDataService {
       if (synonymTarget != null) return synonymTarget;
     }
 
-    // 7. Búsqueda por distancia Levenshtein (corrección ortográfica en palabras de >= 5 letras)
-    // Para evitar falsos positivos semánticos (ej: "DEDICO" -> "MEDICO", "GATO" -> "PATO"),
-    // se exige que coincida la primera letra o que sea una palabra larga (>= 8 letras).
+    // 7. Búsqueda por distancia Levenshtein (corrección ortográfica)
+    // - Para inserciones/omisiones (ej: "abogdo" -> "ABOGADO"): permitido desde 5 letras con coincidencia inicial.
+    // - Para sustituciones de 1 letra en palabras de igual longitud (ej: "CARLOS" vs "CARGOS", "BONITA" vs "BOLITA"):
+    //   requiere al menos 7 letras para evitar falsos positivos semánticos.
+    final bool isVerbInf = w.endsWith('AR') || w.endsWith('ER') || w.endsWith('IR');
     if (_normalizedIndex != null && w.length >= 5) {
       for (final entry in _normalizedIndex!.entries) {
         final key = entry.key;
-        if ((key.length - w.length).abs() <= 1) {
-          if ((w[0] == key[0] && w.length >= 5) || w.length >= 8) {
+        if (key.contains(' ')) continue;
+        // Evitar cruces erróneos entre infinitivos verbales distintos (ej: SENTAR vs SENTIR)
+        if (isVerbInf &&
+            (key.endsWith('AR') || key.endsWith('ER') || key.endsWith('IR')) &&
+            w != key) {
+          continue;
+        }
+        final lenDiff = (key.length - w.length).abs();
+        if (lenDiff <= 1) {
+          if (lenDiff == 0 && w.length < 7) continue;
+          if (w[0] == key[0]) {
             if (_levenshtein(w, key) == 1) {
               return entry.value;
             }
@@ -1827,6 +2160,7 @@ class MockupDataService {
       'LA', 'LOS', 'LAS', 'UNOS', 'UNAS',
       'DE', 'A', 'EN', 'POR', 'PARA', 'CON', 'SIN', 'AL', 'DEL',
       'QUE', 'Y', 'O', 'SU', 'SUS', 'PORQUE',
+      'ENTRE', 'DESDE', 'HACIA', 'HASTA', 'SOBRE',
     };
 
     // Paso 2: Pre-escanear locuciones multi-palabra y frases del diccionario para protegerlas del filtro
@@ -1914,13 +2248,13 @@ class MockupDataService {
         'ESTOY', 'ESTAS', 'ESTA', 'ESTAMOS', 'ESTAN', 'ESTABA', 'ESTABAS', 'ESTABAMOS', 'ESTABAN',
         'ESTUVE', 'ESTUVO', 'ESTUVIMOS', 'ESTUVIERON'
       };
-      if (isMultiWord && copulas.contains(upper)) {
+      if (isMultiWord && (copulas.contains(upper) || copulas.contains(_normalize(raw)))) {
         ti++;
         continue;
       }
 
-      // Perífrasis verbales de dedicación / hábito seguidas de acción (ej: "me dedico a pasear...", "se dedica a pintar...")
-      // En LSRD el conector perifrástico se omite y la seña de la acción principal toma protagonismo directo.
+      // Perífrasis verbales de dedicación / oficio seguidas de ocupación (ej: "me dedico a la música...", "se dedica a programar...")
+      // En LSRD "dedicarse a" expresa la ocupación u oficio con la seña TRABAJO
       const dedicationStems = {
         'DEDICO', 'DEDICAS', 'DEDICA', 'DEDICAMOS', 'DEDICAN', 'DEDICARME', 'DEDICARSE', 'DEDICARTE', 'DEDICARNOS'
       };
@@ -1934,14 +2268,15 @@ class MockupDataService {
         continue;
       }
 
-      // Si es la forma verbal de dedicación en frase compuesta
+      // Si es la forma verbal de dedicación en frase compuesta -> traducir a TRABAJO
       if (isMultiWord && dedicationStems.contains(upper)) {
-        // Caso A: Seguido de preposición "A" o "AL" (ej: "dedico a pasear...")
+        tokens.add('TRABAJO');
+        // Caso A: Seguido de preposición "A" o "AL" (ej: "dedico a orquestación...")
         if (ti + 1 < rawTokens.length && (rawTokens[ti + 1].toUpperCase() == 'A' || rawTokens[ti + 1].toUpperCase() == 'AL')) {
           ti += 2;
           continue;
         }
-        // Caso B: Seguido directamente de verbo/objeto (ej: "dedico pasear...")
+        // Caso B: Seguido directamente de verbo/objeto (ej: "dedico pintar...")
         if (ti + 1 < rawTokens.length) {
           ti++;
           continue;
@@ -2004,20 +2339,7 @@ class MockupDataService {
       }
 
       // Unigrama con resolucion de homonimos por contexto
-      String wordToSearch = tokens[i];
-      if (_contextualHomonyms.containsKey(wordToSearch)) {
-        final contexts = _contextualHomonyms[wordToSearch]!;
-        outer:
-        for (final contextDef in contexts) {
-          final keywords = (contextDef['keywords'] as List).cast<String>();
-          for (final cw in keywords) {
-            if (tokens.contains(_normalize(cw))) {
-              wordToSearch = _normalize(contextDef['sign'] as String);
-              break outer;
-            }
-          }
-        }
-      }
+      final wordToSearch = await resolveContextualWord(tokens[i], tokens, rawTokens: rawTokens);
 
       final sign = await findFlexible(wordToSearch, explicit: explicit);
       if (sign != null) {
@@ -2070,6 +2392,113 @@ class MockupDataService {
       notFoundWords: notFound,
       spelledWords: spelled,
     );
+  }
+
+  /// Carga y cachea el catálogo de homónimos y reglas de contexto desde JSON.
+  Future<List<ContextualHomonym>> getHomonyms() async {
+    if (_cachedHomonyms != null) return _cachedHomonyms!;
+
+    String jsonStr;
+    try {
+      jsonStr = await rootBundle.loadString('assets/matrices/palabras_homonimas_contexto.json');
+    } catch (_) {
+      try {
+        jsonStr = await rootBundle.loadString('assets/mockup/palabras_homonimas_contexto.json');
+      } catch (_) {
+        jsonStr = '{"homonimos": []}';
+      }
+    }
+
+    final Map<String, dynamic> data = json.decode(jsonStr) as Map<String, dynamic>;
+    final List<dynamic> list = (data['homonimos'] as List<dynamic>?) ?? [];
+    _cachedHomonyms = list
+        .map((e) => ContextualHomonym.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final map = <String, ContextualHomonym>{};
+    for (final h in _cachedHomonyms!) {
+      map[_normalize(h.palabra)] = h;
+    }
+    _homonymsIndex = map;
+    return _cachedHomonyms!;
+  }
+
+  /// Obtiene la definición de un homónimo si existe en el catálogo contextual.
+  Future<ContextualHomonym?> getHomonym(String word) async {
+    if (_homonymsIndex == null) {
+      await getHomonyms();
+    }
+    final norm = _normalize(word);
+    return _homonymsIndex?[norm];
+  }
+
+  /// Resuelve el sentido de una palabra según las palabras de contexto presentes en la frase.
+  Future<String> resolveContextualWord(
+    String word,
+    List<String> allWordsInPhrase, {
+    List<String>? rawTokens,
+  }) async {
+    final normWord = _normalize(word);
+    final homonym = await getHomonym(normWord);
+
+    final normalizedTokens = allWordsInPhrase
+        .map(_normalize)
+        .where((t) => t != normWord)
+        .toSet();
+    if (rawTokens != null) {
+      normalizedTokens.addAll(
+        rawTokens.map(_normalize).where((t) => t != normWord),
+      );
+    }
+
+    if (homonym != null) {
+      for (final sense in homonym.acepciones) {
+        for (final kw in sense.keywords) {
+          final normKw = _normalize(kw);
+          if (normalizedTokens.contains(normKw)) {
+            return _normalize(sense.sign);
+          }
+          // Coincidencia morfológica por raíz/prefijo (mínimo 4 letras)
+          if (normKw.length >= 4) {
+            final stemLen = normKw.length >= 5 ? 5 : 4;
+            final kwStem = normKw.substring(0, stemLen);
+            for (final token in normalizedTokens) {
+              if (token.length >= 4 &&
+                  (token.startsWith(kwStem) ||
+                      (token.length >= stemLen && normKw.startsWith(token.substring(0, stemLen))))) {
+                return _normalize(sense.sign);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback a tabla estática si no hubo match en catálogo dinámico
+    if (_contextualHomonyms.containsKey(normWord)) {
+      final contexts = _contextualHomonyms[normWord]!;
+      for (final contextDef in contexts) {
+        final keywords = (contextDef['keywords'] as List).cast<String>();
+        for (final cw in keywords) {
+          final normCw = _normalize(cw);
+          if (normalizedTokens.contains(normCw)) {
+            return _normalize(contextDef['sign'] as String);
+          }
+          if (normCw.length >= 4) {
+            final stemLen = normCw.length >= 5 ? 5 : 4;
+            final kwStem = normCw.substring(0, stemLen);
+            for (final token in normalizedTokens) {
+              if (token.length >= 4 &&
+                  (token.startsWith(kwStem) ||
+                      (token.length >= stemLen && normCw.startsWith(token.substring(0, stemLen))))) {
+                return _normalize(contextDef['sign'] as String);
+              }
+            }
+          }
+        }
+      }
+    }
+    return normWord;
   }
 }
 
